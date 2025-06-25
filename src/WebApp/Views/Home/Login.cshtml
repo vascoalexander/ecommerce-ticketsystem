@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+}
+<html lang="en">
+<head>
+   
+    <title>Login</title>
+</head>
+<body>
+
+        <form asp-action="Login" method="post" >
+        <div class="text-center">
+        <img class="img-b " src="">
+        </div>
+
+        <h1 class="text-center">Anmelden</h1>
+        <h5 class="text-center mb-4">Melden Sie sich in Ihrem Ticketsystem-Konto an</h5>
+
+        <div class="form-floating mb-3">
+            <input @*asp-for="Username"*@ class="form-control" placeholder="Hallo@maloderso." />
+            <label @*asp-for="Username"*@>Benutzername</label>
+            <span @*asp-validation-for="Username"*@ class="text-danger"></span>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input @*asp-for="Password"*@ type="password" class="form-control" placeholder="Passwort" />
+            <label @*asp-for="Password"*@>Passwort</label>
+            <span @*asp-validation-for="Password"*@ class="text-danger"></span>
+        </div>
+
+        <div class="form-check text-start my-3">
+            <input @*asp-for=""*@ class="form-check-input" />
+            <label @*asp-for=""*@ class="form-check-label">Angemeldet bleiben</label>
+        </div>
+
+        <button class="btn btn-primary w-100 py-2" type="submit">Anmelden</button>
+    </form>
+   
+
+</body>
+</html>
