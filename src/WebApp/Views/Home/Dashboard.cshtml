@@ -1,18 +1,8 @@
 ﻿@{
     ViewBag.Title = "Dashboard";
+    Layout = "_Layout";
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mt-3 mb-5">
-        <div class="fw-bold fs-4">Logo</div>
-        <div>
-            @*@if (Model.IsAdmin)
-        {
-            <a asp-action="Admin" class="me-3 text-secondary text-decoration-none">Adminbereich</a>
-        }*@
-            <a asp-action="Logout" class="btn btn-dark">Logout</a>
-        </div>
-    </div>
 
     <h1 class="text-center mb-4" style="font-size:3rem;">Hi,@*@Model.Username*@ !</h1>
 
@@ -40,7 +30,7 @@
             <a asp-action="Create" class="btn btn-dark btn-lg mt-2 px-5">Ticket anlegen</a>
         </div>
     </div>
-</div>
+
 
 
 
