@@ -11,7 +11,7 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="DefaultPage">Lushwear</a>
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="DefaultPage"><img src="Logo.png" alt="Company Logo" class="logo"/></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -42,23 +42,24 @@
     </nav>
 </header>
 
-<div class="container">
-    <main role="main" class="pb-3">
+<main role="main" class="pb-3">
+    <div class="container">
         @RenderBody()
-    </main>
-</div>
+    </div>
+</main>
 
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2025 - IdentityExample - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        &copy; 2025 - Copyright by Lushware
     </div>
 </footer>
+</body>
+</html>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
