@@ -8,7 +8,7 @@
         <p>Verwalten Sie alle Tickets in Ihrem System</p>
     </div>
     <div class="align-self-start">
-        <button class="btn border-dark">Neues Ticket</button>
+        <button id="btnNeuesTicket" class="btn border-dark">Neues Ticket</button>
     </div>
 </div>
 
@@ -29,7 +29,7 @@
     </div>
 </div>
 
-<div class="container p3 my-3 border">
+<div class="container p-3 my-3 border" style="max-height: 400px; overflow-y: auto;">
     <div class="row">
         <div class="col">
             <p>Ticket</p>
@@ -64,3 +64,52 @@
         </div>
     </div>
 </div>
+<div class="container p-3 my-3 border" id="hiddenDiv" style="display: none;">
+    <form action="">
+        <div class="row">
+            <div class="col">
+                <label for="titel" class="form-label">Titel</label>
+                <input id="titel" type="text" class="form-control">
+            </div>
+            <div class="col">
+                <label for="projekt-create" class="form-label">Projekt</label>
+                <select id="projekt-create" class="form-control">
+                    <option value="">Bitte auswählen</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="description" class="form-label">Beschreibung</label>
+                <textarea id="description" class="form-control" rows="4"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="ticket-processor" class="form-label">Ticket-Bearbeiter</label>
+                <select id="ticket-processor" class="form-control">
+                    <option value="">Bitte auswählen</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    <div class="row mt-3">
+        <div class="col d-flex justify-content-end">
+            <button id="btnTicketAbbrechen" class="btn btn-secondary me-2">Abbrechen</button>
+            <button id="btnTicketErstellen" class="btn btn-primary">Ticket Erstellen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const hiddenDiv = document.getElementById('hiddenDiv');
+
+    function toggleHiddenDiv(show) {
+        hiddenDiv.style.display = show ? 'block' : 'none';
+        hiddenDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('btnNeuesTicket').addEventListener('click', () => toggleHiddenDiv(true));
+    document.getElementById('btnTicketAbbrechen').addEventListener('click', () => toggleHiddenDiv(false));
+    document.getElementById('btnTicketErstellen').addEventListener('click', () => toggleHiddenDiv(false));
+</script>
