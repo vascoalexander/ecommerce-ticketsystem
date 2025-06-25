@@ -19,7 +19,7 @@ using var scope = app.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 db.Database.Migrate();
 
-DbInitializer.SeedDb(db);
+DbInitializer.SeedDb(app);
 await EnsureIdentity.SeedDefaultAccounts(app);
 
 
