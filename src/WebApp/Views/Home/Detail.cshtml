@@ -1,0 +1,30 @@
+﻿@{
+    ViewBag.Title = "Detail";
+ 
+}
+
+<div>
+    <h3 class="fw-bold m-md-4">@*@Model.Title*@ <span class="text-secondary">#@*@Model.ID*@</span></h3>
+        <div class="text-secondary m-md-4">Projekt</div>
+        </div>
+        <div class="bg-light rounded-3 p-3 m-md-3 card">
+            <div class="row fw-semibold text-secondary">
+                <div class="col-md-3">Ersteller</div>
+                <div class="col-md-3">Erstellungsdatum</div>
+                <div class="col-md-3">Zugewiesener</div>
+                <div class="col-md-3">Zuweisungsdatum</div>
+            </div>
+            <div class="row pt-2 m-md-3">
+                <div class="col-md-3">@*@Model.Creator*@</div>
+                <div class="col-md-3">@*@Model.CreatedAt.ToString("dd.MM.yyyy")*@</div>
+                <div class="col-md-3">@*@Model.Assignee*@</div>
+                <div class="col-md-3">@*@(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd.MM.yyy") : "-")*@</div>
+            </div>
+        </div>
+        <div class="bg-light rounded-3 p-4 mb-4 card m-md-3">
+            <span class="row fw-semibold text-secondary">Beschreibung:</span>
+        <div class="mt-2">@*@Model.Description*@</div>
+        </div>
+        <div class="m-md-3">
+            <a class="btn btn-outline-secondary" href="#">Zurück</a>
+        </div>
