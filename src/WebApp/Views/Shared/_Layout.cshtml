@@ -23,19 +23,22 @@
                         <li class="nav-item d-flex align-items-center">
                             <span class="nav-link">Hallo @User.Identity.Name</span>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" id="logoutButton">
                             <a class="btn btn-outline-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Logout">Logout</a>
                         </li>
                     }
                     else
                     {
-                        <li class="nav-item">
+                        <li class="nav-item" id="loginButton">
                             <a class="btn btn-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Login">Login</a>
                         </li>
                     }
-                    <li class="nav-item d-none" id="adminButton">
-                        <a class="btn btn-danger ms-lg-2 mt-2 mt-lg-0" href="/Admin/Panel">Admin Panel</a>
-                    </li>
+                    @if (User?.IsInRole("Admin") == true)
+                    {
+                        <li class="nav-item" id="adminButton">
+                            <a class="btn btn-danger ms-lg-2 mt-2 mt-lg-0" href="/Admin/Panel">Admin Panel</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -61,18 +64,3 @@
 
 </body>
 </html>
-
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const userRoles = document.body.dataset.userRole?.split(',') || [];
-
-        if (userRoles.includes("Admin")) {
-            const adminButton = document.getElementById("adminButton");
-            if (adminButton) {
-                adminButton.classList.remove("d-none");
-            }
-        }
-    });
-</script>
