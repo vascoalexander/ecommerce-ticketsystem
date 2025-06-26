@@ -1,38 +1,113 @@
 ﻿@{
-    ViewBag.Title = "Dashboard";
-    Layout = "_Layout";
+ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
 }
+<div class="d-flex flex-column flex-md-row min-vh-100">
+    <!-- Sidebar -->
+    @* <nav class="sidebar bg-light border-end p-3"> *@
+    @*     <h4 class="text-center mb-4 " style="color: black">Lushwear Dashboard</h4> *@
+    @*     <ul class="nav flex-column"> *@
+    @*         <li class="nav-item mb-2"> *@
+    @*             <a href="#" class="nav-link active fw-semibold" style="color: black">Übersicht</a> *@
+    @*         </li> *@
+    @*         <li class="nav-item mb-2"> *@
+    @*             <a href="#" class="nav-link text-secondary">Meine Tickets</a> *@
+    @*         </li> *@
+    @*         <li class="nav-item mb-2"> *@
+    @*             <a href="#" class="nav-link text-secondary">Ticket erstellen</a> *@
+    @*         </li> *@
+    @*         <li class="nav-item mb-2"> *@
+    @*             <a href="#" class="nav-link text-secondary">Ticket bearbeiten</a> *@
+    @*         </li> *@
+    @*         <li class="nav-item mb-2"> *@
+    @*             <a href="#" class="nav-link text-secondary">Ticket schließen</a> *@
+    @*         </li> *@
+    @*     </ul> *@
+    @* </nav> *@
 
+    <!-- Main Content -->
+    <main class="flex-grow-1 p-4 bg-white">
+        <h2 class="mb-4" style="color: black">Willkommen, @User.Identity.Name!</h2>
 
-    <h1 class="text-center mb-4" style="font-size:3rem;">Hi,@*@Model.Username*@ !</h1>
-
-    <div class=" row justify-content-center align-items-start" style="min-height:400px;">
-        <div class="col-md-5">
-            <div class="border p-4 h-100 d-flex align-items-center" style="min-height:340px;">
-                <span class="fs-5 text-secondary">
-                    Dashboard mit erweiterten Statistiken und<br>
-                    bereits erstellten Tickets (Liste) vom<br>
-                    eingeloggten User
-                </span>
+        <!-- Stat Boxes -->
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3 text-center">
+                    <h5>Offene Tickets</h5>
+                    <p class="display-5 text-primary">23</p>
+                </div>
             </div>
-
-            <div class="d-flex mt-4 gap-3">
-                <a asp-action="Edit" class="btn btn-dark flex-fill">Ticket bearbeiten</a>
-                <a asp-action="Close" class="btn btn-danger flex-fill">Ticket schliessen</a>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card shadow-sm p-3 text-center">
+                    <h5>Geschlossene Tickets</h5>
+                    <p class="display-5 text-success">150</p>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-4">
+                <div class="card shadow-sm p-3 text-center">
+                    <h5>Neue Tickets heute</h5>
+                    <p class="display-5 text-warning">5</p>
+                </div>
             </div>
         </div>
-        <div class="col-md-5 d-flex flex-column align-items-center">
-            <div class="mb-4 text-center fs-5 text-secondary">
-                Wenn Sie ein Problem melden<br>
-                möchten können Sie hier ein neues<br>
-                Ticket anlegen
+
+        <!-- Chart -->
+        <div class="card shadow-sm mt-5">
+            <div class="card-header bg-transparent text-primary fw-semibold">
+                Geschlossene Tickets (letztes Jahr)
             </div>
-            <a asp-action="Create" class="btn btn-dark btn-lg mt-2 px-5">Ticket anlegen</a>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="dashboardBarChart"></canvas>
+                </div>
+            </div>
         </div>
-    </div>
+        <div>
+            <div class="mt-5 text-center">
+                <a asp-controller="Ticket" asp-action="TicketList" class="btn btn-dark btn-lg">
+                    Zur Ticketübersicht
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
 
-
-
-
-
-
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('dashboardBarChart').getContext('2d');
+    const myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+            datasets: [{
+                label: 'Tickets',
+                data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
+                backgroundColor: 'rgba(59, 39, 93, 0.7)',
+                borderColor: 'rgba(59, 39, 93, 1)',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#3b275d',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+}

@@ -82,3 +82,31 @@ main {
   }
 }
 
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  color: black;
+}
+
+
+.chart-container {
+  position: relative;
+  height: 400px;
+}
+
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+}
+
+
