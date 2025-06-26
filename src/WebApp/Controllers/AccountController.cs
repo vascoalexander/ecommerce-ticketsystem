@@ -46,7 +46,7 @@ public class AccountController : Controller
                     );
                 if (result.Succeeded)
                 {
-                    return Redirect(model.ReturnUrl ?? "/");
+                    return RedirectToAction("Dashboard", "Home");
                 }
             }
             ModelState.AddModelError("", "Username oder Passwort ungültig.");
