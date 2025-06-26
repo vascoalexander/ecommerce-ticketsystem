@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,9 +58,8 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return View();
+        return RedirectToAction("DefaultPage", "Home");
     }
-
     public IActionResult AccessDenied(string returnUrl)
     {
         return View("AccessDenied", returnUrl);
