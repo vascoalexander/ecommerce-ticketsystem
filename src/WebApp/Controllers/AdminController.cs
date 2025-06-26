@@ -73,7 +73,7 @@ namespace WebApp.Controllers
         
         public IActionResult ProjectsList()
         {
-            var projects = _projectRepository.GetAllProjects();
+            var projects = _projectRepository.GetAllProjectsAsync();
             return View(projects);
         }
 
