@@ -108,5 +108,28 @@ main {
     height: 300px;
   }
 }
+body {
+  background: #f8f9fa;
+}
+
+.card {
+  border-radius: 1rem;
+}
+
+.form-control:focus {
+  border-color: #3b275d;
+  box-shadow: 0 0 0 0.2rem rgba(59, 39, 93, 0.25);
+}
+
+.btn-dark {
+  background-color: #3b275d;
+  border-color: #3b275d;
+}
+
+.btn-dark:hover {
+  background-color: #2d2046;
+  border-color: #2d2046;
+}
+
 
 
