@@ -22,7 +22,7 @@ public class AccountController : Controller
     {
         var model = new LoginModel()
         {
-            UserName = string.Empty,
+            Email = string.Empty,
             Password = string.Empty,
             ReturnUrl = returnUrl
         };
@@ -34,7 +34,7 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null)
             {
                 await _signInManager.SignOutAsync();
