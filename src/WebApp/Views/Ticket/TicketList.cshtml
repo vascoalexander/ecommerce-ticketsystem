@@ -1,6 +1,8 @@
 @{
     ViewBag.Title = "Ticket-Liste";
     Layout = "_Layout";
+    @model WebApp.ViewModels.TicketListViewModel
+
 }
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end p-2">
     <div>
@@ -29,76 +31,86 @@
     </div>
 </div>
 
-<div class="container p-3 my-3 border" style="max-height: 400px; overflow-y: auto;">
-    <div class="row">
-        <div class="col">
-            <p>Ticket</p>
-        </div>
-        <div class="col">
-            <p>Projekt</p>
-        </div>
-        <div class="col">
-            <p>Status</p>
-        </div>
-        <div class="col">
-            <p>Aktionen</p>
-        </div>
+<div class="container p-3 my-3 border">
+    <div class="row fw-bold">
+        <div class="col">Ticket</div>
+        <div class="col">Projekt</div>
+        <div class="col">Status</div>
+        <div class="col">Aktionen</div>
     </div>
-    <div class="row">
-        <div class="col">
-            <p>#TicketID Ticket-Titel</p>
+
+    @if (Model.Tickets != null && Model.Tickets.Any())
+    {
+        foreach (var ticket in Model.Tickets)
+        {
+            <div class="row border-bottom py-2">
+                <div class="col">
+                    <p>#@ticket.Id @ticket.Title</p>
+                </div>
+                <div class="col">
+                    <p>@ticket.Project.Title</p>
+                </div>
+                <div class="col">
+                    <span class="badge bg-danger">Offen</span>
+                </div>
+                <div class="col">
+                    <a href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="row">
+            <div class="col">
+                <p>Keine Tickets vorhanden.</p>
+            </div>
         </div>
-        <div class="col">
-            
-            <p>Projekt Titel</p>
-        </div>
-        <div class="col">
-            <span class="badge badge-pill bg-danger">Offen</span>
-            <span class="badge badge-pill bg-warning">In Bearbeitung</span>
-            <span class="badge badge-pill bg-success">Geschlossen</span>
-        </div>
-        <div class="col">
-            <a href="">Bearbeiten</a>
-            <a href="">Schließen</a>
-            <a href="">Details</a>
-        </div>
-    </div>
+    }
+
 </div>
 <div class="container p-3 my-3 border" id="hiddenDiv" style="display: none;">
-    <form action="">
+    @using (Html.BeginForm("TicketList", "Ticket", FormMethod.Post))
+    {
         <div class="row">
             <div class="col">
-                <label for="titel" class="form-label">Titel</label>
-                <input id="titel" type="text" class="form-control">
+                <label asp-for="NewTicket.Title" class="form-label">Titel</label>
+                <input asp-for="NewTicket.Title" class="form-control" />
             </div>
             <div class="col">
-                <label for="projekt-create" class="form-label">Projekt</label>
-                <select id="projekt-create" class="form-control">
-                    <option value="">Bitte auswählen</option>
+                <label asp-for="NewTicket.ProjectId" class="form-label">Projekt</label>
+                <select asp-for="NewTicket.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title"))">
+                    <option value="">-- Projekt wählen --</option>
                 </select>
+
             </div>
         </div>
+
         <div class="row">
             <div class="col">
-                <label for="description" class="form-label">Beschreibung</label>
-                <textarea id="description" class="form-control" rows="4"></textarea>
+                <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
+                <textarea asp-for="NewTicket.Description" class="form-control" rows="4"></textarea>
             </div>
         </div>
+
         <div class="row">
             <div class="col">
-                <label for="ticket-processor" class="form-label">Ticket-Bearbeiter</label>
-                <select id="ticket-processor" class="form-control">
-                    <option value="">Bitte auswählen</option>
+                <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
+                <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName"))">
+                    <option value="">-- Benutzer wählen --</option>
                 </select>
+
             </div>
         </div>
-    </form>
-    <div class="row mt-3">
-        <div class="col d-flex justify-content-end">
-            <button id="btnTicketAbbrechen" class="btn btn-secondary me-2">Abbrechen</button>
-            <button id="btnTicketErstellen" class="btn btn-primary">Ticket Erstellen</button>
+
+        <div class="row mt-3">
+            <div class="col d-flex justify-content-end">
+                <button type="button" id="btnTicketAbbrechen" class="btn btn-secondary me-2">Abbrechen</button>
+                <button type="submit" id="btnTicketErstellen" class="btn btn-primary">Ticket Erstellen</button>
+            </div>
         </div>
-    </div>
+    }
+
 </div>
 
 <script>

@@ -12,7 +12,10 @@ public class ProjectRepository
     {
         _context = context;
     }
-    public IEnumerable<ProjectModel> GetAllProjects() => _context.Projects.Include(p => p.Tickets).ToList();
+    public async Task<List<ProjectModel>> GetAllProjectsAsync()
+    {
+        return await _context.Projects.ToListAsync();
+    }
 
     public ProjectModel? GetProjectByID(int Id)=>_context.Projects.Include(p=>p.Tickets).FirstOrDefault(p=> p.Id == Id);
 
