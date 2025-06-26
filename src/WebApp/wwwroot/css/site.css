@@ -82,3 +82,54 @@ main {
   }
 }
 
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  color: black;
+}
+
+
+.chart-container {
+  position: relative;
+  height: 400px;
+}
+
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+}
+body {
+  background: #f8f9fa;
+}
+
+.card {
+  border-radius: 1rem;
+}
+
+.form-control:focus {
+  border-color: #3b275d;
+  box-shadow: 0 0 0 0.2rem rgba(59, 39, 93, 0.25);
+}
+
+.btn-dark {
+  background-color: #3b275d;
+  border-color: #3b275d;
+}
+
+.btn-dark:hover {
+  background-color: #2d2046;
+  border-color: #2d2046;
+}
+
+
+
