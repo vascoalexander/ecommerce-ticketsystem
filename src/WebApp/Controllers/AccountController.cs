@@ -3,6 +3,8 @@ using WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using WebApp.Repositories;
+using WebApp.ViewModels;
 
 namespace WebApp.Controllers;
 
@@ -63,5 +65,42 @@ public class AccountController : Controller
     public IActionResult AccessDenied(string returnUrl)
     {
         return View("AccessDenied", returnUrl);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult ChangePassword()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+        if (!changePasswordResult.Succeeded)
+        {
+            foreach (var error in changePasswordResult.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View(model);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        return View(nameof(ChangePasswordConfirmation));
+    }
+
+    [HttpGet]
+    public IActionResult ChangePasswordConfirmation()
+    {
+        return View();
     }
 }
