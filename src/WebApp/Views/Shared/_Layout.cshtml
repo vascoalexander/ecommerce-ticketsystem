@@ -36,7 +36,7 @@
                     @if (User?.IsInRole("Admin") == true)
                     {
                         <li class="nav-item" id="adminButton">
-                            <a class="btn btn-danger ms-lg-2 mt-2 mt-lg-0" href="/Admin/Panel">Admin Panel</a>
+                            <a class="btn btn-danger ms-lg-2 mt-2 mt-lg-0" asp-controller="Admin" asp-action="AdminPage">Admin Panel</a>
                         </li>
                     }
                 </ul>
