@@ -22,7 +22,13 @@ public class TicketRepository
     // Read 
     public async Task<TicketModel> GetTicketByIdAsync(int id)
     {
-        return await _context.Tickets.FindAsync(id) ?? throw new KeyNotFoundException();
+        var ticket= await _context.Tickets
+            .Include( t => t.Project)
+            .Include(t => t.AssignedUser)
+            .FirstOrDefaultAsync(t => t.Id == id);
+        if (ticket == null)
+            throw new KeyNotFoundException($"Kein Ticket mit der ID {id} gefunden.");
+        return ticket;
     }
 
     public async Task<List<TicketModel>> GetAllTicketsAsync()
