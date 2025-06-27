@@ -1,3 +1,4 @@
+// TicketController.cs
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models;
@@ -22,7 +23,6 @@ public class TicketController : Controller
         _userManager = userManager;
     }
 
-    // GET: TicketList
     [HttpGet]
     public async Task<IActionResult> TicketList()
     {
@@ -48,8 +48,7 @@ public class TicketController : Controller
             viewModel.Tickets = await _ticketRepository.GetAllTicketsAsync();
             viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync() ?? new List<ProjectModel>();
             viewModel.AvailableUsers = _userManager.Users.ToList() ?? new List<AppUser>();
-
-            return View(viewModel);
+            return View("TicketList", viewModel);
         }
 
         var currentUser = await _userManager.GetUserAsync(User);
@@ -77,7 +76,6 @@ public class TicketController : Controller
     {
         if (!ModelState.IsValid)
         {
-            
             return RedirectToAction("TicketList");
         }
 
@@ -95,7 +93,7 @@ public class TicketController : Controller
 
         return RedirectToAction("TicketList");
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
@@ -117,11 +115,9 @@ public class TicketController : Controller
             Tickets = await _ticketRepository.GetAllTicketsAsync()
         };
 
-        return RedirectToAction("TicketList",viewModel);
+        return View("TicketList", viewModel);
     }
 
-
-    
     [HttpGet]
     public async Task<IActionResult> Detail(int id)
     {
