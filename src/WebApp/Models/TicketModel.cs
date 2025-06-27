@@ -13,6 +13,8 @@ public class TicketModel
     public required DateTime CreatedAt { get; set; }
     public required DateTime AssignedAt { get; set; }
 
+    public required string Status { get; set; } = "Open";
+
     public int ProjectId { get; set; }
     public required ProjectModel Project { get; set; }
 

@@ -18,6 +18,7 @@ public static class DbInitializer
             {
                 Title = "Project 1",
                 Description = "Project 1 description",
+                Category = "feature",
                 StartDate = new DateTime(2025, 6, 22, 0, 0, 0, DateTimeKind.Utc),
                 EndDate = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc),
             };
@@ -41,6 +42,7 @@ public static class DbInitializer
                 AssignedAt = new DateTime(2026, 6, 23, 0, 0, 0, DateTimeKind.Utc),
                 ProjectId = project1.Id,
                 Project = project1,
+                Status = "Open",
                 CreatorUser = creatorUser,
                 CreatorUserId = creatorUser.Id,
             };
