@@ -14,8 +14,10 @@ namespace WebApp.Controllers
         private readonly ProjectRepository _projectRepository;
 
         public AdminController(AccountRepository accountRepository, ProjectRepository projectRepository)
-        { _projectRepository = projectRepository;
-            _accountRepository = accountRepository; }
+        {
+            _projectRepository = projectRepository;
+            _accountRepository = accountRepository;
+        }
 
 
         public IActionResult AdminPage()
@@ -28,7 +30,7 @@ namespace WebApp.Controllers
         }
         public IActionResult UsersList()
         {
-            var users = _accountRepository.GettAllUsers().Select(u => new AdminUserModel
+            var users = _accountRepository.GetAllUsers().Select(u => new AdminUserModel
             {
                 Id = u.Id,
                 UserName = u.UserName,
@@ -65,18 +67,18 @@ namespace WebApp.Controllers
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error.Description);
-                
+
             }
             return View(model);
         }
 
-        
+
         public IActionResult ProjectsList()
         {
             var projects = _projectRepository.GetAllProjectsAsync();
             return View(projects);
         }
 
-        
+
     }
 }

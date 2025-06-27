@@ -5,12 +5,12 @@ using WebApp.Models;
 
 namespace WebApp.Data;
 
-public class AppDbContext : IdentityDbContext<IdentityUser>
+public class AppDbContext : IdentityDbContext<AppUser>
 {
     public DbSet<TicketModel> Tickets { get; set; }
     public DbSet<ProjectModel> Projects { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
-    : base(options){}
+    : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,7 +24,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
 
         modelBuilder.Entity<TicketModel>()
             .HasOne(t => t.CreatorUser)
-            .WithMany()
+            .WithMany(u => u.Tickets)
             .HasForeignKey(t => t.CreatorUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -33,5 +33,10 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
             .WithMany()
             .HasForeignKey(t => t.AssignedUserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AppUser>()
+            .Property(u => u.UserTheme)
+            .HasDefaultValue("default");
+
     }
 }

@@ -4,10 +4,10 @@ using WebApp.Models;
 
 namespace WebApp.Repositories;
 
-public class TicketRepository 
+public class TicketRepository
 {
     private readonly AppDbContext _context;
-    
+
     public TicketRepository(AppDbContext context)
     {
         _context = context;
@@ -22,7 +22,7 @@ public class TicketRepository
     // Read 
     public async Task<TicketModel> GetTicketByIdAsync(int id)
     {
-        return await _context.Tickets.FindAsync(id)?? throw new KeyNotFoundException();
+        return await _context.Tickets.FindAsync(id) ?? throw new KeyNotFoundException();
     }
 
     public async Task<List<TicketModel>> GetAllTicketsAsync()

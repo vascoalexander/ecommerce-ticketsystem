@@ -7,8 +7,8 @@ namespace WebApp.Repositories;
 public class ProjectRepository
 {
     private readonly AppDbContext _context;
-    
-    public  ProjectRepository(AppDbContext context)
+
+    public ProjectRepository(AppDbContext context)
     {
         _context = context;
     }
