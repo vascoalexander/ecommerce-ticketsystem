@@ -38,9 +38,6 @@ public class ProjectRepository
     public async Task DeleteProject(int Id)
     {
         var project = await _context.Projects.FindAsync(Id);
-=======
-        var project = _context.Projects.Find(Id);
-
     }
 
 }
