@@ -5,14 +5,16 @@
 }
 
 <div class="container my-5">
-   
+    <!-- Zurück zum Dashboard Button -->
+
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
             Zurück zum Dashboard
         </a>
     </div>
 
-   
+    <!-- Header mit Titel + Button -->
+
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
         <div>
             <h2 class="mb-1">Tickets</h2>
@@ -21,7 +23,11 @@
         <button id="btnNeuesTicket" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</button>
     </div>
 
+
+    <!-- Filter -->
+=======
     
+
     <div class="card shadow-sm p-3 mb-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -39,7 +45,8 @@
         </div>
     </div>
 
-   
+    <!-- Ticketliste -->
+
     <div class="card shadow-sm p-3 mb-4">
         <div class="row fw-semibold border-bottom pb-2">
             <div class="col">Ticket</div>
@@ -72,7 +79,9 @@
         }
     </div>
 
-   
+
+    <!-- Neues Ticket Formular -->
+
     <div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
         <h4 class="mb-3">Neues Ticket erstellen</h4>
 

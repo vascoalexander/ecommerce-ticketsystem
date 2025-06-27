@@ -54,7 +54,7 @@ public class TicketController : Controller
 
         var currentUser = await _userManager.GetUserAsync(User);
         var assignedUser = await _userManager.FindByIdAsync(viewModel.NewTicket.AssignedUserId);
-        var project = _projectRepository.GetProjectByID(viewModel.NewTicket.ProjectId);
+        var project = await _projectRepository.GetProjectById(viewModel.NewTicket.ProjectId);
 
         var ticket = new TicketModel
         {
