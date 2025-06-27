@@ -23,6 +23,7 @@ public class ProjectRepository
     }
 
 
+
     public async Task AddProject(ProjectModel project)
     {
         _context.Projects.Add(project);
@@ -37,11 +38,9 @@ public class ProjectRepository
     public async Task DeleteProject(int Id)
     {
         var project = await _context.Projects.FindAsync(Id);
-        if (project != null)
-        {
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-        }
+=======
+        var project = _context.Projects.Find(Id);
+
     }
 
 }
