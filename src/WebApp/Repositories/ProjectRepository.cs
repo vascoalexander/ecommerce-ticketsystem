@@ -17,26 +17,26 @@ public class ProjectRepository
         return await _context.Projects.ToListAsync();
     }
 
-    public ProjectModel? GetProjectByID(int Id) => _context.Projects.Include(p => p.Tickets).FirstOrDefault(p => p.Id == Id);
+    public async Task<ProjectModel?> GetProjectById(int Id)
+    {
+        return await _context.Projects.Include(p => p.Tickets).FirstOrDefaultAsync(p => p.Id == Id);
+    }
 
-    public void AddProject(ProjectModel project)
+
+
+    public async Task AddProject(ProjectModel project)
     {
         _context.Projects.Add(project);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
-    public void UpdateProject(ProjectModel project)
+    public async Task UpdateProject(ProjectModel project)
     {
         _context.Projects.Update(project);
-        _context.SaveChanges();
-    }
-    public void DeleteProject(int Id)
-    {
-        var project = _context.Projects.Find(Id);
-        if (project != null)
-        {
-            _context.Projects.Remove(project);
-            _context.SaveChanges();
-        }
+        await _context.SaveChangesAsync();
     }
 
+    public async Task DeleteProject(int Id)
+    {
+        var project = await _context.Projects.FindAsync(Id);
+    }
 }

@@ -1,10 +1,11 @@
 @model WebApp.ViewModels.TicketListViewModel
 @{
     ViewBag.Title = "Ticket-Liste";
-    
 }
 
 <div class="container my-5">
+    <!-- Zurück zum Dashboard Button -->
+
 
    
     <div class="mb-4">
@@ -12,6 +13,8 @@
             Zurück zum Dashboard
         </a>
     </div>
+
+    <!-- Header mit Titel + Button -->
 
    
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
@@ -21,6 +24,10 @@
         </div>
         <button id="btnNeuesTicket" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</button>
     </div>
+
+
+    <!-- Filter -->
+    
 
     
     <div class="card shadow-sm p-3 mb-4">
@@ -39,6 +46,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Ticketliste -->
 
     
     <div class="card shadow-sm p-3 mb-4">
@@ -61,7 +70,7 @@
                     <div class="col"><span class="badge bg-danger">Offen</span></div>
                     <div class="col d-flex gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
-                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
+                        <a class="btn btn-sm btn-outline-success" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
                         <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Close", "Ticket", new { id = ticket.Id })">Schließen</a>
                     </div>
                 </div>
@@ -131,7 +140,7 @@
         }
     </div>
 
-    
+    <!-- Neues Ticket Formular -->
     <div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
         <h4 class="mb-3">Neues Ticket erstellen</h4>
 

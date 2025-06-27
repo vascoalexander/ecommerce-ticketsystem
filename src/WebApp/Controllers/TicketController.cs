@@ -41,31 +41,34 @@ public class TicketController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(NewTicketInputModel newTicket)
+    public async Task<IActionResult> Create(TicketListViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            return RedirectToAction("TicketList");
+            viewModel.Tickets = await _ticketRepository.GetAllTicketsAsync();
+            viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync() ?? new List<ProjectModel>();
+            viewModel.AvailableUsers = _userManager.Users.ToList() ?? new List<AppUser>();
+
+            return View(viewModel);
         }
 
         var currentUser = await _userManager.GetUserAsync(User);
-        var assignedUser = await _userManager.FindByIdAsync(newTicket.AssignedUserId);
-        var project = _projectRepository.GetProjectByID(newTicket.ProjectId);
+        var assignedUser = await _userManager.FindByIdAsync(viewModel.NewTicket.AssignedUserId);
+        var project = await _projectRepository.GetProjectById(viewModel.NewTicket.ProjectId);
 
         var ticket = new TicketModel
         {
-            Title = newTicket.Title,
-            Description = newTicket.Description,
+            Title = viewModel.NewTicket.Title,
+            Description = viewModel.NewTicket.Description,
             AssignedUser = assignedUser,
             Project = project,
             Status = "Open",
-            CreatedAt = DateTime.UtcNow,
-            AssignedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now.ToUniversalTime(),
+            AssignedAt = DateTime.Now.ToUniversalTime(),
             CreatorUser = currentUser
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
-
         return RedirectToAction("TicketList");
     }
 
