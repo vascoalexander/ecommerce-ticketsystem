@@ -117,7 +117,7 @@ public class TicketController : Controller
             Tickets = await _ticketRepository.GetAllTicketsAsync()
         };
 
-        return View("Edit", viewModel);
+        return RedirectToAction("TicketList",viewModel);
     }
 
 
