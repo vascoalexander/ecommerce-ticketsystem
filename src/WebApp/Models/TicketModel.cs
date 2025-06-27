@@ -6,7 +6,7 @@ namespace WebApp.Models;
 public class TicketModel
 {
     public int Id { get; set; }
-    [StringLength(20, ErrorMessage = "Der Titel darf maximal 20 Zeichen lang sein.")]
+    [StringLength(60, ErrorMessage = "Der Titel darf maximal 60 Zeichen lang sein.")]
     public required string Title { get; set; }
     [StringLength(400, ErrorMessage = "Die Beschreibung darf maximal 400 Zeichen lang sein.")]
     public required string Description { get; set; }
