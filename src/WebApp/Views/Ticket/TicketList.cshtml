@@ -1,18 +1,19 @@
 @model WebApp.ViewModels.TicketListViewModel
 @{
     ViewBag.Title = "Ticket-Liste";
-    Layout = "_Layout";
+    
 }
 
 <div class="container my-5">
-    <!-- Zurück zum Dashboard Button -->
+
+   
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
             Zurück zum Dashboard
         </a>
     </div>
 
-    <!-- Header mit Titel + Button -->
+   
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
         <div>
             <h2 class="mb-1">Tickets</h2>
@@ -21,7 +22,7 @@
         <button id="btnNeuesTicket" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</button>
     </div>
 
-    <!-- Filter -->
+    
     <div class="card shadow-sm p-3 mb-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -39,7 +40,7 @@
         </div>
     </div>
 
-    <!-- Ticketliste -->
+    
     <div class="card shadow-sm p-3 mb-4">
         <div class="row fw-semibold border-bottom pb-2">
             <div class="col">Ticket</div>
@@ -60,9 +61,67 @@
                     <div class="col"><span class="badge bg-danger">Offen</span></div>
                     <div class="col d-flex gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
-                        <a class="btn btn-sm btn-outline-success" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
                         <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Close", "Ticket", new { id = ticket.Id })">Schließen</a>
                     </div>
+                </div>
+
+                
+                <div id="editForm-@ticket.Id" class="card shadow-sm p-4 mb-4" style="display: none;">
+                    <h5 class="mb-3">Ticket bearbeiten (#@ticket.Id)</h5>
+                    <form>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Titel</label>
+                                <input type="text" class="form-control" value="@ticket.Title" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Projekt</label>
+                                <select class="form-control">
+                                    @foreach (var p in Model.AvailableProjects)
+                                    {
+                                        if (p.Id == ticket.Project.Id)
+                                        {
+                                            <option value="@p.Id" selected>@p.Title</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@p.Id">@p.Title</option>
+                                        }
+                                    }
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Beschreibung</label>
+                            <textarea class="form-control" rows="4">@ticket.Description</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Ticket-Bearbeiter</label>
+                            <select class="form-control">
+                                @foreach (var user in Model.AvailableUsers)
+                                {
+                                    if (user.Id == ticket.AssignedUserId)
+                                    {
+                                        <option value="@user.Id" selected>@user.UserName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@user.Id">@user.UserName</option>
+                                    }
+                                }
+                            </select>
+
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" onclick="toggleEditForm(@ticket.Id)">Abbrechen</button>
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                        </div>
+                    </form>
                 </div>
             }
         }
@@ -72,7 +131,7 @@
         }
     </div>
 
-    <!-- Neues Ticket Formular -->
+    
     <div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
         <h4 class="mb-3">Neues Ticket erstellen</h4>
 
@@ -123,5 +182,13 @@
         document.getElementById('btnNeuesTicket').addEventListener('click', () => toggleHiddenDiv(true));
         document.getElementById('btnTicketAbbrechen').addEventListener('click', () => toggleHiddenDiv(false));
         document.getElementById('btnTicketErstellen').addEventListener('click', () => toggleHiddenDiv(false));
+
+        function toggleEditForm(id) {
+            const form = document.getElementById('editForm-' + id);
+            if (form) {
+                form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+                form.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     </script>
 }
