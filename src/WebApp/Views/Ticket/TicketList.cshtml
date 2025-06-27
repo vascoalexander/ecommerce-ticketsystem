@@ -1,12 +1,10 @@
 @model WebApp.ViewModels.TicketListViewModel
 @{
     ViewBag.Title = "Ticket-Liste";
-    Layout = "_Layout";
 }
 
 <div class="container my-5">
     <!-- Zurück zum Dashboard Button -->
-
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
             Zurück zum Dashboard
@@ -14,7 +12,6 @@
     </div>
 
     <!-- Header mit Titel + Button -->
-
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
         <div>
             <h2 class="mb-1">Tickets</h2>
@@ -23,10 +20,7 @@
         <button id="btnNeuesTicket" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</button>
     </div>
 
-
     <!-- Filter -->
-    
-
     <div class="card shadow-sm p-3 mb-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -45,7 +39,6 @@
     </div>
 
     <!-- Ticketliste -->
-
     <div class="card shadow-sm p-3 mb-4">
         <div class="row fw-semibold border-bottom pb-2">
             <div class="col">Ticket</div>
@@ -63,12 +56,61 @@
                         <span class="fw-semibold">#@ticket.Id</span> @ticket.Title
                     </div>
                     <div class="col">@ticket.Project.Title</div>
-                    <div class="col"><span class="badge bg-danger">Offen</span></div>
+                    <div class="col"><span class="badge bg-danger">@ticket.Status</span></div>
                     <div class="col d-flex gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
-                        <a class="btn btn-sm btn-outline-success" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
+                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
                         <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Close", "Ticket", new { id = ticket.Id })">Schließen</a>
                     </div>
+                </div>
+
+                <div id="editForm-@ticket.Id" class="card shadow-sm p-4 mb-4" style="display: none;">
+                    <h5 class="mb-3">Ticket bearbeiten (#@ticket.Id)</h5>
+                    <form method="post" asp-action="Edit" asp-controller="Ticket">
+                        <input type="hidden" name="ticketId" value="@ticket.Id" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Titel</label>
+                                <input type="text" name="Title" class="form-control" value="@ticket.Title" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Projekt</label>
+                                <select class="form-control" name="ProjectId">
+                                    @foreach (var p in Model.AvailableProjects)
+                                    {
+                                        <option value="@p.Id" selected="@(p.Id == ticket.Project.Id ? "selected" : null)">
+                                            @p.Title
+                                        </option>
+                                    }
+                                </select>
+
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Beschreibung</label>
+                            <textarea name="Description" class="form-control" rows="4">@ticket.Description</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Ticket-Bearbeiter</label>
+                            <select class="form-control" name="AssignedUserId">
+                                @foreach (var user in Model.AvailableUsers)
+                                {
+                                    <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">
+                                        @user.UserName
+                                    </option>
+                                }
+                            </select>
+
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" onclick="toggleEditForm(@ticket.Id)">Abbrechen</button>
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                        </div>
+                    </form>
                 </div>
             }
         }
@@ -78,13 +120,10 @@
         }
     </div>
 
-
     <!-- Neues Ticket Formular -->
-
     <div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
         <h4 class="mb-3">Neues Ticket erstellen</h4>
-
-        @using (Html.BeginForm("TicketList", "Ticket", FormMethod.Post))
+        @using (Html.BeginForm("Create", "Ticket", FormMethod.Post))
         {
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -98,19 +137,16 @@
                     </select>
                 </div>
             </div>
-
             <div class="mb-3">
                 <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
                 <textarea asp-for="NewTicket.Description" class="form-control" rows="4"></textarea>
             </div>
-
             <div class="mb-4">
                 <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
                 <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName"))">
                     <option value="">-- Benutzer wählen --</option>
                 </select>
             </div>
-
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" id="btnTicketAbbrechen" class="btn btn-secondary">Abbrechen</button>
                 <button type="submit" id="btnTicketErstellen" class="btn btn-primary">Erstellen</button>
@@ -126,6 +162,14 @@
         function toggleHiddenDiv(show) {
             hiddenDiv.style.display = show ? 'block' : 'none';
             if (show) hiddenDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleEditForm(id) {
+            const form = document.getElementById('editForm-' + id);
+            if (form) {
+                form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+                form.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         document.getElementById('btnNeuesTicket').addEventListener('click', () => toggleHiddenDiv(true));

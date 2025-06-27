@@ -20,13 +20,16 @@ public class TicketRepository
     }
 
     // Read 
-    public async Task<TicketModel?> GetTicketByIdAsync(int id)
+    public async Task<TicketModel> GetTicketByIdAsync(int id)
     {
-        return await _context.Tickets
-            .Include(t => t.Project)
-            .Include(t => t.CreatorUser)
+        var ticket= await _context.Tickets
+            .Include( t => t.Project)
             .Include(t => t.AssignedUser)
+            .Include(t => t.CreatorUser)
             .FirstOrDefaultAsync(t => t.Id == id);
+        if (ticket == null)
+            throw new KeyNotFoundException($"Kein Ticket mit der ID {id} gefunden.");
+        return ticket;
     }
 
     public async Task<List<TicketModel>> GetAllTicketsAsync()
