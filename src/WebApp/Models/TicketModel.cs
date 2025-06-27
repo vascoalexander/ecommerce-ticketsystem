@@ -17,8 +17,8 @@ public class TicketModel
     public required ProjectModel Project { get; set; }
 
     public string CreatorUserId { get; set; } = string.Empty;
-    public required IdentityUser CreatorUser { get; set; }
+    public required AppUser CreatorUser { get; set; }
 
     public string? AssignedUserId { get; set; }
-    public IdentityUser? AssignedUser { get; set; }
+    public AppUser? AssignedUser { get; set; }
 }

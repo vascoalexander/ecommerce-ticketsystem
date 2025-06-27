@@ -28,7 +28,7 @@ namespace WebApp.Controllers
         }
         public IActionResult UsersList()
         {
-            var users = _accountRepository.GettAllUsers().Select(u => new AdminUserModel
+            var users = _accountRepository.GetAllUsers().Select(u => new AdminUserModel
             {
                 Id = u.Id,
                 UserName = u.UserName,
