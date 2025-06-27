@@ -10,12 +10,12 @@ public class TicketController : Controller
 {
     private readonly TicketRepository _ticketRepository;
     private readonly ProjectRepository _projectRepository;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
 
     public TicketController(
         TicketRepository ticketRepository,
         ProjectRepository projectRepository,
-        UserManager<IdentityUser> userManager)
+        UserManager<AppUser> userManager)
     {
         _ticketRepository = ticketRepository;
         _projectRepository = projectRepository;
@@ -28,13 +28,13 @@ public class TicketController : Controller
     {
         var tickets = await _ticketRepository.GetAllTicketsAsync();
         var projects = await _projectRepository.GetAllProjectsAsync();
-        var users =  _userManager.Users.ToList();
+        var users = _userManager.Users.ToList();
 
         var viewModel = new TicketListViewModel
         {
             Tickets = tickets,
             AvailableProjects = projects,
-            AvailableUsers = users 
+            AvailableUsers = users
         };
 
         return View(viewModel);
@@ -47,7 +47,7 @@ public class TicketController : Controller
         {
             viewModel.Tickets = await _ticketRepository.GetAllTicketsAsync();
             viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync() ?? new List<ProjectModel>();
-            viewModel.AvailableUsers = _userManager.Users.ToList() ?? new List<IdentityUser>();
+            viewModel.AvailableUsers = _userManager.Users.ToList() ?? new List<AppUser>();
 
             return View(viewModel);
         }
@@ -62,6 +62,7 @@ public class TicketController : Controller
             Description = viewModel.NewTicket.Description,
             AssignedUser = assignedUser,
             Project = project,
+            Status = "Open",
             CreatedAt = DateTime.Now.ToUniversalTime(),
             AssignedAt = DateTime.Now.ToUniversalTime(),
             CreatorUser = currentUser

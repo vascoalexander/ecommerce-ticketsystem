@@ -9,6 +9,9 @@ public class ProjectModel
     public required string Title { get; set; }
     [StringLength(400, ErrorMessage = "Die Beschreibung darf maximal 400 Zeichen lang sein.")]
     public required string Description { get; set; }
+
+    [StringLength(20)]
+    public string? Category { get; set; } = String.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public virtual ICollection<TicketModel>? Tickets { get; set; }

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using WebApp.Models;
+
 namespace WebApp.Data;
 
 public static class EnsureIdentity
@@ -25,10 +27,10 @@ public static class EnsureIdentity
             .CreateScope()
             .ServiceProvider
             .GetRequiredService<RoleManager<IdentityRole>>();
-        UserManager<IdentityUser> userManager = app.ApplicationServices
+        UserManager<AppUser> userManager = app.ApplicationServices
             .CreateScope()
             .ServiceProvider
-            .GetRequiredService<UserManager<IdentityUser>>();
+            .GetRequiredService<UserManager<AppUser>>();
 
         if (!await roleManager.RoleExistsAsync(AdminRole))
         {
@@ -46,10 +48,10 @@ public static class EnsureIdentity
             await roleManager.CreateAsync(role);
         }
 
-        IdentityUser? admin = await userManager.FindByNameAsync(AdminName);
+        AppUser? admin = await userManager.FindByNameAsync(AdminName);
         if (admin == null)
         {
-            admin = new IdentityUser(AdminName)
+            admin = new AppUser(AdminName)
             {
                 Email = AdminEmail,
                 EmailConfirmed = true,
@@ -59,10 +61,10 @@ public static class EnsureIdentity
             await userManager.AddToRoleAsync(admin, TesterRole);
             await userManager.AddToRoleAsync(admin, DeveloperRole);
         }
-        IdentityUser? tester = await userManager.FindByNameAsync(TesterName);
+        AppUser? tester = await userManager.FindByNameAsync(TesterName);
         if (tester == null)
         {
-            tester = new IdentityUser(TesterName)
+            tester = new AppUser(TesterName)
             {
                 Email = TesterEmail,
                 EmailConfirmed = true,
@@ -70,10 +72,10 @@ public static class EnsureIdentity
             await userManager.CreateAsync(tester, TesterPassword);
             await userManager.AddToRoleAsync(tester, TesterRole);
         }
-        IdentityUser? developer = await userManager.FindByNameAsync(DeveloperName);
+        AppUser? developer = await userManager.FindByNameAsync(DeveloperName);
         if (developer == null)
         {
-            developer = new IdentityUser(DeveloperName)
+            developer = new AppUser(DeveloperName)
             {
                 Email = DeveloperEmail,
                 EmailConfirmed = true,

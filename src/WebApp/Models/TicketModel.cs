@@ -13,12 +13,14 @@ public class TicketModel
     public required DateTime CreatedAt { get; set; }
     public required DateTime AssignedAt { get; set; }
 
+    public required string Status { get; set; } = "Open";
+
     public int ProjectId { get; set; }
     public required ProjectModel Project { get; set; }
 
     public string CreatorUserId { get; set; } = string.Empty;
-    public required IdentityUser CreatorUser { get; set; }
+    public required AppUser CreatorUser { get; set; }
 
     public string? AssignedUserId { get; set; }
-    public IdentityUser? AssignedUser { get; set; }
+    public AppUser? AssignedUser { get; set; }
 }

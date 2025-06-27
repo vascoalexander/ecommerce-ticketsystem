@@ -8,5 +8,5 @@ public class TicketListViewModel
     public List<TicketModel> Tickets { get; set; } = new();
     public NewTicketInputModel NewTicket { get; set; } = new();
     public List<ProjectModel> AvailableProjects { get; set; } = new();  // muss NICHT null sein!
-    public List<IdentityUser> AvailableUsers { get; set; } = new();
+    public List<AppUser> AvailableUsers { get; set; } = new();
 }
