@@ -18,8 +18,8 @@ public static class DbInitializer
             {
                 Title = "Project 1",
                 Description = "Project 1 description",
-                StartDate = new DateTime(2025, 6, 22,0,0,0,DateTimeKind.Utc),
-                EndDate = new DateTime(2026,6,10,0,0,0,DateTimeKind.Utc),
+                StartDate = new DateTime(2025, 6, 22, 0, 0, 0, DateTimeKind.Utc),
+                EndDate = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc),
             };
             context.Projects.AddRange(project1);
             context.SaveChanges();
@@ -37,8 +37,8 @@ public static class DbInitializer
             {
                 Title = "Ticket 1",
                 Description = "Ticket 1 description",
-                CreatedAt = new DateTime(2025, 6, 23,0,0,0, DateTimeKind.Utc),
-                AssignedAt = new DateTime(2026, 6, 23,0,0,0, DateTimeKind.Utc),
+                CreatedAt = new DateTime(2025, 6, 23, 0, 0, 0, DateTimeKind.Utc),
+                AssignedAt = new DateTime(2026, 6, 23, 0, 0, 0, DateTimeKind.Utc),
                 ProjectId = project1.Id,
                 Project = project1,
                 CreatorUser = creatorUser,
