@@ -61,7 +61,7 @@ public class TicketController : Controller
             Description = viewModel.NewTicket.Description,
             AssignedUser = assignedUser,
             Project = project!,
-            Status = TicketStatus.Open,
+            Status = assignedUser != null ? TicketStatus.InProgress : TicketStatus.Open,
             CreatedAt = DateTime.Now.ToUniversalTime(),
             AssignedAt = DateTime.Now.ToUniversalTime(),
             CreatorUser = currentUser!
@@ -86,8 +86,12 @@ public class TicketController : Controller
 
         ticketToUpdate.Title = updatedTicket.Title;
         ticketToUpdate.Description = updatedTicket.Description;
-        ticketToUpdate.AssignedUser = assignedUser;
         ticketToUpdate.ProjectId = updatedTicket.ProjectId;
+        if (ticketToUpdate.AssignedUser == null && assignedUser != null)
+        {
+            ticketToUpdate.Status = TicketStatus.InProgress;
+        }
+        ticketToUpdate.AssignedUser = assignedUser;
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
@@ -128,5 +132,30 @@ public class TicketController : Controller
         }
 
         return View(ticket);
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> Close(int ticketId)
+    {
+        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
+        if (ticketToUpdate == null) return NotFound();
+
+        ticketToUpdate.Status = TicketStatus.Closed;
+
+        await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+
+        return RedirectToAction("TicketList");
+    }
+    
+    public async Task<IActionResult> Reopen(int ticketId)
+    {
+        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
+        if (ticketToUpdate == null) return NotFound();
+
+        ticketToUpdate.Status = TicketStatus.Open;
+
+        await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+
+        return RedirectToAction("TicketList");
     }
 }
