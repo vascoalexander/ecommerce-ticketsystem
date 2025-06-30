@@ -60,11 +60,11 @@ public class TicketController : Controller
             Title = viewModel.NewTicket.Title,
             Description = viewModel.NewTicket.Description,
             AssignedUser = assignedUser,
-            Project = project,
+            Project = project!,
             Status = "Open",
             CreatedAt = DateTime.Now.ToUniversalTime(),
             AssignedAt = DateTime.Now.ToUniversalTime(),
-            CreatorUser = currentUser
+            CreatorUser = currentUser!
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
