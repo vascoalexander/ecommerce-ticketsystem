@@ -1,5 +1,7 @@
 // TicketController.cs
 
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +16,18 @@ public class TicketController : Controller
 {
     private readonly TicketRepository _ticketRepository;
     private readonly ProjectRepository _projectRepository;
+    private readonly FileRepository _fileRepository;
     private readonly UserManager<AppUser> _userManager;
 
     public TicketController(
         TicketRepository ticketRepository,
         ProjectRepository projectRepository,
+        FileRepository fileRepository,
         UserManager<AppUser> userManager)
     {
         _ticketRepository = ticketRepository;
         _projectRepository = projectRepository;
+        _fileRepository = fileRepository;
         _userManager = userManager;
     }
 
@@ -179,5 +184,101 @@ public class TicketController : Controller
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
         return RedirectToAction("TicketList");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Upload(int id)
+    {
+        var ticket = await _ticketRepository.GetTicketByIdAsync(id);
+        if (ticket == null)
+        {
+            return NotFound();
+        }
+
+        var viewModel = new UploadViewModel
+        {
+            TicketId = id,
+            UploadedFile = null
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Upload(UploadViewModel model)
+    {
+        if (!ModelState.IsValid || model.UploadedFile == null || model.UploadedFile.Length == 0)
+        {
+            ModelState.AddModelError("UploadedFile", "Ungültige Datei.");
+            return View(model);
+        }
+        var originalFileName = Path.GetFileName(model.UploadedFile.FileName);
+        var extension = Path.GetExtension(originalFileName);
+
+        string hash;
+        using (var sha = SHA256.Create())
+        {
+            var inputBytes = Encoding.UTF8.GetBytes($"{originalFileName}-{DateTime.UtcNow.Ticks}");
+            var hashBytes = sha.ComputeHash(inputBytes);
+            hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+        var storedFileName = $"{hash}{extension}";
+        var fullpath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", storedFileName);
+
+        if (System.IO.File.Exists(fullpath))
+        {
+            ModelState.AddModelError("FileName", "Filename already exists.");
+            return View(model);
+        }
+
+        await using var fileStream = new FileStream(fullpath, FileMode.Create);
+        await model.UploadedFile.CopyToAsync(fileStream);
+
+        var ticketId = model.TicketId;
+        var ticket = await _ticketRepository.GetTicketByIdAsync(ticketId);
+        if (ticket == null)
+        {
+            return NotFound();
+        }
+
+        var ticketFile = new TicketFile
+        {
+            OriginalName = originalFileName,
+            StoredName = storedFileName,
+            FileSize = model.UploadedFile.Length,
+            UploadDate = DateTime.UtcNow,
+            TicketId = ticket.Id,
+            Ticket = ticket
+        };
+        await _fileRepository.AddFileAsync(ticketFile);
+        await _fileRepository.SaveChangesAsync();
+
+        return RedirectToAction("TicketList");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadFile(int fileId)
+    {
+        var file = await _fileRepository.GetFileByIdAsync(fileId);
+        if (file == null)
+        {
+            return NotFound();
+        }
+
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", file.StoredName);
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound();
+        }
+
+        var memory = new MemoryStream();
+        await using (var stream = new FileStream(filePath, FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+
+        return File(memory, "application/octet-stream", file.OriginalName);
     }
 }

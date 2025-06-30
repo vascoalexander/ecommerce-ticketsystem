@@ -26,6 +26,7 @@ public class TicketRepository
             .Include( t => t.Project)
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatorUser)
+            .Include(t => t.Files)
             .FirstOrDefaultAsync(t => t.Id == id);
         if (ticket == null)
             throw new KeyNotFoundException($"Kein Ticket mit der ID {id} gefunden.");
