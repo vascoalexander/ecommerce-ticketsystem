@@ -38,5 +38,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .Property(u => u.UserTheme)
             .HasDefaultValue("default");
 
+        modelBuilder.Entity<TicketModel>()
+            .Property(t => t.Status)
+            .HasConversion<string>();
+
     }
 }

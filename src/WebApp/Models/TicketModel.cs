@@ -3,6 +3,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace WebApp.Models;
 
+public enum TicketStatus
+{
+    [Display(Name = "Open")]
+    Open,
+    [Display(Name = "InProgress")]
+    InProgress,
+    [Display(Name = "Closed")]
+    Closed
+}
 public class TicketModel
 {
     public int Id { get; set; }
@@ -12,8 +21,7 @@ public class TicketModel
     public required string Description { get; set; }
     public required DateTime CreatedAt { get; set; }
     public required DateTime AssignedAt { get; set; }
-
-    public required string Status { get; set; } = "Open";
+    public required TicketStatus Status { get; set; } = TicketStatus.Open;
 
     public int ProjectId { get; set; }
     public required ProjectModel Project { get; set; }
