@@ -4,23 +4,34 @@
 }
 
 <div class="container my-5">
-    <!-- Zurück zum Dashboard Button -->
+    @if (TempData["ToastMessage"] != null)
+    {
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+            <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        @TempData["ToastMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
             Zurück zum Dashboard
         </a>
     </div>
 
-    <!-- Header mit Titel + Button -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
         <div>
             <h2 class="mb-1">Tickets</h2>
             <p class="text-muted mb-0">Verwalten Sie alle Tickets in Ihrem System</p>
         </div>
-        <button id="btnNeuesTicket" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</button>
+        <button id="btnNeuesTicket" class="btn btn-dark">Neues Ticket</button>
     </div>
 
-    <!-- Filter -->
     <div class="card shadow-sm p-3 mb-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -38,7 +49,6 @@
         </div>
     </div>
 
-    <!-- Ticketliste -->
     <div class="card shadow-sm p-3 mb-4">
         <div class="row fw-semibold border-bottom pb-2">
             <div class="col">Ticket</div>
@@ -59,17 +69,18 @@
                     @{
                         string statusClass = ticket.Status switch
                         {
-                            TicketStatus.Open => "bg-success",        
-                            TicketStatus.InProgress => "bg-warning", 
-                            TicketStatus.Closed => "bg-danger",       
+                            TicketStatus.Open => "bg-success",
+                            TicketStatus.InProgress => "bg-warning",
+                            TicketStatus.Closed => "bg-danger",
                             _ => "bg-secondary"
                         };
                     }
-                    <div class="col"> <span class="badge text-white @statusClass text-center d-inline-block"
-                                            style="min-width: 100px; padding: 0.4rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
-                        @ticket.Status.ToString()
-                    </span></div>
-                    <div class="col d-flex gap-2">
+                    <div class="col">
+                        <span class="badge text-white @statusClass text-center d-inline-block" style="min-width: 100px; padding: 0.4rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
+                            @ticket.Status.ToString()
+                        </span>
+                    </div>
+                    <div class="col d-flex flex-wrap gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
 
                         @if (ticket.Status == TicketStatus.Closed)
@@ -89,7 +100,6 @@
                             </form>
                         }
                     </div>
-
                 </div>
 
                 <div id="editForm-@ticket.Id" class="card shadow-sm p-4 mb-4" style="display: none;">
@@ -143,7 +153,6 @@
         }
     </div>
 
-    <!-- Neues Ticket Formular -->
     <div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
         <h4 class="mb-3">Neues Ticket erstellen</h4>
         @using (Html.BeginForm("Create", "Ticket", FormMethod.Post))
@@ -195,9 +204,17 @@
             }
         }
 
-        document.getElementById('btnNeuesTicket').addEventListener('click', () => toggleHiddenDiv(true));
-        document.getElementById('btnTicketAbbrechen').addEventListener('click', () => toggleHiddenDiv(false));
-        document.getElementById('btnTicketErstellen').addEventListener('click', () => toggleHiddenDiv(false));
+        document.getElementById('btnNeuesTicket')?.addEventListener('click', () => toggleHiddenDiv(true));
+        document.getElementById('btnTicketAbbrechen')?.addEventListener('click', () => toggleHiddenDiv(false));
+        document.getElementById('btnTicketErstellen')?.addEventListener('click', () => toggleHiddenDiv(false));
+
+        
+        setTimeout(() => {
+            const toastEl = document.querySelector('.toast');
+            if (toastEl) {
+                const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+                toast.hide();
+            }
+        }, 4000);
     </script>
 }
-
