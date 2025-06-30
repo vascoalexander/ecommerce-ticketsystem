@@ -87,11 +87,28 @@ public class TicketController : Controller
         ticketToUpdate.Title = updatedTicket.Title;
         ticketToUpdate.Description = updatedTicket.Description;
         ticketToUpdate.ProjectId = updatedTicket.ProjectId;
-        if (ticketToUpdate.AssignedUser == null && assignedUser != null || ticketToUpdate.Status == TicketStatus.Open && assignedUser != null)
+        
+        if (ticketToUpdate.AssignedUser?.Id != updatedTicket.AssignedUserId)
         {
-            ticketToUpdate.Status = TicketStatus.InProgress;
+            // Wenn der zugewiesene Benutzer abgewählt wurde
+            if (String.IsNullOrEmpty(updatedTicket.AssignedUserId))
+            {
+                ticketToUpdate.Status = TicketStatus.Open;
+                ticketToUpdate.AssignedUser = null;
+            }
+            else // Wenn ein neuer Benutzer zugewiesen wurde
+            {
+                ticketToUpdate.Status = TicketStatus.InProgress;
+                ticketToUpdate.AssignedUser = assignedUser;
+            }
         }
-        ticketToUpdate.AssignedUser = assignedUser;
+        else // Wenn der zugewiesene Benutzer gleich geblieben ist
+        {
+            if (ticketToUpdate.Status == TicketStatus.Open)
+            {
+                ticketToUpdate.Status = TicketStatus.InProgress;
+            }
+        }
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
@@ -154,6 +171,7 @@ public class TicketController : Controller
         if (ticketToUpdate == null) return NotFound();
 
         ticketToUpdate.Status = TicketStatus.Open;
+        ticketToUpdate.AssignedUser = null;
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 

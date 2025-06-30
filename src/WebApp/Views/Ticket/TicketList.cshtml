@@ -121,6 +121,7 @@
                         <div class="mb-4">
                             <label class="form-label">Ticket-Bearbeiter</label>
                             <select class="form-control" name="AssignedUserId">
+                                <option value="">Bitte Benutzer wählen</option>
                                 @foreach (var user in Model.AvailableUsers)
                                 {
                                     <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">@user.UserName</option>
