@@ -56,12 +56,40 @@
                         <span class="fw-semibold">#@ticket.Id</span> @ticket.Title
                     </div>
                     <div class="col">@ticket.Project.Title</div>
-                    <div class="col"><span class="badge bg-danger">@ticket.Status.ToString()</span></div>
+                    @{
+                        string statusClass = ticket.Status switch
+                        {
+                            TicketStatus.Open => "bg-success",        
+                            TicketStatus.InProgress => "bg-warning", 
+                            TicketStatus.Closed => "bg-danger",       
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <div class="col"> <span class="badge text-white @statusClass text-center d-inline-block"
+                                            style="min-width: 100px; padding: 0.4rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
+                        @ticket.Status.ToString()
+                    </span></div>
                     <div class="col d-flex gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
-                        <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
-                        <a class="btn btn-sm btn-outline-danger" href="@Url.Action("Close", "Ticket", new { id = ticket.Id })">Schließen</a>
+
+                        @if (ticket.Status == TicketStatus.Closed)
+                        {
+                            <form method="post" asp-action="Reopen" asp-controller="Ticket">
+                                <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-dark">Wieder öffnen</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
+
+                            <form method="post" asp-action="Close" asp-controller="Ticket">
+                                <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Schließen</button>
+                            </form>
+                        }
                     </div>
+
                 </div>
 
                 <div id="editForm-@ticket.Id" class="card shadow-sm p-4 mb-4" style="display: none;">
@@ -79,12 +107,9 @@
                                 <select class="form-control" name="ProjectId">
                                     @foreach (var p in Model.AvailableProjects)
                                     {
-                                        <option value="@p.Id" selected="@(p.Id == ticket.Project.Id ? "selected" : null)">
-                                            @p.Title
-                                        </option>
+                                        <option value="@p.Id" selected="@(p.Id == ticket.Project.Id ? "selected" : null)">@p.Title</option>
                                     }
                                 </select>
-
                             </div>
                         </div>
 
@@ -98,12 +123,9 @@
                             <select class="form-control" name="AssignedUserId">
                                 @foreach (var user in Model.AvailableUsers)
                                 {
-                                    <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">
-                                        @user.UserName
-                                    </option>
+                                    <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">@user.UserName</option>
                                 }
                             </select>
-
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
