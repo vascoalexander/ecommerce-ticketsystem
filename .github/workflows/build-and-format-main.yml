@@ -1,0 +1,20 @@
+name: Build & Format Check on Main PR
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+      - name: Format Check
+        run: dotnet format --verify-no-changes --severity info
+

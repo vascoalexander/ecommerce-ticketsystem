@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Ticket-Detail";
+ 
+}
+@model WebApp.Models.TicketModel
+<div class="container my-5">
+    <div class="mb-4">
+        <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-secondary">
+            Zurück zur Übersicht
+        </a>
+    </div>
+    
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">@Model.Title</h2>
+        <p class="text-muted">Projekt: <strong>@Model.Project.Title</strong></p>
+    </div>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row fw-semibold text-secondary mb-2">
+                <div class="col-md-3">Ersteller</div>
+                <div class="col-md-3">Erstellt am</div>
+                <div class="col-md-3">Zugewiesen an</div>
+                <div class="col-md-3">Zuweisungsdatum</div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">@Model.CreatorUser.UserName</div>
+                <div class="col-md-3">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
+                <div class="col-md-3">@Model.AssignedUser?.UserName</div>
+                <div class="col-md-3">
+                    @(Model.AssignedUser != null 
+                        ? Model.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
+                        : "-")
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="text-secondary mb-3">Beschreibung</h5>
+            <p class="mb-0">@Model.Description</p>
+        </div>
+    </div>
+</div>
