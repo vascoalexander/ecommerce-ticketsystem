@@ -1,22 +1,27 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 using WebApp.Models;
 using WebApp.Repositories;
+using WebApp.ViewModels;
+
 
 namespace WebApp.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-
-        private readonly AccountRepository _accountRepository;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-        public AdminController(AccountRepository accountRepository, ProjectRepository projectRepository)
+        public AdminController(UserManager<IdentityUser> userManager,RoleManager<IdentityRole>roleManager ,ProjectRepository projectRepository)
         {
             _projectRepository = projectRepository;
-            _accountRepository = accountRepository;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
 
@@ -28,48 +33,76 @@ namespace WebApp.Controllers
         {
             return View();
         }
-        public IActionResult UsersList()
+        public async Task<IActionResult> UsersList()
         {
-            var users = _accountRepository.GetAllUsers().Select(u => new AdminUserModel
+            var users = _userManager.Users.ToList();
+            var userModels = new List<AdminUserViewModel>();
+            foreach (var u in users)
             {
-                Id = u.Id,
-                UserName = u.UserName,
-                Roles = (IList<SelectListItem>)_accountRepository.GetUserRoles(u.Id).Result
-
-
-            }).ToList();
+                var roles = await _userManager.GetRolesAsync(u);
+                userModels.Add(new AdminUserViewModel
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Roles = roles.Select(r => new SelectListItem { Value = r, Text = r }).ToList()
+                });
+            }
             return View(users);
         }
         [HttpGet]
         public IActionResult CreateUser()
         {
-            var model = new AdminUserModel
+            var model = new AdminUserViewModel
             {
-                Roles = _accountRepository.GetRoles().Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList()
+                Roles = _roleManager.Roles
+                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                .ToList()
             };
             return View(model);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateUser(AdminUserModel model)
+        public async Task<IActionResult> CreateUser(AdminUserViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                model.Roles = _accountRepository.GetRoles().Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList();
+                model.Roles = _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToList();
                 return View(model);
             }
-            var result = await _accountRepository.CreateUser(model.UserName, model.Password, model.Role);
+            var user = new IdentityUser { UserName = model.UserName };
+            var result = await _userManager.CreateAsync(user, model.Password! );
             if (result.Succeeded)
             {
-                return RedirectToAction("Users");
-            }
-            else { model.Roles = _accountRepository.GetRoles().Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList(); }
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
+                var roleResult = await _userManager.AddToRoleAsync(user, model.Role!);
+                if (roleResult.Succeeded)
+                {
+                    return RedirectToAction("UsersList");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        
+                        ModelState.AddModelError("", error.Description);
 
+                    }
+                }
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                model.Roles = _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToList();
+                
             }
             return View(model);
+
         }
 
 

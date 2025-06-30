@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
-namespace WebApp.Models
+namespace WebApp.ViewModels
 {
-    public class AdminUserModel
+    public class AdminUserViewModel
     {
         public string? Id { get; set; }
         public string? UserName { get; set; }
