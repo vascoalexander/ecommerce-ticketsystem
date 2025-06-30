@@ -87,7 +87,7 @@ public class TicketController : Controller
         ticketToUpdate.Title = updatedTicket.Title;
         ticketToUpdate.Description = updatedTicket.Description;
         ticketToUpdate.ProjectId = updatedTicket.ProjectId;
-        if (ticketToUpdate.AssignedUser == null && assignedUser != null)
+        if (ticketToUpdate.AssignedUser == null && assignedUser != null || ticketToUpdate.Status == TicketStatus.Open && assignedUser != null)
         {
             ticketToUpdate.Status = TicketStatus.InProgress;
         }
@@ -147,6 +147,7 @@ public class TicketController : Controller
         return RedirectToAction("TicketList");
     }
     
+    [HttpPost]
     public async Task<IActionResult> Reopen(int ticketId)
     {
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
