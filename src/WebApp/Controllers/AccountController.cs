@@ -83,7 +83,8 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = await _userManager.GetUserAsync(User);
+        var  user = await _userManager.GetUserAsync(User);
+        if (user == null) { return View("Login"); }
         var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         if (!changePasswordResult.Succeeded)
         {

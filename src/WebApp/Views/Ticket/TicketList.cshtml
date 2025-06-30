@@ -56,7 +56,7 @@
                         <span class="fw-semibold">#@ticket.Id</span> @ticket.Title
                     </div>
                     <div class="col">@ticket.Project.Title</div>
-                    <div class="col"><span class="badge bg-danger">@ticket.Status</span></div>
+                    <div class="col"><span class="badge bg-danger">@ticket.Status.ToString()</span></div>
                     <div class="col d-flex gap-2">
                         <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
                         <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
