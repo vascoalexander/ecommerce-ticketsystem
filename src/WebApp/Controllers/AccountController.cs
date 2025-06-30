@@ -22,7 +22,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
-        var model = new LoginModel()
+        var model = new LoginViewModel()
         {
             Email = string.Empty,
             Password = string.Empty,
@@ -32,18 +32,18 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Login(LoginModel model)
+    public async Task<IActionResult> Login(LoginViewModel viewModel)
     {
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(viewModel.Email);
             if (user != null)
             {
                 await _signInManager.SignOutAsync();
                 var result = await _signInManager
                     .PasswordSignInAsync(
                         user,
-                        model.Password,
+                        viewModel.Password,
                         false,
                         false
                     );
@@ -54,7 +54,7 @@ public class AccountController : Controller
             }
             ModelState.AddModelError("", "Username oder Passwort ungültig.");
         }
-        return View(model);
+        return View(viewModel);
     }
     [Authorize]
     public async Task<IActionResult> Logout()
