@@ -129,4 +129,17 @@ public class TicketController : Controller
 
         return View(ticket);
     }
+    
+    [HttpPost]
+    public async Task<IActionResult> ChangeStatus(int ticketId, string status)
+    {
+        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
+        if (ticketToUpdate == null) return NotFound();
+
+        ticketToUpdate.Status = status;
+
+        await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+
+        return RedirectToAction("TicketList");
+    }
 }
