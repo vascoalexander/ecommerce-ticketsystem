@@ -1,4 +1,6 @@
 // TicketController.cs
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Models;
@@ -7,6 +9,7 @@ using WebApp.ViewModels;
 
 namespace WebApp.Controllers;
 
+[Authorize]
 public class TicketController : Controller
 {
     private readonly TicketRepository _ticketRepository;

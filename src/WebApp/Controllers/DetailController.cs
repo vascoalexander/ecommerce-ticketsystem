@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebApp.Repositories;
 
 namespace WebApp.Controllers
 {
+    [Authorize]
     public class DetailController : Controller
     {
         private readonly ProjectRepository _projectRepo;
