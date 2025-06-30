@@ -61,7 +61,7 @@ public class TicketController : Controller
             Description = viewModel.NewTicket.Description,
             AssignedUser = assignedUser,
             Project = project!,
-            Status = "Open",
+            Status = TicketStatus.Open,
             CreatedAt = DateTime.Now.ToUniversalTime(),
             AssignedAt = DateTime.Now.ToUniversalTime(),
             CreatorUser = currentUser!

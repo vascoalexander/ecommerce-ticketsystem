@@ -14,7 +14,7 @@ public static class DbInitializer
 
         var random = new Random();
         var categories = new[] { "feature", "bug", "enhancement", "documentation", "maintenance" };
-        var statuses = new[] { "Open", "In Progress", "Closed" };
+        var statuses = new[] { TicketStatus.Open, TicketStatus.Closed, TicketStatus.InProgress };
 
         if (!context.Projects.Any())
         {
