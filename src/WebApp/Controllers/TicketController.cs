@@ -43,6 +43,18 @@ public class TicketController : Controller
         return View(viewModel);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var viewModel = new TicketListViewModel
+        {
+            NewTicket = new NewTicketInputModel(),
+            AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
+            AvailableUsers = _userManager.Users.ToList()
+        };
+
+        return View(viewModel);
+    }
     [HttpPost]
     public async Task<IActionResult> Create(TicketListViewModel viewModel)
     {
@@ -71,7 +83,7 @@ public class TicketController : Controller
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
-        return View("Create");
+        return View();
     }
 
     [HttpPost]
@@ -139,7 +151,7 @@ public class TicketController : Controller
             Tickets = await _ticketRepository.GetAllTicketsAsync()
         };
 
-        return View("TicketList", viewModel);
+        return View(viewModel);
     }
 
     [HttpGet]
