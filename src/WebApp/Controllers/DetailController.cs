@@ -17,10 +17,10 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Detail(int Id)
         {
             var project = await _projectRepo.GetProjectById(Id);
-            if(project == null) { return NotFound(); }
+            if (project == null) { return NotFound(); }
             return View(project);
         }
-        
+
 
     }
 }
