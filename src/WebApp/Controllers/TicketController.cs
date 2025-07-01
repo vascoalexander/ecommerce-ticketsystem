@@ -111,12 +111,20 @@ public class TicketController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int ticketId, NewTicketInputModel updatedTicket)
+    public async Task<IActionResult> Edit(int ticketId, [Bind(Prefix = "NewTicket")] NewTicketInputModel updatedTicket)
     {
         if (!ModelState.IsValid)
         {
-            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
-            return RedirectToAction("TicketList");
+            updatedTicket.TicketId = ticketId;
+            var viewModel = new TicketListViewModel
+            {
+                NewTicket = updatedTicket,
+                AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
+                AvailableUsers = _userManager.Users.ToList(),
+                Tickets = await _ticketRepository.GetAllTicketsAsync()
+            };
+            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden. Bitte Eingaben prüfen.";
+            return View(viewModel);
         }
 
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
@@ -148,7 +156,7 @@ public class TicketController : Controller
         }
         else
         {
-            if (ticketToUpdate.Status == TicketStatus.Open)
+            if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
             {
                 ticketToUpdate.Status = TicketStatus.InProgress;
             }
