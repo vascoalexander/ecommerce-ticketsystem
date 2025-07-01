@@ -1,5 +1,3 @@
-// TicketController.cs
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +69,7 @@ public class TicketController : Controller
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
+        TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";
         return RedirectToAction("TicketList");
     }
 
@@ -79,33 +78,37 @@ public class TicketController : Controller
     {
         if (!ModelState.IsValid)
         {
+            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
             return RedirectToAction("TicketList");
         }
 
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
-        if (ticketToUpdate == null) return NotFound();
+        if (ticketToUpdate == null)
+        {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
+            return NotFound();
+        }
 
         var assignedUser = await _userManager.FindByIdAsync(updatedTicket.AssignedUserId);
 
         ticketToUpdate.Title = updatedTicket.Title;
         ticketToUpdate.Description = updatedTicket.Description;
         ticketToUpdate.ProjectId = updatedTicket.ProjectId;
-        
+
         if (ticketToUpdate.AssignedUser?.Id != updatedTicket.AssignedUserId)
         {
-            // Wenn der zugewiesene Benutzer abgewählt wurde
-            if (String.IsNullOrEmpty(updatedTicket.AssignedUserId))
+            if (string.IsNullOrEmpty(updatedTicket.AssignedUserId))
             {
                 ticketToUpdate.Status = TicketStatus.Open;
                 ticketToUpdate.AssignedUser = null;
             }
-            else // Wenn ein neuer Benutzer zugewiesen wurde
+            else
             {
                 ticketToUpdate.Status = TicketStatus.InProgress;
                 ticketToUpdate.AssignedUser = assignedUser;
             }
         }
-        else // Wenn der zugewiesene Benutzer gleich geblieben ist
+        else
         {
             if (ticketToUpdate.Status == TicketStatus.Open)
             {
@@ -115,6 +118,7 @@ public class TicketController : Controller
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
+        TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
         return RedirectToAction("TicketList");
     }
 
@@ -148,36 +152,46 @@ public class TicketController : Controller
         var ticket = await _ticketRepository.GetTicketByIdAsync(id);
         if (ticket == null)
         {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
             return NotFound();
         }
 
         return View(ticket);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Close(int ticketId)
     {
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
-        if (ticketToUpdate == null) return NotFound();
+        if (ticketToUpdate == null)
+        {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
+            return NotFound();
+        }
 
         ticketToUpdate.Status = TicketStatus.Closed;
-
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
+        TempData["ToastMessage"] = "Ticket erfolgreich geschlossen.";
         return RedirectToAction("TicketList");
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Reopen(int ticketId)
     {
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
-        if (ticketToUpdate == null) return NotFound();
+        if (ticketToUpdate == null)
+        {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
+            return NotFound();
+        }
 
         ticketToUpdate.Status = TicketStatus.Open;
         ticketToUpdate.AssignedUser = null;
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
 
+        TempData["ToastMessage"] = "Ticket wurde wieder geöffnet.";
         return RedirectToAction("TicketList");
     }
 }
