@@ -24,95 +24,102 @@
         </a>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center flex-wrap mb-4 gap-3">
         <div>
             <h2 class="mb-1">Tickets</h2>
             <p class="text-muted mb-0">Verwalten Sie alle Tickets in Ihrem System</p>
         </div>
-        <a href="@Url.Action("Create", "Ticket")" class="btn btn-dark mt-3 mt-md-0">Neues Ticket</a>
+        <a href="@Url.Action("Create", "Ticket")" class="btn btn-dark mt-2 mt-md-0">Neues Ticket</a>
     </div>
 
+    <!-- Suchfilter -->
     <div class="card shadow-sm p-3 mb-4">
-        <div class="row g-3">
-            <div class="col-md-4">
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+            <div>
                 <label for="status" class="form-label">Status</label>
-                <input id="status" type="text" class="form-control" placeholder="Nach Status suchen...">
+                <input id="status" type="text" class="form-control" placeholder="Nach Status suchen..." />
             </div>
-            <div class="col-md-4">
+            <div>
                 <label for="projekt" class="form-label">Projekt</label>
-                <input id="projekt" type="text" class="form-control" placeholder="Nach Projekt suchen...">
+                <input id="projekt" type="text" class="form-control" placeholder="Nach Projekt suchen..." />
             </div>
-            <div class="col-md-4">
+            <div>
                 <label for="suche" class="form-label">Suche</label>
-                <input id="suche" type="text" class="form-control" placeholder="Ticket suchen...">
+                <input id="suche" type="text" class="form-control" placeholder="Ticket suchen..." />
             </div>
         </div>
     </div>
 
+    <!-- Ticketliste -->
     <div class="card shadow-sm p-3 mb-4">
-        <div class="row fw-semibold border-bottom pb-2">
-            <div class="col">Ticket</div>
-            <div class="col">Projekt</div>
-            <div class="col">Status</div>
-            <div class="col">Aktionen</div>
+        <div class="row fw-semibold border-bottom pb-2 d-none d-md-flex">
+            <div class="col-md-3">Ticket</div>
+            <div class="col-md-3">Projekt</div>
+            <div class="col-md-2">Status</div>
+            <div class="col-md-4">Aktionen</div>
         </div>
 
         @if (Model.Tickets != null && Model.Tickets.Any())
         {
             foreach (var ticket in Model.Tickets)
             {
-                <div class="row align-items-center py-2 border-bottom">
-                    <div class="col">
-                        <span class="fw-semibold">#@ticket.Id</span> @ticket.Title
+                <div class="row align-items-start py-3 border-bottom text-nowrap text-md-wrap text-break">
+                    <div class="col-12 col-md-3 mb-2 mb-md-0">
+                        <strong>#@ticket.Id</strong><br />
+                        @ticket.Title
                     </div>
-                    <div class="col">@ticket.Project.Title</div>
+                    <div class="col-12 col-md-3 mb-2 mb-md-0">
+                        @ticket.Project.Title
+                    </div>
                     @{
                         string statusClass = ticket.Status switch
                         {
-                            TicketStatus.Open => "bg-success",        
-                            TicketStatus.InProgress => "bg-warning", 
-                            TicketStatus.Closed => "bg-danger",       
+                            TicketStatus.Open => "bg-success",
+                            TicketStatus.InProgress => "bg-warning",
+                            TicketStatus.Closed => "bg-danger",
                             _ => "bg-secondary"
                         };
                     }
-                    <div class="col"> <span class="badge text-white @statusClass text-center d-inline-block"
-                                            style="min-width: 100px; padding: 0.4rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
-                        @ticket.Status.ToString()
-                    </span></div>
-                    <div class="col d-flex gap-2">
-                        <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
+                    <div class="col-12 col-md-2 mb-2 mb-md-0">
+                        <span class="badge text-white @statusClass w-100 text-center d-inline-block"
+                              style="padding: 0.5rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
+                            @ticket.Status.ToString()
+                        </span>
+                    </div>
+                    <div class="col-12 col-md-4 d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-primary flex-fill" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
 
                         @if (ticket.Status == TicketStatus.Closed)
                         {
-                            <form method="post" asp-action="Reopen" asp-controller="Ticket">
+                            <form method="post" asp-action="Reopen" asp-controller="Ticket" class="flex-fill">
                                 <input type="hidden" name="ticketId" value="@ticket.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-dark">Wieder öffnen</button>
+                                <button type="submit" class="btn btn-sm btn-outline-dark w-100">Wieder öffnen</button>
                             </form>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-sm btn-outline-success" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
+                            <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
 
-                            <form method="post" asp-action="Close" asp-controller="Ticket">
+                            <form method="post" asp-action="Close" asp-controller="Ticket" class="flex-fill">
                                 <input type="hidden" name="ticketId" value="@ticket.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Schließen</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100">Schließen</button>
                             </form>
                         }
                     </div>
-
                 </div>
 
+                <!-- Edit-Formular -->
                 <div id="editForm-@ticket.Id" class="card shadow-sm p-4 mb-4" style="display: none;">
                     <h5 class="mb-3">Ticket bearbeiten (#@ticket.Id)</h5>
                     <form method="post" asp-action="Edit" asp-controller="Ticket">
                         <input type="hidden" name="ticketId" value="@ticket.Id" />
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">Titel</label>
                                 <input type="text" name="Title" class="form-control" value="@ticket.Title" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">Projekt</label>
                                 <select class="form-control" name="ProjectId">
                                     @foreach (var p in Model.AvailableProjects)
@@ -134,7 +141,9 @@
                                 <option value="">Bitte Benutzer wählen</option>
                                 @foreach (var user in Model.AvailableUsers)
                                 {
-                                    <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">@user.UserName</option>
+                                    <option value="@user.Id" selected="@(user.Id == ticket.AssignedUserId ? "selected" : null)">
+                                        @user.UserName
+                                    </option>
                                 }
                             </select>
                         </div>
@@ -156,6 +165,15 @@
 
 @section Scripts {
     <script>
+        function toggleEditForm(ticketId) {
+            const form = document.getElementById(`editForm-${ticketId}`);
+            if (form) {
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                window.scrollTo({ top: form.offsetTop - 50, behavior: 'smooth' });
+            }
+        }
+
+        // Toast automatisch ausblenden
         setTimeout(() => {
             const toastEl = document.querySelector('.toast');
             if (toastEl) {
@@ -165,4 +183,3 @@
         }, 4000);
     </script>
 }
-
