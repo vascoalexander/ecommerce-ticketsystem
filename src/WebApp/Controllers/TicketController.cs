@@ -71,7 +71,7 @@ public class TicketController : Controller
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
-        return RedirectToAction("TicketList");
+        return View("Create");
     }
 
     [HttpPost]

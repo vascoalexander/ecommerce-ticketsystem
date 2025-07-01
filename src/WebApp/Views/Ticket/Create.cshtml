@@ -1,0 +1,37 @@
+@model WebApp.ViewModels.TicketListViewModel
+@{
+    ViewBag.Title = "Ticket-Liste";
+}
+
+<div class="card shadow-sm p-4 mb-5" id="hiddenDiv" style="display: none;">
+    <h4 class="mb-3">Neues Ticket erstellen</h4>
+    @using (Html.BeginForm("Create", "Ticket", FormMethod.Post))
+    {
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="NewTicket.Title" class="form-label">Titel</label>
+                <input asp-for="NewTicket.Title" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="NewTicket.ProjectId" class="form-label">Projekt</label>
+                <select asp-for="NewTicket.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title"))">
+                    <option value="">-- Projekt wählen --</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
+            <textarea asp-for="NewTicket.Description" class="form-control" rows="4"></textarea>
+        </div>
+        <div class="mb-4">
+            <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
+            <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName"))">
+                <option value="">-- Benutzer wählen --</option>
+            </select>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" id="btnTicketAbbrechen" class="btn btn-secondary">Abbrechen</button>
+            <button type="submit" id="btnTicketErstellen" class="btn btn-primary">Erstellen</button>
+        </div>
+    }
+</div>
