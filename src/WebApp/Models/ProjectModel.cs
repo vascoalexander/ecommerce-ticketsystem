@@ -8,7 +8,7 @@ public class ProjectModel
     public int Id { get; set; }
     [StringLength(40, ErrorMessage = "Der Titel darf maximal 40 Zeichen lang sein.")]
     public required string Title { get; set; }
-    [StringLength(400, ErrorMessage = "Die Beschreibung darf maximal 400 Zeichen lang sein.")]
+    [StringLength(2000, ErrorMessage = "Die Beschreibung darf maximal 400 Zeichen lang sein.")]
     public required string Description { get; set; }
 
     [StringLength(40)]

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebApp.Repositories;
 
 namespace WebApp.Controllers
 {
+    [Authorize]
     public class DetailController : Controller
     {
         private readonly ProjectRepository _projectRepo;
@@ -15,10 +17,10 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Detail(int Id)
         {
             var project = await _projectRepo.GetProjectById(Id);
-            if(project == null) { return NotFound(); }
+            if (project == null) { return NotFound(); }
             return View(project);
         }
-        
+
 
     }
 }

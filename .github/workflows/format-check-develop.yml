@@ -1,0 +1,20 @@
+name: Format Check on Push to Develop
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - name: Run dotnet format (non-blocking)
+        run: |
+          dotnet format --verify-no-changes --severity info || echo "::warning::Formatierung nicht korrekt"
+
