@@ -58,8 +58,8 @@
                     <td>2025-01-01</td>
                     <td>2025-12-31</td>
                     <td>
-                        <a href="#" class="btn btn-sm btn-outline-primary me-1">Bearbeiten</a>
-                        <a href="#" class="btn btn-sm btn-outline-danger">Löschen</a>
+                        <a  asp-controller="Admin"  asp-action="EditProject" class="btn btn-sm btn-outline-primary me-1">Bearbeiten</a>
+                        <a asp-controller="Admin" asp-action="DeleteProject" class="btn btn-sm btn-outline-danger">Löschen</a>
                     </td>
                 </tr>
                 // bis hier hin muss es denn ersetzt werden
@@ -87,3 +87,6 @@
         <button class="btn btn-dark">Anwenden</button>
     </div>
 </div>
+
+
+
