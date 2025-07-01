@@ -17,7 +17,7 @@ namespace WebApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-        public AdminController(UserManager<AppUser> userManager,RoleManager<IdentityRole>roleManager ,ProjectRepository projectRepository)
+        public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ProjectRepository projectRepository)
         {
             _projectRepository = projectRepository;
             _userManager = userManager;
@@ -72,7 +72,7 @@ namespace WebApp.Controllers
                 return View(model);
             }
             var user = new AppUser { UserName = model.UserName };
-            var result = await _userManager.CreateAsync(user, model.Password! );
+            var result = await _userManager.CreateAsync(user, model.Password!);
             if (result.Succeeded)
             {
                 var roleResult = await _userManager.AddToRoleAsync(user, model.Role!);
@@ -84,7 +84,7 @@ namespace WebApp.Controllers
                 {
                     foreach (var error in result.Errors)
                     {
-                        
+
                         ModelState.AddModelError("", error.Description);
 
                     }
@@ -99,7 +99,7 @@ namespace WebApp.Controllers
                 model.Roles = _roleManager.Roles
                     .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                     .ToList();
-                
+
             }
             return View(model);
 
