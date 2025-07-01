@@ -128,7 +128,7 @@ public class AccountController : Controller
             AvailableThemes = GetAvailableThemes()
         };
 
-        return View();
+        return View(model);
     }
 
     [HttpPost]
@@ -142,11 +142,47 @@ public class AccountController : Controller
             model.IsSuccess = false;
             return View(model);
         }
+
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
             return NotFound();
         }
+
+        var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
+        if (!setEmailResult.Succeeded)
+        {
+            AddErrors(setEmailResult);
+            model.StatusMessage = "Fehler beim Aktualisieren der E-Mail-Adresse.";
+            model.IsSuccess = false;
+            return View(model);
+        }
+
+        var setUserNameResult = await _userManager.SetUserNameAsync(user, model.Username);
+        if (!setUserNameResult.Succeeded)
+        {
+            AddErrors(setUserNameResult);
+            model.StatusMessage = "Fehler beim Aktualisieren des Benutzernamens.";
+            model.IsSuccess = false;
+            return View(model);
+        }
+
+        if (user.UserTheme != model.SelectedTheme)
+        {
+            user.UserTheme = model.SelectedTheme;
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                AddErrors(updateResult);
+                model.StatusMessage = "Fehler beim Aktualisieren des Themes.";
+                model.IsSuccess = false;
+                return View(model);
+            }
+        }
+        model.StatusMessage = "Ihre Einstellungen wurden erfolgreich gespeichert!";
+        model.IsSuccess = true;
+
+        return View(model);
     }
     private List<SelectListItem> GetAvailableThemes()
     {
@@ -162,5 +198,12 @@ public class AccountController : Controller
                     .GetName() ?? e.ToString()
             }).ToList();
         return themeOptions;
+    }
+    private void AddErrors(IdentityResult result)
+    {
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
     }
 }

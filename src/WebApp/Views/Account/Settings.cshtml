@@ -12,7 +12,7 @@
                 </div>
                 <div class="card-body">
 
-                    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+                    @if (!string.IsNullOrEmpty(@Model.StatusMessage))
                     {
                         <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
                             @Model.StatusMessage
