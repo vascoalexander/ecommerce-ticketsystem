@@ -4,55 +4,62 @@
     ViewData["Title"] = "Einstellungen";
 }
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">@ViewData["Title"]</h2>
-                </div>
-                <div class="card-body">
+    <div class="row">
+        <div class="mb-4 col-3">
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
+                Zurück zum Dashboard
+            </a>
+        </div>
+        <div class="col-9 justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-header background-dark text-white">
+                        <h2 class="mb-0">@ViewData["Title"]</h2>
+                    </div>
+                    <div class="card-body">
 
-                    @if (!string.IsNullOrEmpty(@Model.StatusMessage))
-                    {
-                        <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
-                            @Model.StatusMessage
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        @if (!string.IsNullOrEmpty(@Model.StatusMessage))
+                        {
+                            <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+                                @Model.StatusMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <form asp-action="Settings" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label"></label>
+                                <input asp-for="Username" class="form-control"/>
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control"/>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="SelectedTheme" class="form-label"></label>
+                                <select asp-for="SelectedTheme" asp-items="@Model.AvailableThemes" class="form-select">
+                                    <option value="">@Model.SelectedTheme</option>
+                                </select>
+                                <span asp-validation-for="SelectedTheme" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" class="btn btn-outline-success btn-lg">Einstellungen aktualisieren</button>
+                            </div>
+                        </form>
+
+                        <hr/>
+
+                        <div class="mb-3 text-center">
+                            <p class="mb-2">Passwort ändern?</p>
+                            <a asp-action="ChangePassword" class="btn btn-outline-secondary btn-sm">Passwort ändern</a>
                         </div>
-                    }
-
-                    <form asp-action="Settings" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                        <div class="mb-3">
-                            <label asp-for="Username" class="form-label"></label>
-                            <input asp-for="Username" class="form-control" />
-                            <span asp-validation-for="Username" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="SelectedTheme" class="form-label"></label>
-                            <select asp-for="SelectedTheme" asp-items="@Model.AvailableThemes" class="form-select">
-                                <option value="">Bitte wählen Sie ein Theme</option>
-                            </select>
-                            <span asp-validation-for="SelectedTheme" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-grid gap-2 mb-3">
-                            <button type="submit" class="btn btn-success btn-lg">Einstellungen aktualisieren</button>
-                        </div>
-                    </form>
-
-                    <hr />
-
-                    <div class="mb-3 text-center">
-                        <p class="mb-2">Passwort ändern?</p>
-                        <a asp-action="ChangePassword" class="btn btn-outline-secondary btn-sm">Passwort ändern</a>
                     </div>
                 </div>
             </div>
