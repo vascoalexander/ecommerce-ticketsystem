@@ -51,11 +51,16 @@ public class AccountController : Controller
                 {
                     return RedirectToAction("Dashboard", "Home");
                 }
+                else
+                {
+                    viewModel.ErrorMessage = "Benutzername oder Passwort ist falsch.";
+                    return View(viewModel);
+                }
             }
-            ModelState.AddModelError("", "Username oder Passwort ungültig.");
         }
         return View(viewModel);
     }
+
     [Authorize]
     public async Task<IActionResult> Logout()
     {

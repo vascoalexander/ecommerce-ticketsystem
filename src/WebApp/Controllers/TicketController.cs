@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.SqlTypes;
 using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.ViewModels;
@@ -25,20 +26,85 @@ public class TicketController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> TicketList()
+    public async Task<IActionResult> TicketList(string? search, string? status, int? projectId, string? assignedUser, DateTime? startDate, DateTime? endDate, string? sortOrder, string? creatorId)
     {
         var tickets = await _ticketRepository.GetAllTicketsAsync();
         var projects = await _projectRepository.GetAllProjectsAsync();
         var users = _userManager.Users.ToList();
+        TicketStatus? statusEnum = null;
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TicketStatus>
+                          (status, true, out var parsedStatus))
+        {
+            statusEnum = parsedStatus;
+            tickets = tickets
+                .Where(t => t.Status == statusEnum).
+        ToList();
+        }
+        if (projectId.HasValue)
+        {
+            tickets = tickets
+                .Where(t => t.ProjectId == projectId.Value).ToList();
 
-        var viewModel = new TicketListViewModel
+        }
+
+        if (!string.IsNullOrWhiteSpace(creatorId))
+        {
+            tickets = tickets
+                .Where(t => t.CreatorUser?.Id == creatorId)
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(assignedUser))
+        {
+            tickets = tickets
+                .Where(t => t.AssignedUserId == assignedUser).ToList();
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            tickets = tickets
+                .Where(t => (t.Title?
+                    .Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                      (t.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                      (t.AssignedUser?.Id.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+        }
+
+        if (startDate.HasValue)
+        {
+            tickets = tickets
+                .Where(t => t.CreatedAt >= startDate.Value).ToList();
+
+        }
+
+        if (endDate.HasValue)
+        {
+            tickets = tickets
+                .Where(t => t.CreatedAt <= endDate.Value).ToList();
+        }
+
+        tickets = sortOrder switch
+        {
+            "date_desc" => tickets.OrderByDescending(t => t.CreatedAt).ToList(),
+            "title_asc" => tickets.OrderBy(t => t.Title).ToList(),
+            "title_desc" => tickets.OrderByDescending(t => t.Title).ToList(),
+            _ => tickets.OrderBy(t => t.Id).ToList()
+        };
+
+        var statusOptions = Enum.GetValues(typeof(TicketStatus)).Cast<TicketStatus>().ToList();
+        var viewmodel = new TicketListViewModel
         {
             Tickets = tickets,
             AvailableProjects = projects,
-            AvailableUsers = users
+            AvailableUsers = users,
+            StatusOptions = statusOptions,
+            SelectedStatus = status,
+            Search = search,
+            SelectedCreatorId = creatorId,
+            SelectedAssigneeId = assignedUser,
+            FromDate = startDate,
+            ToDate = endDate,
         };
-
-        return View(viewModel);
+        return View(viewmodel);
     }
 
     [HttpGet]
@@ -128,11 +194,7 @@ public class TicketController : Controller
         }
 
         var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
-        if (ticketToUpdate == null)
-        {
-            TempData["ToastMessage"] = "Ticket nicht gefunden.";
-            return NotFound();
-        }
+        if (ticketToUpdate == null) return NotFound();
 
         var assignedUser = await _userManager.FindByIdAsync(updatedTicket.AssignedUserId);
 
@@ -143,18 +205,19 @@ public class TicketController : Controller
         
         if (ticketToUpdate.AssignedUser?.Id != updatedTicket.AssignedUserId)
         {
-            if (string.IsNullOrEmpty(updatedTicket.AssignedUserId))
+            // Wenn der zugewiesene Benutzer abgewählt wurde
+            if (String.IsNullOrEmpty(updatedTicket.AssignedUserId))
             {
                 ticketToUpdate.Status = TicketStatus.Open;
                 ticketToUpdate.AssignedUser = null;
             }
-            else
+            else // Wenn ein neuer Benutzer zugewiesen wurde
             {
                 ticketToUpdate.Status = TicketStatus.InProgress;
                 ticketToUpdate.AssignedUser = assignedUser;
             }
         }
-        else
+        else // Wenn der zugewiesene Benutzer gleich geblieben ist
         {
             if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
             {
