@@ -13,6 +13,6 @@ public class NewTicketInputModel
     public string? AssignedUserId { get; set; } = "";
 
     public int ProjectId { get; set; }
-    
+
     public string Status { get; set; } = "Open";  // default for new tickets
 }
