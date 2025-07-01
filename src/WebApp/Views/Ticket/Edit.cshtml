@@ -1,6 +1,92 @@
+@model WebApp.ViewModels.TicketListViewModel
 @{
-    ViewBag.Title = "title";
-    Layout = "_Layout";
+    ViewBag.Title = "Edit";
+  
 }
 
-<h2>title</h2>
+<div class="mt-5">
+    <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-secondary">
+        Zurück zur Ticketliste
+    </a>
+</div>
+
+<div class="card shadow-sm p-4 mt-5">
+    <h4 class="mb-3">Ticket bearbeiten (#@Model.NewTicket.TicketId)</h4>
+
+    @using (Html.BeginForm("Edit", "Ticket", FormMethod.Post))
+    {
+        <input type="hidden" name="ticketId" value="@Model.NewTicket.TicketId" />
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 position-relative">
+                <label asp-for="NewTicket.Title" class="form-label">Titel</label>
+                <input asp-for="NewTicket.Title" 
+                       class="form-control pe-5" 
+                       placeholder="Bitte Titel eingeben" 
+                       maxlength="60" 
+                       id="titleInput" />
+                <small id="titleCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
+                    0 / 60
+                </small>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="NewTicket.ProjectId" class="form-label">Projekt</label>
+                <select asp-for="NewTicket.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title", Model.NewTicket.ProjectId))">
+                    <option value="">-- Projekt wählen --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3 position-relative">
+            <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
+            <textarea asp-for="NewTicket.Description" 
+                      class="form-control pe-5" 
+                      rows="4" 
+                      maxlength="2000" 
+                      id="descriptionInput"></textarea>
+            <small id="descriptionCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
+                0 / 2000
+            </small>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
+            <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName", Model.NewTicket.AssignedUserId))">
+                <option value="">-- Benutzer wählen --</option>
+            </select>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-danger">Abbrechen</a>
+            <button type="submit" class="btn btn-dark mt-2 mt-md-0">Speichern</button>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Titel-Zähler
+        const maxTitleChars = 60;
+        const titleInput = document.getElementById("titleInput");
+        const titleCounter = document.getElementById("titleCounter");
+
+        function updateTitleCounter() {
+            const used = titleInput.value.length;
+            titleCounter.textContent = `${used} / ${maxTitleChars}`;
+        }
+        titleInput.addEventListener("input", updateTitleCounter);
+        updateTitleCounter(); 
+
+        // Beschreibung-Zähler
+        const maxDescChars = 2000;
+        const descInput = document.getElementById("descriptionInput");
+        const descCounter = document.getElementById("descriptionCounter");
+
+        function updateDescCounter() {
+            const used = descInput.value.length;
+            descCounter.textContent = `${used} / ${maxDescChars}`;
+        }
+        descInput.addEventListener("input", updateDescCounter);
+        updateDescCounter(); 
+    </script>
+}

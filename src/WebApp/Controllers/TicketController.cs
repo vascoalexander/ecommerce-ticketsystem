@@ -132,6 +132,7 @@ public class TicketController : Controller
         ticketToUpdate.Description = updatedTicket.Description;
         ticketToUpdate.ProjectId = updatedTicket.ProjectId;
         
+        
         if (ticketToUpdate.AssignedUser?.Id != updatedTicket.AssignedUserId)
         {
             if (string.IsNullOrEmpty(updatedTicket.AssignedUserId))
