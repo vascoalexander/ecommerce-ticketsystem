@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc.Rendering; // Für SelectListItem
 
 public enum ThemeOption
 {
-    [Display(Name = "Hell")] DefaultLight,
-    [Display(Name = "Dunkel")] DefaultDark,
-    [Display(Name = "LushwearLight")] LushwearLight,
-    [Display(Name = "LushwearDark")] LushwearDark
+    [Display(Name = "standard")] standard,
+    [Display(Name = "lushwear")] lushwear
 }
 
 public class SettingsViewModel
