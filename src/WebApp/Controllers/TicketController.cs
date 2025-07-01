@@ -81,8 +81,33 @@ public class TicketController : Controller
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
+        var createdTicketId = ticket.Id;
         TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";
-        return RedirectToAction("Detail");
+        return RedirectToAction("Detail", new { id = createdTicketId });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var ticket = await _ticketRepository.GetTicketByIdAsync(id);
+        if (ticket == null) return NotFound();
+
+        var viewModel = new TicketListViewModel
+        {
+            NewTicket = new NewTicketInputModel
+            {
+                TicketId = ticket.Id,
+                Title = ticket.Title,
+                Description = ticket.Description,
+                ProjectId = ticket.Project.Id,
+                AssignedUserId = ticket.AssignedUser?.Id
+            },
+            AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
+            AvailableUsers = _userManager.Users.ToList(),
+            Tickets = await _ticketRepository.GetAllTicketsAsync()
+        };
+
+        return View(viewModel);
     }
 
     [HttpPost]
@@ -129,34 +154,12 @@ public class TicketController : Controller
         }
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+        var createdTicketId = ticketToUpdate.Id;
 
         TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
-        return RedirectToAction("TicketList");
+        return RedirectToAction("Detail", new { id = createdTicketId });
     }
-
-    [HttpGet]
-    public async Task<IActionResult> Edit(int id)
-    {
-        var ticket = await _ticketRepository.GetTicketByIdAsync(id);
-        if (ticket == null) return NotFound();
-
-        var viewModel = new TicketListViewModel
-        {
-            NewTicket = new NewTicketInputModel
-            {
-                TicketId = ticket.Id,
-                Title = ticket.Title,
-                Description = ticket.Description,
-                ProjectId = ticket.Project.Id,
-                AssignedUserId = ticket.AssignedUser?.Id
-            },
-            AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList(),
-            Tickets = await _ticketRepository.GetAllTicketsAsync()
-        };
-
-        return View(viewModel);
-    }
+    
 
     [HttpGet]
     public async Task<IActionResult> Detail(int id)

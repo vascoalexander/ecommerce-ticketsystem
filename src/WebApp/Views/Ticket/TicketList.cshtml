@@ -98,7 +98,7 @@
                         }
                         else
                         {
-                            <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="toggleEditForm(@ticket.Id)">Bearbeiten</button>
+                            <a class="btn btn-sm btn-outline-success flex-fill" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
 
                             <form method="post" asp-action="Close" asp-controller="Ticket" class="flex-fill">
                                 <input type="hidden" name="ticketId" value="@ticket.Id" />
