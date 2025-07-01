@@ -34,7 +34,11 @@ public class TicketRepository
 
     public async Task<List<TicketModel>> GetAllTicketsAsync()
     {
-        return await _context.Tickets.ToListAsync();
+        return await _context.Tickets
+            .Include(t => t.Project)
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatorUser)
+            .ToListAsync();
     }
 
     // Update 
