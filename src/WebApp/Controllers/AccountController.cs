@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
@@ -108,5 +111,56 @@ public class AccountController : Controller
     public IActionResult ChangePasswordConfirmation()
     {
         return View();
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Settings()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) { return View("Login"); }
+
+        var model = new SettingsViewModel()
+        {
+            Username = user.UserName,
+            Email = user.Email,
+            SelectedTheme = user.UserTheme,
+            AvailableThemes = GetAvailableThemes()
+        };
+
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Settings(SettingsViewModel model)
+    {
+        model.AvailableThemes = GetAvailableThemes();
+        if (!ModelState.IsValid)
+        {
+            model.StatusMessage = "Bitte korrigieren Sie die Fehler im Formular.";
+            model.IsSuccess = false;
+            return View(model);
+        }
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+    }
+    private List<SelectListItem> GetAvailableThemes()
+    {
+        var themeOptions = Enum.GetValues(typeof(ThemeOption))
+            .Cast<ThemeOption>()
+            .Select(e => new SelectListItem
+            {
+                Value = e.ToString(),
+                Text = e.GetType()
+                    .GetMember(e.ToString())
+                    .First()
+                    .GetCustomAttribute<DisplayAttribute>()?
+                    .GetName() ?? e.ToString()
+            }).ToList();
+        return themeOptions;
     }
 }

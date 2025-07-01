@@ -8,7 +8,7 @@ public class AppUser : IdentityUser
 {
     [DefaultValue("default")]
     [StringLength(20)]
-    public string UserTheme { get; set; } = "default";
+    public string UserTheme { get; set; } = "Default-Light";
     public ICollection<TicketModel>? Tickets { get; set; }
 
     public AppUser() : base() { }
