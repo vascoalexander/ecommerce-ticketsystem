@@ -18,8 +18,9 @@ namespace WebApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-        public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager,
-            ProjectRepository projectRepository)
+
+        public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ProjectRepository projectRepository)
+
         {
             _projectRepository = projectRepository;
             _userManager = userManager;
