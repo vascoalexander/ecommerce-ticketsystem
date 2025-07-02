@@ -26,7 +26,7 @@ public class TicketController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> TicketList(string? search, string? status, int? projectId,string? show ,string? assignedUser, DateTime? startDate, DateTime? endDate, string? sortOrder, string? creatorId)
+    public async Task<IActionResult> TicketList(string? search, string? status, int? projectId, string? show, string? assignedUser, DateTime? startDate, DateTime? endDate, string? sortOrder, string? creatorId)
     {
         var tickets = await _ticketRepository.GetAllTicketsAsync();
         var currentUser = await _userManager.GetUserAsync(User);
