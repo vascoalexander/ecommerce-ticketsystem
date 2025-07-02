@@ -28,18 +28,26 @@ namespace WebApp.Controllers
         }
 
 
-        public IActionResult AdminPage()
+        public async Task<IActionResult> AdminPage()
         {
-            return View();
+            var project = await _projectRepository.GetAllProjectsAsync();
+            return View(project);
         }
         public IActionResult UserManagement()
         {
             return View();
         }
 
-        public async Task<IActionResult> UsersList(string? roleFilter, string? search, string? sortOrder)
+        public async Task<IActionResult> UsersList(string? roleFilter, string? search, string? sortOrder,
+            bool includeInactive = false)
         {
             var users = await _userManager.Users.ToListAsync();
+            if (!includeInactive)
+            {
+                users.Where(u => u.IsActive).ToList();
+            }
+
+            ;
 
             if (!string.IsNullOrWhiteSpace(search))
                 users = users
@@ -64,6 +72,30 @@ namespace WebApp.Controllers
                 });
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            var model = new AdminUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                AssignedRoles = await _userManager.GetRolesAsync(user)
+            };
+            return View(model);
+        }
+
+        [HttpPost, ActionName("DeleteUser")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUserConfirmend(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            await _userManager.DeleteAsync(user);
+            return RedirectToAction("UsersList");
         }
 
         [HttpGet]
@@ -128,7 +160,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
-        
+
 
             if (!string.IsNullOrEmpty(category))
             {

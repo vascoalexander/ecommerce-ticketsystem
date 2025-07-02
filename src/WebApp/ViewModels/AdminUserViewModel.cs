@@ -12,7 +12,7 @@ namespace WebApp.ViewModels
         [DataType(DataType.Password)]
         public string? Password { get; set; }
         public IList<string> AssignedRoles { get; set; } = new List<string>();
-
+        public bool IsActive { get; set; } = true;
 
         public List<SelectListItem> AvailableRoles { get; set; } = new();
         [Required(ErrorMessage = "Rolle muss zugewiesen werden.")]
