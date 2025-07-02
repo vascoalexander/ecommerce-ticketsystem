@@ -15,6 +15,15 @@ public static class DbInitializer
         var random = new Random();
         var categories = new[] { "feature", "bug", "enhancement", "documentation", "maintenance" };
         var statuses = new[] { TicketStatus.Open, TicketStatus.Closed, TicketStatus.InProgress };
+        var longDescription = """
+                              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ante tortor,
+                               ornare sit amet bibendum vel, laoreet id leo. Donec vulputate tellus in 
+                               lobortis ornare. Praesent nec mattis felis. Praesent sollicitudin placerat 
+                               velit nec bibendum. Sed a massa diam. Integer metus nibh, 
+                               vehicula et efficitur vitae, commodo vitae elit. Nulla id lobortis enim. 
+                               Morbi hendrerit condimentum enim, vel suscipit est consectetur in. Fusce 
+                               vitae nunc ligula. Sed maximus condimentum posuere. Nunc porta vehicula elit. Nunc luctus lobortis magna vitae interdum. Mauris varius arcu non augue venenatis, vel tempor urna facilisis. Morbi vel lorem id risus ornare vulputate.
+                              """;
 
         if (!context.Projects.Any())
         {
@@ -60,10 +69,8 @@ public static class DbInitializer
 
                 var ticket = new TicketModel
                 {
-                    Title = $"Ticket {i}: {GetRandomTicketTitle(random)}",
-                    Description = $"This is ticket number {i} with randomly generated content. " +
-                                  $"Priority level: {random.Next(1, 6)}. " +
-                                  $"Estimated effort: {random.Next(1, 21)} hours.",
+                    Title = $"{GetRandomTicketTitle(random)}",
+                    Description = $"This is ticket number {i} with randomly generated content. {longDescription}",
                     CreatedAt = createdAt,
                     AssignedAt = assignedAt,
                     AssignedUser = randomUser,
@@ -77,25 +84,6 @@ public static class DbInitializer
                 tickets.Add(ticket);
             }
 
-
-            // var project1 = context.Projects.FirstOrDefault(p => p.Title == "Project 1");
-            // var creatorUser = context.Users.FirstOrDefault(u => u.UserName == "tester");
-            //
-            // if (project1 is null || creatorUser is null)
-            //     throw new Exception("Seed-Daten fehlen: Projekt 'Project 1' oder User 'tester' nicht gefunden.");
-
-            // var ticket1 = new TicketModel
-            // {
-            //     Title = "Ticket 1",
-            //     Description = "Ticket 1 description",
-            //     CreatedAt = new DateTime(2025, 6, 23, 0, 0, 0, DateTimeKind.Utc),
-            //     AssignedAt = new DateTime(2026, 6, 23, 0, 0, 0, DateTimeKind.Utc),
-            //     ProjectId = project1.Id,
-            //     Project = project1,
-            //     Status = "Open",
-            //     CreatorUser = creatorUser,
-            //     CreatorUserId = creatorUser.Id,
-            // };
             context.Tickets.AddRange(tickets);
             context.SaveChanges();
         }

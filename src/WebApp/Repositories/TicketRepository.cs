@@ -22,8 +22,8 @@ public class TicketRepository
     // Read 
     public async Task<TicketModel> GetTicketByIdAsync(int id)
     {
-        var ticket= await _context.Tickets
-            .Include( t => t.Project)
+        var ticket = await _context.Tickets
+            .Include(t => t.Project)
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatorUser)
             .FirstOrDefaultAsync(t => t.Id == id);

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebApp.Data;
@@ -11,9 +12,11 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250630092027_AllowLongerDescriptions")]
+    partial class AllowLongerDescriptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,45 +261,6 @@ namespace WebApp.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("WebApp.Models.TicketHistoryModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ChangedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NewValue")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("OldValue")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("PropertyName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("TicketId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChangedByUserId");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("TicketHistoryModel");
-                });
-
             modelBuilder.Entity("WebApp.Models.TicketModel", b =>
                 {
                     b.Property<int>("Id")
@@ -397,23 +361,6 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebApp.Models.TicketHistoryModel", b =>
-                {
-                    b.HasOne("WebApp.Models.AppUser", "ChangedByUser")
-                        .WithMany()
-                        .HasForeignKey("ChangedByUserId");
-
-                    b.HasOne("WebApp.Models.TicketModel", "Ticket")
-                        .WithMany("History")
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ChangedByUser");
-
-                    b.Navigation("Ticket");
-                });
-
             modelBuilder.Entity("WebApp.Models.TicketModel", b =>
                 {
                     b.HasOne("WebApp.Models.AppUser", "AssignedUser")
@@ -448,11 +395,6 @@ namespace WebApp.Migrations
             modelBuilder.Entity("WebApp.Models.ProjectModel", b =>
                 {
                     b.Navigation("Tickets");
-                });
-
-            modelBuilder.Entity("WebApp.Models.TicketModel", b =>
-                {
-                    b.Navigation("History");
                 });
 #pragma warning restore 612, 618
         }

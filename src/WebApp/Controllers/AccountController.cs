@@ -51,11 +51,16 @@ public class AccountController : Controller
                 {
                     return RedirectToAction("Dashboard", "Home");
                 }
+                else
+                {
+                    viewModel.ErrorMessage = "Benutzername oder Passwort ist falsch.";
+                    return View(viewModel);
+                }
             }
-            ModelState.AddModelError("", "Username oder Passwort ungültig.");
         }
         return View(viewModel);
     }
+
     [Authorize]
     public async Task<IActionResult> Logout()
     {
@@ -83,7 +88,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var  user = await _userManager.GetUserAsync(User);
+        var user = await _userManager.GetUserAsync(User);
         if (user == null) { return View("Login"); }
         var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
         if (!changePasswordResult.Succeeded)
