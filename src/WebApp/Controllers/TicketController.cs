@@ -14,15 +14,18 @@ public class TicketController : Controller
     private readonly TicketRepository _ticketRepository;
     private readonly ProjectRepository _projectRepository;
     private readonly UserManager<AppUser> _userManager;
+    private readonly TicketHistoryRepository _ticketHistoryRepository;
 
     public TicketController(
         TicketRepository ticketRepository,
         ProjectRepository projectRepository,
-        UserManager<AppUser> userManager)
+        UserManager<AppUser> userManager,
+        TicketHistoryRepository ticketHistoryRepository) 
     {
         _ticketRepository = ticketRepository;
         _projectRepository = projectRepository;
         _userManager = userManager;
+        _ticketHistoryRepository = ticketHistoryRepository; 
     }
 
     [HttpGet]
@@ -154,6 +157,15 @@ public class TicketController : Controller
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
+        
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Title, null, ticket.Title, currentUser?.Id);
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Description, null, ticket.Description, currentUser?.Id);
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Project, null, project?.Title, currentUser?.Id);
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.AssignedUser, null, assignedUser?.UserName, currentUser?.Id);
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status, null, ticket.Status.ToString(), currentUser?.Id);
+        
+        await _ticketHistoryRepository.SaveChangesAsync();
+        
         TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";
         return RedirectToAction("Detail", new { id = ticket.Id });
     }
@@ -179,47 +191,82 @@ public class TicketController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
+public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
+{
+    if (!ModelState.IsValid)
     {
-        if (!ModelState.IsValid)
-        {
-            viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
-            viewModel.AvailableUsers = _userManager.Users.ToList();
-            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
-            return View(viewModel);
-        }
+        viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
+        viewModel.AvailableUsers = _userManager.Users.ToList();
+        TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
+        return View(viewModel);
+    }
+    var currentUser = await _userManager.GetUserAsync(User);
+    var userId = currentUser?.Id;
 
-        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(viewModel.TicketId ?? 0);
-        if (ticketToUpdate == null) return NotFound();
+    var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(viewModel.TicketId ?? 0);
+    if (ticketToUpdate == null) return NotFound();
 
-        var assignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId);
+    var assignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId);
 
+    // Vergleiche alte und neue Werte und tracke Änderungen
+    if (ticketToUpdate.Title != viewModel.Title)
+    {
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Title, ticketToUpdate.Title, viewModel.Title, currentUser?.Id);
         ticketToUpdate.Title = viewModel.Title;
-        ticketToUpdate.Description = viewModel.Description;
-        ticketToUpdate.ProjectId = viewModel.ProjectId;
+    }
 
-        if (ticketToUpdate.AssignedUser?.Id != viewModel.AssignedUserId)
+    if (ticketToUpdate.Description != viewModel.Description)
+    {
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Description, ticketToUpdate.Description, viewModel.Description, currentUser?.Id);
+        ticketToUpdate.Description = viewModel.Description;
+    }
+
+    if (ticketToUpdate.ProjectId != viewModel.ProjectId)
+    {
+        var oldProject = ticketToUpdate.Project?.Title;
+        var newProject = (await _projectRepository.GetProjectById(viewModel.ProjectId))?.Title;
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Project, oldProject, newProject, currentUser?.Id);
+        ticketToUpdate.ProjectId = viewModel.ProjectId;
+    }
+
+    // AssignedUser & Status
+    var oldAssignedUserId = ticketToUpdate.AssignedUser?.Id;
+    var newAssignedUserId = viewModel.AssignedUserId;
+    if (oldAssignedUserId != newAssignedUserId)
+    {
+        var oldUserName = ticketToUpdate.AssignedUser?.UserName;
+        var newUserName = assignedUser?.UserName;
+
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
+
+        if (string.IsNullOrEmpty(newAssignedUserId))
         {
-            if (string.IsNullOrEmpty(viewModel.AssignedUserId))
-            {
-                ticketToUpdate.Status = TicketStatus.Open;
-                ticketToUpdate.AssignedUser = null;
-            }
-            else
-            {
-                ticketToUpdate.Status = TicketStatus.InProgress;
-                ticketToUpdate.AssignedUser = assignedUser;
-            }
+            ticketToUpdate.Status = TicketStatus.Open;
+            ticketToUpdate.AssignedUser = null;
         }
-        else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
+        else
         {
             ticketToUpdate.Status = TicketStatus.InProgress;
+            ticketToUpdate.AssignedUser = assignedUser;
         }
 
-        await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
-        TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
-        return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
+        // Status auch tracken
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), ticketToUpdate.Status.ToString(), currentUser?.Id);
     }
+    else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
+    {
+        ticketToUpdate.Status = TicketStatus.InProgress;
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, TicketStatus.Open.ToString(), TicketStatus.InProgress.ToString(), currentUser?.Id);
+    }
+
+    await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+
+    await _ticketHistoryRepository.SaveChangesAsync();  // speichern
+
+    TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
+    return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
+}
+
 
 
     [HttpGet]
@@ -232,7 +279,15 @@ public class TicketController : Controller
             return NotFound();
         }
 
-        return View(ticket);
+        var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
+
+        var viewModel = new TicketDetailViewModel
+        {
+            Ticket = ticket,
+            History = history
+        };
+
+        return View(viewModel);
     }
 
     [HttpPost]
