@@ -2,7 +2,7 @@
     ViewBag.Title = "Ticket-Detail";
  
 }
-@model WebApp.Models.TicketModel
+@model WebApp.ViewModels.TicketDetailViewModel
 <div class="container my-5">
     <div class="mb-4">
         <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-secondary">
@@ -11,8 +11,8 @@
     </div>
     
     <div class="mb-4">
-        <h2 class="fw-bold mb-1">@Model.Title</h2>
-        <p class="text-muted">Projekt: <strong>@Model.Project.Title</strong></p>
+        <h2 class="fw-bold mb-1">@Model.Ticket.Title</h2>
+        <p class="text-muted">Projekt: <strong>@Model.Ticket.Project.Title</strong></p>
     </div>
     
     <div class="card shadow-sm mb-4">
@@ -24,12 +24,12 @@
                 <div class="col-md-3">Zuweisungsdatum</div>
             </div>
             <div class="row">
-                <div class="col-md-3">@Model.CreatorUser.UserName</div>
-                <div class="col-md-3">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
-                <div class="col-md-3">@Model.AssignedUser?.UserName</div>
+                <div class="col-md-3">@Model.Ticket.CreatorUser.UserName</div>
+                <div class="col-md-3">@Model.Ticket.CreatedAt.ToString("dd.MM.yyyy")</div>
+                <div class="col-md-3">@Model.Ticket.AssignedUser?.UserName</div>
                 <div class="col-md-3">
-                    @(Model.AssignedUser != null 
-                        ? Model.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
+                    @(Model.Ticket.AssignedUser != null 
+                        ? Model.Ticket.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
                         : "-")
                 </div>
             </div>
@@ -39,7 +39,7 @@
     <div class="card shadow-sm mb-5">
         <div class="card-body">
             <h5 class="text-secondary mb-3">Beschreibung</h5>
-            <p class="mb-0">@Model.Description</p>
+            <p class="mb-0">@Model.Ticket.Description</p>
         </div>
     </div>
 </div>

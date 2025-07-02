@@ -20,13 +20,6 @@ public class TicketHistoryRepository
             .OrderByDescending(h => h.ChangedAt)
             .ToListAsync();
     }
-
-    public async Task AddHistoryAsync(TicketHistoryModel history)
-    {
-        await _context.TicketHistories.AddAsync(history);
-        await _context.SaveChangesAsync();
-    }
-
     public void TrackChange(TicketModel ticket, TicketProperty property, string? oldVal, string? newVal, string? userId)
     {
         var history = new TicketHistoryModel

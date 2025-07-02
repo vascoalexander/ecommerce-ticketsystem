@@ -200,6 +200,8 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
         TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
         return View(viewModel);
     }
+    var currentUser = await _userManager.GetUserAsync(User);
+    var userId = currentUser?.Id;
 
     var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(viewModel.TicketId ?? 0);
     if (ticketToUpdate == null) return NotFound();
@@ -209,13 +211,13 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
     // Vergleiche alte und neue Werte und tracke Änderungen
     if (ticketToUpdate.Title != viewModel.Title)
     {
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Title, ticketToUpdate.Title, viewModel.Title, User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Title, ticketToUpdate.Title, viewModel.Title, currentUser?.Id);
         ticketToUpdate.Title = viewModel.Title;
     }
 
     if (ticketToUpdate.Description != viewModel.Description)
     {
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Description, ticketToUpdate.Description, viewModel.Description, User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Description, ticketToUpdate.Description, viewModel.Description, currentUser?.Id);
         ticketToUpdate.Description = viewModel.Description;
     }
 
@@ -223,7 +225,7 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
     {
         var oldProject = ticketToUpdate.Project?.Title;
         var newProject = (await _projectRepository.GetProjectById(viewModel.ProjectId))?.Title;
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Project, oldProject, newProject, User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Project, oldProject, newProject, currentUser?.Id);
         ticketToUpdate.ProjectId = viewModel.ProjectId;
     }
 
@@ -235,7 +237,7 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
         var oldUserName = ticketToUpdate.AssignedUser?.UserName;
         var newUserName = assignedUser?.UserName;
 
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
 
         if (string.IsNullOrEmpty(newAssignedUserId))
         {
@@ -249,12 +251,12 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
         }
 
         // Status auch tracken
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), ticketToUpdate.Status.ToString(), User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), ticketToUpdate.Status.ToString(), currentUser?.Id);
     }
     else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
     {
         ticketToUpdate.Status = TicketStatus.InProgress;
-        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, TicketStatus.Open.ToString(), TicketStatus.InProgress.ToString(), User.FindFirst("sub")?.Value);
+        _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, TicketStatus.Open.ToString(), TicketStatus.InProgress.ToString(), currentUser?.Id);
     }
 
     await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
@@ -277,7 +279,15 @@ public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
             return NotFound();
         }
 
-        return View(ticket);
+        var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
+
+        var viewModel = new TicketDetailViewModel
+        {
+            Ticket = ticket,
+            History = history
+        };
+
+        return View(viewModel);
     }
 
     [HttpPost]
