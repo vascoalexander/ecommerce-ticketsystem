@@ -32,5 +32,17 @@ namespace WebApp.Models
 
         public string? ChangedByUserId { get; set; }
         public AppUser? ChangedByUser { get; set; }
+        public static string GetPropertyDisplayName(TicketProperty property)
+        {
+            return property switch
+            {
+                TicketProperty.Title => "Titel",
+                TicketProperty.Description => "Beschreibung",
+                TicketProperty.Status => "Status",
+                TicketProperty.AssignedUser => "Zugewiesen an",
+                TicketProperty.Project => "Projekt",
+                _ => property.ToString()
+            };
+        }
     }
 }
