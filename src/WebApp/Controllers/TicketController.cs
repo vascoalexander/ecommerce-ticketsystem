@@ -26,11 +26,20 @@ public class TicketController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> TicketList(string? search, string? status, int? projectId, string? assignedUser, DateTime? startDate, DateTime? endDate, string? sortOrder, string? creatorId)
+    public async Task<IActionResult> TicketList(string? search, string? status, int? projectId,string? show ,string? assignedUser, DateTime? startDate, DateTime? endDate, string? sortOrder, string? creatorId)
     {
         var tickets = await _ticketRepository.GetAllTicketsAsync();
+        var currentUser = await _userManager.GetUserAsync(User);
+        var userId = currentUser?.Id;
         var projects = await _projectRepository.GetAllProjectsAsync();
         var users = _userManager.Users.ToList();
+        if (show != "all" && !string.IsNullOrEmpty(userId))
+        {
+            tickets = tickets.Where(t =>
+                t.CreatorUserId == userId ||
+                t.AssignedUserId == userId
+            ).ToList();
+        }
         TicketStatus? statusEnum = null;
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TicketStatus>
                           (status, true, out var parsedStatus))
