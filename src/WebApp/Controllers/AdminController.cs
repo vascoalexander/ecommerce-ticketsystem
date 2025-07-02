@@ -128,7 +128,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
-        
+
 
             if (!string.IsNullOrEmpty(category))
             {
