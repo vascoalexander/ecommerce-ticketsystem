@@ -101,23 +101,7 @@ ViewBag.Title = "Ticket-Liste";
             </div>
             <div class="col-12 col-md-4 d-flex flex-wrap gap-2">
                 <a class="btn btn-sm btn-outline-primary flex-fill" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
-
-                @if (ticket.Status == TicketStatus.Closed)
-                {
-                <form method="post" asp-action="Reopen" asp-controller="Ticket" class="flex-fill">
-                    <input type="hidden" name="ticketId" value="@ticket.Id" />
-                    <button type="submit" class="btn btn-sm btn-outline-dark w-100">Wieder öffnen</button>
-                </form>
-                }
-                else
-                {
                 <a class="btn btn-sm btn-outline-success flex-fill" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
-
-                <form method="post" asp-action="Close" asp-controller="Ticket" class="flex-fill">
-                    <input type="hidden" name="ticketId" value="@ticket.Id" />
-                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">Schließen</button>
-                </form>
-                }
             </div>
         </div>
 
