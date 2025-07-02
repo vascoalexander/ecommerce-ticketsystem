@@ -42,18 +42,17 @@ public class TicketController : Controller
         }
         TicketStatus? statusEnum = null;
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TicketStatus>
-                          (status, true, out var parsedStatus))
+                (status, true, out var parsedStatus))
         {
             statusEnum = parsedStatus;
             tickets = tickets
-                .Where(t => t.Status == statusEnum).
-        ToList();
+                .Where(t => t.Status == statusEnum).ToList();
         }
+
         if (projectId.HasValue)
         {
             tickets = tickets
                 .Where(t => t.ProjectId == projectId.Value).ToList();
-
         }
 
         if (!string.IsNullOrWhiteSpace(creatorId))
@@ -68,13 +67,14 @@ public class TicketController : Controller
             tickets = tickets
                 .Where(t => t.AssignedUserId == assignedUser).ToList();
         }
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             tickets = tickets
                 .Where(t => (t.Title?
-                    .Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                      (t.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                      (t.AssignedUser?.Id.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                                .Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (t.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (t.AssignedUser?.Id.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
                 .ToList();
         }
 
@@ -82,7 +82,6 @@ public class TicketController : Controller
         {
             tickets = tickets
                 .Where(t => t.CreatedAt >= startDate.Value).ToList();
-
         }
 
         if (endDate.HasValue)
@@ -119,128 +118,109 @@ public class TicketController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var viewModel = new TicketListViewModel
+        var viewModel = new CreateTicketViewModel
         {
-            NewTicket = new NewTicketInputModel(),
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
             AvailableUsers = _userManager.Users.ToList()
         };
 
         return View(viewModel);
     }
+
     [HttpPost]
-    public async Task<IActionResult> Create(TicketListViewModel viewModel)
+    public async Task<IActionResult> Create(CreateTicketViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            viewModel.Tickets = await _ticketRepository.GetAllTicketsAsync();
-            viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync() ?? new List<ProjectModel>();
-            viewModel.AvailableUsers = _userManager.Users.ToList() ?? new List<AppUser>();
-            return View("TicketList", viewModel);
+            viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
+            viewModel.AvailableUsers = _userManager.Users.ToList();
+            return View(viewModel);
         }
 
         var currentUser = await _userManager.GetUserAsync(User);
-        var assignedUser = await _userManager.FindByIdAsync(viewModel.NewTicket.AssignedUserId);
-        var project = await _projectRepository.GetProjectById(viewModel.NewTicket.ProjectId);
+        var assignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId);
+        var project = await _projectRepository.GetProjectById(viewModel.ProjectId);
 
         var ticket = new TicketModel
         {
-            Title = viewModel.NewTicket.Title,
-            Description = viewModel.NewTicket.Description,
+            Title = viewModel.Title,
+            Description = viewModel.Description,
             AssignedUser = assignedUser,
             Project = project!,
             Status = assignedUser != null ? TicketStatus.InProgress : TicketStatus.Open,
-            CreatedAt = DateTime.Now.ToUniversalTime(),
-            AssignedAt = DateTime.Now.ToUniversalTime(),
+            CreatedAt = DateTime.UtcNow,
+            AssignedAt = DateTime.UtcNow,
             CreatorUser = currentUser!
         };
 
         await _ticketRepository.CreateTicketAsync(ticket);
-        var createdTicketId = ticket.Id;
         TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";
-        return RedirectToAction("Detail", new { id = createdTicketId });
+        return RedirectToAction("Detail", new { id = ticket.Id });
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
         var ticket = await _ticketRepository.GetTicketByIdAsync(id);
         if (ticket == null) return NotFound();
 
-        var viewModel = new TicketListViewModel
+        var viewModel = new EditTicketViewModel
         {
-            NewTicket = new NewTicketInputModel
-            {
-                TicketId = ticket.Id,
-                Title = ticket.Title,
-                Description = ticket.Description,
-                ProjectId = ticket.Project.Id,
-                AssignedUserId = ticket.AssignedUser?.Id
-            },
+            TicketId = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            ProjectId = ticket.ProjectId,
+            AssignedUserId = ticket.AssignedUser?.Id,
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList(),
-            Tickets = await _ticketRepository.GetAllTicketsAsync()
+            AvailableUsers = _userManager.Users.ToList()
         };
 
         return View(viewModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int ticketId, [Bind(Prefix = "NewTicket")] NewTicketInputModel updatedTicket)
+    public async Task<IActionResult> Edit(EditTicketViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            updatedTicket.TicketId = ticketId;
-            var viewModel = new TicketListViewModel
-            {
-                NewTicket = updatedTicket,
-                AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-                AvailableUsers = _userManager.Users.ToList(),
-                Tickets = await _ticketRepository.GetAllTicketsAsync()
-            };
-            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden. Bitte Eingaben prüfen.";
+            viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
+            viewModel.AvailableUsers = _userManager.Users.ToList();
+            TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
             return View(viewModel);
         }
 
-        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(ticketId);
+        var ticketToUpdate = await _ticketRepository.GetTicketByIdAsync(viewModel.TicketId ?? 0);
         if (ticketToUpdate == null) return NotFound();
 
-        var assignedUser = await _userManager.FindByIdAsync(updatedTicket.AssignedUserId);
+        var assignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId);
 
-        ticketToUpdate.Title = updatedTicket.Title;
-        ticketToUpdate.Description = updatedTicket.Description;
-        ticketToUpdate.ProjectId = updatedTicket.ProjectId;
-        
-        
-        if (ticketToUpdate.AssignedUser?.Id != updatedTicket.AssignedUserId)
+        ticketToUpdate.Title = viewModel.Title;
+        ticketToUpdate.Description = viewModel.Description;
+        ticketToUpdate.ProjectId = viewModel.ProjectId;
+
+        if (ticketToUpdate.AssignedUser?.Id != viewModel.AssignedUserId)
         {
-            // Wenn der zugewiesene Benutzer abgewählt wurde
-            if (String.IsNullOrEmpty(updatedTicket.AssignedUserId))
+            if (string.IsNullOrEmpty(viewModel.AssignedUserId))
             {
                 ticketToUpdate.Status = TicketStatus.Open;
                 ticketToUpdate.AssignedUser = null;
             }
-            else // Wenn ein neuer Benutzer zugewiesen wurde
+            else
             {
                 ticketToUpdate.Status = TicketStatus.InProgress;
                 ticketToUpdate.AssignedUser = assignedUser;
             }
         }
-        else // Wenn der zugewiesene Benutzer gleich geblieben ist
+        else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
         {
-            if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
-            {
-                ticketToUpdate.Status = TicketStatus.InProgress;
-            }
+            ticketToUpdate.Status = TicketStatus.InProgress;
         }
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
-        var createdTicketId = ticketToUpdate.Id;
-
         TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
-        return RedirectToAction("Detail", new { id = createdTicketId });
+        return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
     }
-    
+
 
     [HttpGet]
     public async Task<IActionResult> Detail(int id)
@@ -254,7 +234,7 @@ public class TicketController : Controller
 
         return View(ticket);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Close(int ticketId)
     {
@@ -271,7 +251,7 @@ public class TicketController : Controller
         TempData["ToastMessage"] = "Ticket erfolgreich geschlossen.";
         return RedirectToAction("TicketList");
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Reopen(int ticketId)
     {

@@ -1,4 +1,4 @@
-@model WebApp.ViewModels.TicketListViewModel
+@model WebApp.ViewModels.CreateTicketViewModel
 @{
     ViewBag.Title = "Create";
 }
@@ -14,27 +14,27 @@
     {
         <div class="row g-3 mb-3">
             <div class="col-md-6 position-relative">
-                <label asp-for="NewTicket.Title" class="form-label">Titel</label>
-                <input asp-for="NewTicket.Title" class="form-control pe-5" placeholder="Bitte Titel eingeben" maxlength="60" id="titleInput" />
+                <label asp-for="@Model.Title" class="form-label">Titel</label>
+                <input asp-for="@Model.Title" class="form-control pe-5" placeholder="Bitte Titel eingeben" maxlength="60" id="titleInput" />
                 <small id="titleCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0/60</small>
             </div>
 
             <div class="col-md-6">
-                <label asp-for="NewTicket.ProjectId" class="form-label">Projekt</label>
-                <select asp-for="NewTicket.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title"))">
+                <label asp-for="@Model.ProjectId" class="form-label">Projekt</label>
+                <select asp-for="@Model.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title"))">
                     <option value="">-- Projekt wählen --</option>
                 </select>
             </div>
         </div>
         <div class="mb-3 position-relative">
-            <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
-            <textarea asp-for="NewTicket.Description" class="form-control pe-5" rows="4" maxlength="2000" id="descriptionInput"></textarea>
+            <label asp-for="@Model.Description" class="form-label">Beschreibung</label>
+            <textarea asp-for="@Model.Description" class="form-control pe-5" rows="4" maxlength="2000" id="descriptionInput"></textarea>
             <small id="descriptionCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0/2000</small>
         </div>
 
         <div class="mb-4">
-            <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
-            <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName"))">
+            <label asp-for="@Model.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
+            <select asp-for="@Model.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName"))">
                 <option value="">-- Benutzer wählen --</option>
             </select>
         </div>

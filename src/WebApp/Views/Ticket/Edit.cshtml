@@ -1,4 +1,4 @@
-@model WebApp.ViewModels.TicketListViewModel
+@model WebApp.ViewModels.EditTicketViewModel
 @{
     ViewBag.Title = "Edit";
   
@@ -11,16 +11,16 @@
 </div>
 
 <div class="card shadow-sm p-4 mt-5">
-    <h4 class="mb-3">Ticket bearbeiten (#@Model.NewTicket.TicketId)</h4>
+    <h4 class="mb-3">Ticket bearbeiten (#@Model.TicketId)</h4>
 
     @using (Html.BeginForm("Edit", "Ticket", FormMethod.Post))
     {
-        <input type="hidden" name="ticketId" value="@Model.NewTicket.TicketId" />
+        <input type="hidden" name="ticketId" value="@Model.TicketId" />
 
         <div class="row g-3 mb-3">
             <div class="col-md-6 position-relative">
-                <label asp-for="NewTicket.Title" class="form-label">Titel</label>
-                <input asp-for="NewTicket.Title" 
+                <label asp-for="@Model.Title" class="form-label">Titel</label>
+                <input asp-for="@Model.Title" 
                        class="form-control pe-5" 
                        placeholder="Bitte Titel eingeben" 
                        maxlength="60" 
@@ -30,16 +30,16 @@
                 </small>
             </div>
             <div class="col-md-6">
-                <label asp-for="NewTicket.ProjectId" class="form-label">Projekt</label>
-                <select asp-for="NewTicket.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title", Model.NewTicket.ProjectId))">
+                <label asp-for="@Model.ProjectId" class="form-label">Projekt</label>
+                <select asp-for="@Model.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title", Model.ProjectId))">
                     <option value="">-- Projekt wählen --</option>
                 </select>
             </div>
         </div>
 
         <div class="mb-3 position-relative">
-            <label asp-for="NewTicket.Description" class="form-label">Beschreibung</label>
-            <textarea asp-for="NewTicket.Description" 
+            <label asp-for="@Model.Description" class="form-label">Beschreibung</label>
+            <textarea asp-for="@Model.Description" 
                       class="form-control pe-5" 
                       rows="4" 
                       maxlength="2000" 
@@ -50,8 +50,8 @@
         </div>
 
         <div class="mb-4">
-            <label asp-for="NewTicket.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
-            <select asp-for="NewTicket.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName", Model.NewTicket.AssignedUserId))">
+            <label asp-for="@Model.AssignedUserId" class="form-label">Ticket-Bearbeiter</label>
+            <select asp-for="@Model.AssignedUserId" class="form-control" asp-items="@(new SelectList(Model.AvailableUsers, "Id", "UserName", Model.AssignedUserId))">
                 <option value="">-- Benutzer wählen --</option>
             </select>
         </div>
