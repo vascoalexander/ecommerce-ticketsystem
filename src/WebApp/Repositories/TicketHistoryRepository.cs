@@ -16,6 +16,7 @@ public class TicketHistoryRepository
     public async Task<List<TicketHistoryModel>> GetHistoryForTicketAsync(int ticketId)
     {
         return await _context.Set<TicketHistoryModel>()
+            .Include(h => h.ChangedByUser)
             .Where(h => h.TicketId == ticketId)
             .OrderByDescending(h => h.ChangedAt)
             .ToListAsync();
