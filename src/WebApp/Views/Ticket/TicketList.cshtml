@@ -34,7 +34,7 @@ ViewBag.Title = "Ticket-Liste";
 
     <!-- Suchfilter -->
     <div class="card shadow-sm p-3 mb-4">
-        <div class="row row-cols-1 row-cols-md-3 g-3">
+        <div class="row row-cols-1 row-cols-md-4 g-3">
             <div>
                 <label for="status" class="form-label">Status</label>
                 <select id="status" class="form-select">
@@ -42,6 +42,13 @@ ViewBag.Title = "Ticket-Liste";
                     <option value="open">Open</option>
                     <option value="inprogress">InProgress</option>
                     <option value="closed">Closed</option>
+                </select>
+            </div>
+            <div>
+                <label for="ticketView" class="form-label">Anzeigen</label>
+                <select id="ticketView" class="form-select">
+                    <option value="mine">Nur meine Tickets</option>
+                    <option value="all">Alle Tickets</option>
                 </select>
             </div>
 
@@ -273,6 +280,19 @@ ViewBag.Title = "Ticket-Liste";
         [statusInput, projectInput, searchInput].forEach(input => {
             input.addEventListener('input', filterTickets);
         });
+    });
+    const ticketViewInput = document.getElementById('ticketView');
+
+    // Lese den aktuellen Wert aus der URL, um das Dropdown korrekt vorauszuwählen
+    const params = new URLSearchParams(window.location.search);
+    const showValue = params.get('show') || 'mine';
+    ticketViewInput.value = showValue;
+
+    ticketViewInput.addEventListener('change', () => {
+        // URL neu aufbauen mit show=... und vorhandenen Parametern
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.set('show', ticketViewInput.value);
+        window.location.search = newParams.toString();
     });
 </script>
 
