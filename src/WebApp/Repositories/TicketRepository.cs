@@ -22,8 +22,8 @@ public class TicketRepository
     // Read 
     public async Task<TicketModel> GetTicketByIdAsync(int id)
     {
-        var ticket= await _context.Tickets
-            .Include( t => t.Project)
+        var ticket = await _context.Tickets
+            .Include(t => t.Project)
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatorUser)
             .Include(t => t.Files)
@@ -35,7 +35,11 @@ public class TicketRepository
 
     public async Task<List<TicketModel>> GetAllTicketsAsync()
     {
-        return await _context.Tickets.ToListAsync();
+        return await _context.Tickets
+            .Include(t => t.Project)
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatorUser)
+            .ToListAsync();
     }
 
     // Update 

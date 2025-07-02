@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebApp.Models;
 
@@ -15,4 +16,6 @@ public class ProjectModel
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public virtual ICollection<TicketModel>? Tickets { get; set; }
+
+
 }
