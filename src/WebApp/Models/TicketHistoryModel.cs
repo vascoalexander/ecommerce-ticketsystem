@@ -1,5 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 
+public enum TicketProperty
+{
+    Title,
+    Description,
+    Status,
+    AssignedUser,
+    Project
+}
+
 namespace WebApp.Models
 {
     public class TicketHistoryModel
@@ -8,11 +17,10 @@ namespace WebApp.Models
 
         [Required]
         public int TicketId { get; set; }
-        public required TicketModel Ticket { get; set; }
+        public TicketModel? Ticket { get; set; }
 
         [Required]
-        [StringLength(100)]
-        public string PropertyName { get; set; } = string.Empty;
+        public TicketProperty PropertyName { get; set; }
 
         [StringLength(2000)]
         public string? OldValue { get; set; }

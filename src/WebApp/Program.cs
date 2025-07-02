@@ -34,6 +34,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();
+builder.Services.AddScoped<TicketHistoryRepository>();
 
 
 var app = builder.Build();
