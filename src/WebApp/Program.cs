@@ -66,6 +66,9 @@ app.Use(async (context, next) =>
     await next();
 });
 
+var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+Directory.CreateDirectory(uploadPath);
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
