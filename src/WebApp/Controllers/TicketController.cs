@@ -24,6 +24,8 @@ public class TicketController : Controller
     public TicketController(
         TicketRepository ticketRepository,
         ProjectRepository projectRepository,
+        FileRepository fileRepository,
+        TicketHistoryRepository ticketHistoryRepository,
         UserManager<AppUser> userManager)
     {
         _ticketRepository = ticketRepository;
