@@ -6,6 +6,38 @@
     <title>@ViewData["Title"] - Lushwear</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Avatar Bild mit leichtem Rand */
+        .navbar .rounded-circle {
+            border: 2px solid #6c757d;
+            transition: border-color 0.3s ease;
+            object-fit: cover;
+        }
+
+        .navbar .rounded-circle:hover {
+            border-color: #343a40;
+        }
+
+        /* Roter Punkt für neue Nachrichten */
+        #messageDot {
+            width: 10px;
+            height: 10px;
+        }
+
+        /* Avatar als Toggle Button im mobilen Menü */
+        .navbar-toggler.custom-avatar-toggler {
+            border: none;
+            padding: 0;
+            background: none;
+        }
+
+        /* Burger-Icon standardmäßig anzeigen */
+        .navbar-toggler-icon {
+            display: block;
+        }
+
+      
+    </style>
 </head>
 <body data-user-role="@string.Join(",", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))">
 
@@ -13,7 +45,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container-fluid">
 
-           
+            <!-- Logo -->
             <a class="navbar-brand"
                asp-area=""
                asp-controller="@(User?.Identity?.IsAuthenticated == true ? "Home" : "Home")"
@@ -23,7 +55,7 @@
 
             @if (User?.Identity?.IsAuthenticated ?? false)
             {
-                
+                <!-- Avatar als Burger-Toggle im mobilen View -->
                 <button class="navbar-toggler custom-avatar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                         aria-label="Toggle navigation">
@@ -37,7 +69,7 @@
             }
             else
             {
-                
+                <!-- Standard Burger-Icon, wenn nicht eingeloggt -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -71,7 +103,7 @@
                                 <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
                             </ul>
 
-                            
+                            <!-- Mobil sichtbarer Bereich (kein Dropdown!) -->
                             <div class="d-lg-none mt-3 ps-3 pe-3">
                                 <div class="mb-2">Hallo @User.Identity.Name</div>
                                 <ul class="list-unstyled">
