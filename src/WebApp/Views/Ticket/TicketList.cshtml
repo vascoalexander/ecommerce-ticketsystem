@@ -4,19 +4,6 @@ ViewBag.Title = "Ticket-Liste";
 }
 
 <div class="container my-5">
-    @if (TempData["ToastMessage"] != null)
-    {
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
-        <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    @TempData["ToastMessage"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-    }
 
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
@@ -169,82 +156,18 @@ ViewBag.Title = "Ticket-Liste";
 
 @section Scripts {
     <script>
-    function toggleEditForm(ticketId) {
-        const form = document.getElementById(`editForm-${ticketId}`);
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredTickets = [];
 
-        if (form) {
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            window.scrollTo({ top: form.offsetTop - 50, behavior: 'smooth' });
-        }
-    }
+        function getFilteredTickets() {
+            const statusFilter = document.getElementById('status').value.toLowerCase();
+            const projectFilter = document.getElementById('projekt').value.toLowerCase();
+            const searchFilter = document.getElementById('suche').value.toLowerCase();
 
+            const allTickets = Array.from(document.querySelectorAll('.ticket-row'));
 
-    setTimeout(() => {
-        const toastEl = document.querySelector('.toast');
-        if (toastEl) {
-            const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-            toast.hide();
-        }
-    }, 4000);
-
-    // Pagination
-    const itemsPerPage = 10;
-    let currentPage = 1;
-
-    function paginationTickets() {
-        const tickets = document.querySelectorAll('.ticket-row');
-        const totalPages = Math.ceil(tickets.length / itemsPerPage);
-
-        tickets.forEach((ticket, index) => {
-            ticket.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage)
-                ? 'flex' : 'none';
-        });
-
-        renderPagination(totalPages);
-    }
-
-    function renderPagination(totalPages) {
-        const paginationContainer = document.getElementById('pagination');
-        paginationContainer.innerHTML = '';
-
-        for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement('li');
-            li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-
-
-            const button = document.createElement('button');
-            button.className = 'page-link';
-            button.textContent = i;
-            button.addEventListener('click', () => {
-                currentPage = i;
-                paginationTickets();
-            });
-
-            li.appendChild(button);
-            paginationContainer.appendChild(li);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        paginationTickets();
-    });
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const statusInput = document.getElementById('status');
-        const projectInput = document.getElementById('projekt'); // <-- korrigiert
-        const searchInput = document.getElementById('suche');    // <-- korrigiert
-
-        const filterTickets = () => {
-            const statusFilter = statusInput.value.toLowerCase();
-            const projectFilter = projectInput.value.toLowerCase();
-            const searchFilter = searchInput.value.toLowerCase();
-
-            const tickets = document.querySelectorAll('.ticket-row');
-
-            tickets.forEach((ticket) => {
+            return allTickets.filter(ticket => {
                 const statusText = ticket.querySelector('.badge')?.textContent.toLowerCase() || "";
                 const projectText = ticket.querySelector('.col-md-3:nth-child(2)')?.textContent.toLowerCase() || "";
                 const ticketText = ticket.textContent.toLowerCase();
@@ -253,34 +176,73 @@ ViewBag.Title = "Ticket-Liste";
                 const matchProject = projectText.includes(projectFilter);
                 const matchSearch = ticketText.includes(searchFilter);
 
-                if (matchStatus && matchProject && matchSearch) {
-                    ticket.style.display = 'flex';
-                } else {
-                    ticket.style.display = 'none';
-                }
+                return matchStatus && matchProject && matchSearch;
+            });
+        }
+
+        function renderPagination(totalPages) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+
+                const button = document.createElement('button');
+                button.className = 'page-link';
+                button.textContent = i;
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    showCurrentPage();
+                });
+
+                li.appendChild(button);
+                paginationContainer.appendChild(li);
+            }
+        }
+
+        function showCurrentPage() {
+            const allTickets = document.querySelectorAll('.ticket-row');
+            allTickets.forEach(t => t.style.display = 'none');
+
+            const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = currentPage * itemsPerPage;
+
+            filteredTickets.slice(start, end).forEach(ticket => {
+                ticket.style.display = 'flex';
             });
 
-            // optional: pagination aktualisieren
-            renderPagination(Math.ceil(document.querySelectorAll('.ticket-row[style="display: flex;"]').length / itemsPerPage));
-        };
+            renderPagination(totalPages);
+        }
 
-        [statusInput, projectInput, searchInput].forEach(input => {
-            input.addEventListener('input', filterTickets);
+        function updateFilterAndPagination() {
+            filteredTickets = getFilteredTickets();
+            currentPage = 1;
+            showCurrentPage();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Filter Event Listener
+            ['status', 'projekt', 'suche'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateFilterAndPagination);
+            });
+
+            // Ticket View Dropdown
+            const ticketViewInput = document.getElementById('ticketView');
+            const params = new URLSearchParams(window.location.search);
+            const showValue = params.get('show') || 'mine';
+            ticketViewInput.value = showValue;
+
+            ticketViewInput.addEventListener('change', () => {
+                const newParams = new URLSearchParams(window.location.search);
+                newParams.set('show', ticketViewInput.value);
+                window.location.search = newParams.toString();
+            });
+
+            updateFilterAndPagination(); // Initial laden
         });
-    });
-    const ticketViewInput = document.getElementById('ticketView');
-
-    // Lese den aktuellen Wert aus der URL, um das Dropdown korrekt vorauszuwählen
-    const params = new URLSearchParams(window.location.search);
-    const showValue = params.get('show') || 'mine';
-    ticketViewInput.value = showValue;
-
-    ticketViewInput.addEventListener('change', () => {
-        // URL neu aufbauen mit show=... und vorhandenen Parametern
-        const newParams = new URLSearchParams(window.location.search);
-        newParams.set('show', ticketViewInput.value);
-        window.location.search = newParams.toString();
-    });
 </script>
 
 }
