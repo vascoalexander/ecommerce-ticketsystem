@@ -28,17 +28,40 @@ namespace WebApp.Controllers
         }
 
 
-        public async Task<IActionResult> AdminPage()
+        public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
         {
-            var project = await _projectRepository.GetAllProjectsAsync();
-            return View(project);
-        }
-        public IActionResult UserManagement()
-        {
-            return View();
-        }
+            var projects = await _projectRepository.GetAllProjectsAsync();
 
-        public async Task<IActionResult> UsersList(string? roleFilter, string? search, string? sortOrder,
+            if (!string.IsNullOrEmpty(category))
+            {
+                projects = projects
+                    .Where(p => p.Category == category)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                projects = projects
+                    .Where(p =>
+                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+            }
+
+            projects = sortOrder switch
+            {
+                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
+                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
+                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
+                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
+                _ => projects.OrderBy(p => p.Title).ToList(),
+            };
+
+            return View(projects);
+        }
+       
+
+        public async Task<IActionResult> UserManagement(string? roleFilter, string? search, string? sortOrder,
             bool includeInactive = false)
         {
             var users = await _userManager.Users.ToListAsync();
@@ -200,8 +223,10 @@ namespace WebApp.Controllers
             {
                 return View(model);
             }
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             await _projectRepository.CreateProject(model);
-            return RedirectToAction("ProjectsList");
+            return RedirectToAction("AdminPage");
         }
 
         [HttpGet]
@@ -239,20 +264,25 @@ namespace WebApp.Controllers
             {
                 return View(model);
             }
+            
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
 
-
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             existingproject.Title = model.Title;
             existingproject.Description = model.Description;
             existingproject.Category = model.Category;
             existingproject.StartDate = model.StartDate;
             existingproject.EndDate = model.EndDate;
+            
 
             await _projectRepository.UpdateProject(existingproject);
 
-            return RedirectToAction("ProjectsList");
+          
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
+            return RedirectToAction(nameof(AdminPage));
         }
 
         [HttpGet]
@@ -267,7 +297,8 @@ namespace WebApp.Controllers
         public async Task<IActionResult> DeleteProjectConfirmend(int id)
         {
             await _projectRepository.GetProjectById(id);
-            return RedirectToAction("ProjectsList");
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
+            return RedirectToAction("AdminPage");
         }
 
         public async Task<IActionResult> DetailsProject(int id)
@@ -281,7 +312,7 @@ namespace WebApp.Controllers
                 Tickets = tickets,
             };
 
-            return View(project);
+            return View(viewModel);
 
         }
 

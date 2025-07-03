@@ -3,14 +3,21 @@
     ViewBag.Title = "Admin-Bereich";
 }
 
-<div class="container my-5"/>
+<div class="container my-5">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+}
 <div class="mb-4">
     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
         Zurück zum Dashboard
     </a>
     
-    <div>
-        @*
+    </div>
+        
     <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
             <a class="nav-link active" aria-current="page" asp-controller="Admin" asp-action="AdminPage">Projekte</a>
@@ -22,10 +29,13 @@
 
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
         <h2 class="mb-3">Stammdaten Übersicht</h2>
-        <div class="input-group" style="max-width: 300px;">
-            <input type="text" class="form-control" placeholder="Suchen..."/>
-            <button class="btn btn-outline-secondary">Filter</button>
-        </div>*@
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("CreateProject", "Admin")" class="btn btn-primary">Neues Projekt</a>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" class="form-control" id="searchInput" placeholder="Suchen..."/>
+                <button class="btn btn-outline-secondary" id="searchButton">Filter</button>
+            </div>
+        </div>
     </div>
     <p class="text-muted">Verwalten Sie hier alle Stammdaten der Anwendung.</p>
     <div class="table-responsive shadow-sm rounded">
@@ -60,12 +70,12 @@
                         </td>
                         <td>@projcet.Category</td>
                         <td><span class="badge bg-success">Aktiv</span></td>
-                        <td>@projcet.StartDate</td>
-                        <td>@projcet.EndDate</td>
+                        <td>@projcet.StartDate.ToString("dd.MM.yyyy")</td>
+                        <td>@projcet.EndDate.ToString("dd.MM.yyyy")</td>
                         <td>
-                            <a asp-controller="Admin" asp-action="DetailsProject" asp-route-id="@projcet.Id" class="btn btn-sm btn-outline-secondary me-1">Detail</a>
-                            <a asp-controller="Admin" asp-action="EditProject" class="btn btn-sm btn-outline-primary me-1">Bearbeiten</a>
-                            <a asp-controller="Admin" asp-action="DeleteProject" class="btn btn-sm btn-outline-danger">Löschen</a>
+                            <a href="@Url.Action("DetailsProject", "Admin", new { id = projcet.Id })" class="btn btn-sm btn-outline-secondary me-1">Detail</a>
+                            <a href="@Url.Action("EditProject", "Admin", new { id = projcet.Id })" class="btn btn-sm btn-outline-primary me-1">Bearbeiten</a>
+                        <a href="@Url.Action("DeleteProject", "Admin", new { id = projcet.Id })" class="btn btn-sm btn-outline-danger">Löschen</a>
                         </td>
                     </tr>
                 }
@@ -102,6 +112,15 @@
         <button class="btn btn-dark">Anwenden</button>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchValue = document.getElementById('searchInput').value;
+            window.location.href = '@Url.Action("AdminPage", "Admin")?search=' + encodeURIComponent(searchValue);
+        });
+    </script>
+}
 
 
 

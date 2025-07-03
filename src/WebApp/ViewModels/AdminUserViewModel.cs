@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using WebApp.Models;
 
 namespace WebApp.ViewModels
 {
@@ -7,7 +8,7 @@ namespace WebApp.ViewModels
     {
         public string? Id { get; set; }
         [Required(ErrorMessage = "Name ist erforderlich")]
-        public string? UserName { get; set; }
+        public string UserName { get; set; }
         [Required(ErrorMessage = "Passwort ist erforderlich.")]
         [DataType(DataType.Password)]
         public string? Password { get; set; }
@@ -17,5 +18,11 @@ namespace WebApp.ViewModels
         public List<SelectListItem> AvailableRoles { get; set; } = new();
         [Required(ErrorMessage = "Rolle muss zugewiesen werden.")]
         public string? SelectedRole { get; set; }
+        public string? Search { get; set; }
+        public string? SortOrder { get; set; }
+        public bool IncludeInactive { get; set; }
+        
+        public IEnumerable<AppUser> Users { get; set; } = new List<AppUser>();
+        
     }
 }
