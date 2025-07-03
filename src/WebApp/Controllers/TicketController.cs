@@ -308,4 +308,21 @@ public class TicketController : Controller
 
         return View(viewModel);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Detail(TicketDetailViewModel viewModel)
+    {
+        var ticket = await _ticketRepository.GetTicketByIdAsync(viewModel.Ticket.Id);
+        if (ticket == null)
+        {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
+            return NotFound();
+        }
+        var currentUser = await _userManager.GetUserAsync(User);
+        
+        var comment = new TicketComments()
+        {
+            Content = 
+        }
+    }
 }
