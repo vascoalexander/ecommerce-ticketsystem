@@ -6,38 +6,6 @@
     <title>@ViewData["Title"] - Lushwear</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <style>
-        /* Avatar Bild mit leichtem Rand */
-        .navbar .rounded-circle {
-            border: 2px solid #6c757d;
-            transition: border-color 0.3s ease;
-            object-fit: cover;
-        }
-
-        .navbar .rounded-circle:hover {
-            border-color: #343a40;
-        }
-
-        /* Roter Punkt für neue Nachrichten */
-        #messageDot {
-            width: 10px;
-            height: 10px;
-        }
-
-        /* Avatar als Toggle Button im mobilen Menü */
-        .navbar-toggler.custom-avatar-toggler {
-            border: none;
-            padding: 0;
-            background: none;
-        }
-
-        /* Burger-Icon standardmäßig anzeigen */
-        .navbar-toggler-icon {
-            display: block;
-        }
-
-      
-    </style>
 </head>
 <body data-user-role="@string.Join(",", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))">
 
