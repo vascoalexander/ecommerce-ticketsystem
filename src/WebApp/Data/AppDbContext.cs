@@ -11,6 +11,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ProjectModel> Projects { get; set; }
     public DbSet<TicketFile> TicketFiles { get; set; }
     public DbSet<TicketHistoryModel> TicketHistories { get; set; }
+    public DbSet<TicketComments> TicketComments { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
 
@@ -59,6 +60,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<TicketHistoryModel>()
             .Property(h => h.PropertyName)
             .HasConversion<string>();
+
+        modelBuilder.Entity<TicketComments>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(t => t.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
 
     }
 }

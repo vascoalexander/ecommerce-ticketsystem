@@ -36,6 +36,7 @@ builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<FileRepository>();
 builder.Services.AddScoped<TicketHistoryRepository>();
+builder.Services.AddScoped<TicketCommentsRepository>();
 
 
 var app = builder.Build();

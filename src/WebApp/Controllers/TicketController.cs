@@ -20,12 +20,14 @@ public class TicketController : Controller
     private readonly FileRepository _fileRepository;
     private readonly UserManager<AppUser> _userManager;
     private readonly TicketHistoryRepository _ticketHistoryRepository;
+    private readonly TicketCommentsRepository _ticketCommentsRepository;
 
     public TicketController(
         TicketRepository ticketRepository,
         ProjectRepository projectRepository,
         FileRepository fileRepository,
         TicketHistoryRepository ticketHistoryRepository,
+        TicketCommentsRepository ticketCommentsRepository,
         UserManager<AppUser> userManager)
     {
         _ticketRepository = ticketRepository;
@@ -33,6 +35,7 @@ public class TicketController : Controller
         _fileRepository = fileRepository;
         _userManager = userManager;
         _ticketHistoryRepository = ticketHistoryRepository;
+        _ticketCommentsRepository = ticketCommentsRepository;
     }
 
     [HttpGet]
@@ -310,14 +313,49 @@ public class TicketController : Controller
         }
 
         var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
+        var comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(id);
+
 
         var viewModel = new TicketDetailViewModel
         {
             Ticket = ticket,
-            History = history
+            History = history,
+            Comments = comments
         };
 
         return View(viewModel);
+    }
+    [HttpPost]
+    public async Task<IActionResult> Detail(TicketDetailViewModel viewModel)
+    {
+        var ticket = await _ticketRepository.GetTicketByIdAsync(viewModel.Ticket.Id);
+        if (ticket == null)
+        {
+            TempData["ToastMessage"] = "Ticket nicht gefunden.";
+            return NotFound();
+        }
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null)
+        {
+            TempData["ToastMessage"] = "Benutzer nicht angemeldet.";
+            return Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(viewModel.NewCommentContent))
+        {
+            ModelState.AddModelError(nameof(viewModel.NewCommentContent), "Kommentar darf nicht leer sein.");
+            viewModel.Ticket = ticket;
+            viewModel.History = await _ticketHistoryRepository.GetHistoryForTicketAsync(ticket.Id);
+            viewModel.Comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(ticket.Id);
+            return View(viewModel);
+        }
+
+        _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
+        await _ticketCommentsRepository.SaveCommentAsync();
+
+        TempData["ToastMessage"] = "Kommentar erfolgreich hinzugefügt.";
+        return RedirectToAction(nameof(Detail), new { id = ticket.Id });
     }
 
     [HttpGet]
