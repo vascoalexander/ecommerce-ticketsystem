@@ -31,4 +31,8 @@ public class TicketModel
 
     public string? AssignedUserId { get; set; }
     public AppUser? AssignedUser { get; set; }
+
+    public ICollection<TicketHistoryModel> History { get; set; } = new List<TicketHistoryModel>();
+
+    public ICollection<TicketFile>? Files { get; set; }
 }

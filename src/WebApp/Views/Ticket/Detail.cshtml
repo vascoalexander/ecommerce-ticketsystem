@@ -1,20 +1,20 @@
-﻿@{
+﻿@model WebApp.ViewModels.TicketDetailViewModel
+@{
     ViewBag.Title = "Ticket-Detail";
- 
 }
-@model WebApp.Models.TicketModel
+
 <div class="container my-5">
     <div class="mb-4">
         <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-secondary">
             Zurück zur Übersicht
         </a>
     </div>
-    
+
     <div class="mb-4">
-        <h2 class="fw-bold mb-1">@Model.Title</h2>
-        <p class="text-muted">Projekt: <strong>@Model.Project.Title</strong></p>
+        <h2 class="fw-bold mb-1">@Model.Ticket.Title</h2>
+        <p class="text-muted">Projekt: <strong>@Model.Ticket.Project.Title</strong></p>
     </div>
-    
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row fw-semibold text-secondary mb-2">
@@ -24,22 +24,81 @@
                 <div class="col-md-3">Zuweisungsdatum</div>
             </div>
             <div class="row">
-                <div class="col-md-3">@Model.CreatorUser.UserName</div>
-                <div class="col-md-3">@Model.CreatedAt.ToString("dd.MM.yyyy")</div>
-                <div class="col-md-3">@Model.AssignedUser?.UserName</div>
+                <div class="col-md-3">@Model.Ticket.CreatorUser.UserName</div>
+                <div class="col-md-3">@Model.Ticket.CreatedAt.ToString("dd.MM.yyyy")</div>
+                <div class="col-md-3">@Model.Ticket.AssignedUser?.UserName</div>
                 <div class="col-md-3">
-                    @(Model.AssignedUser != null 
-                        ? Model.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
+                    @(Model.Ticket.AssignedUser != null 
+                        ? Model.Ticket.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
                         : "-")
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div class="card shadow-sm mb-5">
         <div class="card-body">
             <h5 class="text-secondary mb-3">Beschreibung</h5>
-            <p class="mb-0">@Model.Description</p>
+            <p class="mb-0">@Model.Ticket.Description</p>
         </div>
     </div>
+
+    @if (Model.History != null && Model.History.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="text-secondary mb-4">Änderungshistorie</h5>
+
+                @foreach (var item in Model.History.OrderByDescending(h => h.ChangedAt))
+                {
+                    var datum = item.ChangedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+                    var user = item.ChangedByUser?.UserName ?? "Unbekannt";
+                    var eigenschaft = TicketHistoryModel.GetPropertyDisplayName(item.PropertyName);
+
+                    // Nur Kurzform für Titel & Beschreibung
+                    if (item.PropertyName == TicketProperty.Description || item.PropertyName == TicketProperty.Title)
+                    {
+                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                            <p class="mb-0">
+                                Am <strong>@datum</strong> wurde von <strong>@user</strong> die <strong>@eigenschaft</strong> geändert.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        var alt = string.IsNullOrWhiteSpace(item.OldValue) ? "leer" : $"„{item.OldValue}“";
+                        var neu = string.IsNullOrWhiteSpace(item.NewValue) ? "leer" : $"„{item.NewValue}“";
+
+                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                            <p class="mb-0">
+                                Am <strong>@datum</strong> wurde von <strong>@user</strong> die Eigenschaft <strong>@eigenschaft</strong> von @alt auf @neu geändert.
+                            </p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="text-secondary mb-2">Änderungshistorie</h5>
+                <p class="text-muted mb-0">Keine Änderungen vorhanden.</p>
+            </div>
+        </div>
+    }
+
+    @if (Model.Ticket.Files != null && Model.Ticket.Files.Count != 0)
+    {
+        <div class="card shadow-sm my-3">
+            <div class="card-body">
+                <h5 class="text-secondary mb-3">Uploaded Files</h5>
+                @foreach (TicketFile file in Model.Ticket.Files)
+                {
+                    <a href="@Url.Action("DownloadFile", "Ticket", new { fileId = file.Id })" class="btn btn-outline-dark">Download: @file.OriginalName</a>
+                }
+            </div>
+        </div>
+    }
 </div>

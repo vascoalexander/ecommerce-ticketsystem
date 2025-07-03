@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 
 src/WebApp/appsettings.Development.json
 .mise.toml
+
+src/WebApp/Uploads/*
+
+!src/WebApp/Uploads/.gitkeep
