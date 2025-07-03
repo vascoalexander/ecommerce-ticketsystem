@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<TicketFile> TicketFiles { get; set; }
     public DbSet<TicketHistoryModel> TicketHistories { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<TicketComments> TicketComments { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
 
@@ -72,5 +73,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(u => u.SentMessages)
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TicketComments>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(t => t.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

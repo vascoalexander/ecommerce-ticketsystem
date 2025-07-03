@@ -4,19 +4,6 @@ ViewBag.Title = "Ticket-Liste";
 }
 
 <div class="container my-5">
-    @if (TempData["ToastMessage"] != null)
-    {
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
-        <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    @TempData["ToastMessage"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-    }
 
     <div class="mb-4">
         <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
@@ -177,16 +164,6 @@ ViewBag.Title = "Ticket-Liste";
             window.scrollTo({ top: form.offsetTop - 50, behavior: 'smooth' });
         }
     }
-
-
-    setTimeout(() => {
-        const toastEl = document.querySelector('.toast');
-        if (toastEl) {
-            const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-            toast.hide();
-        }
-    }, 4000);
-
     // Pagination
     const itemsPerPage = 10;
     let currentPage = 1;

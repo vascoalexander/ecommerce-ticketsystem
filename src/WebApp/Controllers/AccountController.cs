@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using WebApp.Repositories;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers;
@@ -13,11 +14,13 @@ public class AccountController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly MessageRepository _messageRepository;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageRepository messageRepository)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _messageRepository = messageRepository;
     }
 
     [HttpGet]
@@ -182,6 +185,7 @@ public class AccountController : Controller
 
         return View(model);
     }
+
     private List<SelectListItem> GetAvailableThemes()
     {
         var themeOptions = Enum.GetValues(typeof(ThemeOption))

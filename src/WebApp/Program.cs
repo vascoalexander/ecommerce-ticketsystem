@@ -36,13 +36,19 @@ builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<FileRepository>();
 builder.Services.AddScoped<TicketHistoryRepository>();
-
+builder.Services.AddScoped<TicketCommentsRepository>();
+builder.Services.AddScoped<MessageRepository>();
 
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-db.Database.Migrate();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    //db.Database.EnsureDeleted();
+    //db.Database.EnsureCreated();
+    // ^^^^^^  Development only !!
+    db.Database.Migrate();
+}
 
 await EnsureIdentity.SeedDefaultAccounts(app);
 DbInitializer.SeedDb(app);
