@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
@@ -186,6 +188,114 @@ public class AccountController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Messages()
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) { return View("Login"); }
+
+        var model = new MessagesViewModel()
+        {
+            ReceivedMessages = await _messageRepository.GetMessagesReceived(currentUser.Id),
+            SentMessages = await _messageRepository.GetMessagesSent(currentUser.Id)
+        };
+
+        return View(model);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> MessageDetails(int messageId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) { return View("Login"); }
+
+        var message = await _messageRepository.GetMessageById(messageId);
+        if (message == null) { return View("Messages"); }
+
+        if (message.SenderId != currentUser.Id && message.ReceiverId != currentUser.Id)
+        {
+            return Forbid();
+        }
+
+        if (message.ReceiverId == currentUser.Id && !message.IsRead)
+        {
+            message.IsRead = true;
+            await _messageRepository.UpdateMessage(message);
+            await _messageRepository.SaveChangesAsync();
+        }
+        return View("MessageDetails", message);
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> SendMessage(int? replyToMessageId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) { return View("Login"); }
+        var users = await _userManager.Users
+            .Where(u => u.Id != currentUser.Id)
+            .OrderBy(u => u.UserName)
+            .ToListAsync();
+
+        var model = new SendMessageViewModel();
+        model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
+
+        if (replyToMessageId.HasValue)
+        {
+            var originalMessage = await _messageRepository.GetMessageById(replyToMessageId.Value);
+            if (originalMessage != null && originalMessage.ReceiverId == currentUser.Id)
+            {
+                model.ReceiverId = originalMessage.SenderId;
+                if (!string.IsNullOrEmpty(originalMessage.Subject) && !originalMessage.Subject.StartsWith("Re: "))
+                {
+                    model.Subject = $"Re: {originalMessage.Subject}";
+                } else if (!string.IsNullOrEmpty(originalMessage.Subject)) {
+                    model.Subject = originalMessage.Subject;
+                }
+            }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendMessage(SendMessageViewModel model)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) { return View("Login"); }
+
+        if (!ModelState.IsValid)
+        {
+            model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
+            return View(model);
+        }
+
+        var receiverUser = await _userManager.FindByIdAsync(model.ReceiverId);
+        if (receiverUser == null)
+        {
+            ModelState.AddModelError("ReceiverId", "Der ausgewählte Empfänger existiert nicht.");
+            model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
+            return View(model);
+        }
+
+        var message = new Message
+        {
+            SenderId = currentUser.Id,
+            Sender = currentUser,
+            ReceiverId = model.ReceiverId,
+            Receiver = receiverUser,
+            Body = model.Body,
+            Subject = model.Subject,
+            SentAt = DateTime.UtcNow,
+            IsRead = false
+        };
+        await _messageRepository.AddMessage(message);
+        await _messageRepository.SaveChangesAsync();
+        return RedirectToAction(nameof(Messages));
+    }
+
     private List<SelectListItem> GetAvailableThemes()
     {
         var themeOptions = Enum.GetValues(typeof(ThemeOption))
@@ -200,6 +310,19 @@ public class AccountController : Controller
                     .GetName() ?? e.ToString()
             }).ToList();
         return themeOptions;
+    }
+
+    private async Task<IEnumerable<SelectListItem>> GetAvailableReceivers(String currentUserId)
+    {
+        var users = await _userManager.Users
+            .Where(u => u.Id != currentUserId)
+            .OrderBy(u => u.UserName)
+            .Select(u => new SelectListItem
+            {
+                Value = u.Id,
+                Text = u.UserName
+            }).ToListAsync();
+        return users;
     }
     private void AddErrors(IdentityResult result)
     {

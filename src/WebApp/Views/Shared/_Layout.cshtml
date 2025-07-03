@@ -28,11 +28,14 @@
                         <li class="nav-item d-flex align-items-center">
                             <span class="nav-link">Hallo @User.Identity.Name</span>
                         </li>
-                        <li class="nav-item" id="logoutButton">
-                            <a class="btn btn-outline-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Logout">Logout</a>
+                        <li class="nav-item" id="settingsButton">
+                            <a class="btn btn-outline-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Messages">Messages</a>
                         </li>
                         <li class="nav-item" id="settingsButton">
                             <a class="btn btn-outline-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Settings">Settings</a>
+                        </li>
+                        <li class="nav-item" id="logoutButton">
+                            <a class="btn btn-outline-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Logout">Logout</a>
                         </li>
                     }
                     else
