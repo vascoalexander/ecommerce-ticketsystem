@@ -26,7 +26,7 @@ public class TicketHistoryRepository
         var history = new TicketHistoryModel
         {
             TicketId = ticket.Id,
-            PropertyName = property, 
+            PropertyName = property,
             OldValue = oldVal,
             NewValue = newVal,
             ChangedByUserId = userId,
@@ -35,7 +35,7 @@ public class TicketHistoryRepository
 
         _context.TicketHistories.Add(history);
     }
-    
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

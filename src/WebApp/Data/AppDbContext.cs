@@ -48,7 +48,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(t => t.History)
             .HasForeignKey(h => h.TicketId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         modelBuilder.Entity<TicketHistoryModel>()
             .Property(h => h.PropertyName)
             .HasConversion<string>();
