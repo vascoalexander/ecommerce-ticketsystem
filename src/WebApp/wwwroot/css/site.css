@@ -133,6 +133,47 @@ body {
 .background-dark {
   background-color: #3b275d;
 }
+#messageDot {
+  width: 10px;
+  height: 10px;
+}
+
+.navbar .rounded-circle {
+  border: 2px solid #6c757d;
+  transition: border-color 0.3s ease;
+  object-fit: cover;
+}
+
+.navbar .rounded-circle:hover {
+  border-color: #343a40; 
+}
+@media (min-width: 992px) {
+  .custom-avatar-toggler {
+    display: none !important;
+  }
+}
+
+.navbar-toggler.custom-avatar-toggler {
+  border: none;
+  padding: 0;
+  background: none;
+}
+
+
+.navbar-toggler-icon {
+  display: block;
+}
+
+@media (min-width: 992px) {
+
+  .custom-avatar-toggler {
+    display: none !important;
+  }
+ 
+  .navbar-toggler-icon {
+    display: block;
+  }
+}
 
 
 
