@@ -1,6 +1,7 @@
 ﻿@{
-ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
+    ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
 }
+
 <div class="d-flex flex-column flex-md-row min-vh-100">
     <!-- Sidebar -->
     @* <nav class="sidebar bg-light border-end p-3"> *@
@@ -25,8 +26,9 @@ ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
     @* </nav> *@
 
     <!-- Main Content -->
-    <main class="flex-grow-1 p-4 bg-white">
-        <h2 class="mb-4" style="color: black">Willkommen,
+    <main class="flex-grow-1 p-4 dashboard-main">
+        <h2 class="mb-4">Willkommen,
+
             @if (User.Identity != null)
             {
                 @User.Identity.Name
@@ -77,42 +79,106 @@ ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('dashboardBarChart').getContext('2d');
-    const myBarChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-            datasets: [{
-                label: 'Tickets',
-                data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
-                backgroundColor: 'rgba(59, 39, 93, 0.7)',
-                borderColor: 'rgba(59, 39, 93, 1)',
-                borderWidth: 1,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButton = document.getElementById('themeModeToggle');
+            const body = document.body;
+            let myBarChart;
+
+            function createChart() {
+                const isDarkMode = body.classList.contains('dark-mode') ||
+                    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                const barColor = isDarkMode
+                    ? 'rgba(235, 195, 255, 1)'
+                    : 'rgba(195, 127, 250, 0.6)'; // zum Testen mehr Deckkraft
+
+                const borderColor = isDarkMode
+                    ? 'rgba(195, 127, 250, 1)'
+                    : 'rgba(195, 127, 250, 0.6)';
+
+                const labelColor = isDarkMode ? '#c38ffa' : '#3b275d';
+                const gridColor = isDarkMode ? 'rgba(195, 127, 250, 0.3)' : '#ccc';
+
+                const ctx = document.getElementById('dashboardBarChart').getContext('2d');
+
+                if (myBarChart) {
+                    myBarChart.destroy();
                 }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#3b275d',
-                        font: {
-                            size: 14,
-                            weight: 'bold'
+
+                myBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+                        datasets: [{
+                            label: 'Tickets',
+                            data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
+                            backgroundColor: barColor,
+                            borderColor: borderColor,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
-        }
-    });
-</script>
+
+            // Initial Chart erstellen
+            createChart();
+
+            // Initialen Zustand aus localStorage laden
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            if (currentTheme === 'dark') {
+                body.classList.add('dark-mode');
+                toggleButton.textContent = 'Light Mode';
+            } else {
+                toggleButton.textContent = 'Dark Mode';
+            }
+
+            toggleButton.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                const isDark = body.classList.contains('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                toggleButton.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+
+                // Chart mit neuer Farbe neu zeichnen
+                createChart();
+            });
+        });
+
+    </script>
 }
