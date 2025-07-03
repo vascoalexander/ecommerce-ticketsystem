@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Microsoft.AspNetCore.Authentication;
 using WebApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WebApp.Repositories;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers;
@@ -122,8 +120,8 @@ public class AccountController : Controller
 
         var model = new SettingsViewModel()
         {
-            Username = user.UserName,
-            Email = user.Email,
+            Username = user.UserName!,
+            Email = user.Email!,
             SelectedTheme = user.UserTheme,
             AvailableThemes = GetAvailableThemes()
         };
