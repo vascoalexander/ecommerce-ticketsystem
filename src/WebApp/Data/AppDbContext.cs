@@ -9,6 +9,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
 {
     public DbSet<TicketModel> Tickets { get; set; }
     public DbSet<ProjectModel> Projects { get; set; }
+    public DbSet<TicketFile> TicketFiles { get; set; }
     public DbSet<TicketHistoryModel> TicketHistories { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
@@ -33,6 +34,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasOne(t => t.AssignedUser)
             .WithMany()
             .HasForeignKey(t => t.AssignedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TicketModel>()
+            .HasMany(t => t.Files)
+            .WithOne(f => f.Ticket)
+            .HasForeignKey(t => t.TicketId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<AppUser>()

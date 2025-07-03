@@ -1,0 +1,20 @@
+@{
+    ViewBag.Title = "Upload";
+}
+@model WebApp.ViewModels.UploadViewModel
+
+<div class="container mt-4">
+    <h1>Upload Image</h1>
+    <form asp-action="Upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" asp-for="TicketId" />
+        <div class="mb-2">
+            <label asp-for="UploadedFile" class="form-label"></label>
+            <input asp-for="UploadedFile" class="form-control"></input>
+            <span asp-validation-for="UploadedFile"></span>
+        </div>
+        <div class="mb-2">
+            <a asp-action="TicketList" asp-controller="Ticket" class="btn btn-outline-secondary">Zurück zur Übersicht</a>
+            <button type="submit" class="btn btn-success">Speichern</button>
+        </div>
+    </form>
+</div>
