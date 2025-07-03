@@ -33,4 +33,5 @@ public class TicketModel
     public AppUser? AssignedUser { get; set; }
 
     public ICollection<TicketHistoryModel> History { get; set; } = new List<TicketHistoryModel>();
+    public ICollection<TicketComments> Comments { get; set; } = new List<TicketComments>();
 }
