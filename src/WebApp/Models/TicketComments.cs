@@ -4,7 +4,7 @@ namespace WebApp.Models;
 
 public class TicketComments
 {
-    public int Id {get; set;}
+    public int Id { get; set; }
     [StringLength(4000, ErrorMessage = "Die Beschreibung darf maximal 4000 Zeichen lang sein.")]
     public string? Content { get; set; }
     public int TicketId { get; set; }

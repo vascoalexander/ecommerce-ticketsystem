@@ -350,7 +350,7 @@ public class TicketController : Controller
             viewModel.Comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(ticket.Id);
             return View(viewModel);
         }
-        
+
         _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
         await _ticketCommentsRepository.SaveCommentAsync();
 

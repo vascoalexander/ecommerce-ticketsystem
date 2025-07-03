@@ -60,7 +60,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<TicketHistoryModel>()
             .Property(h => h.PropertyName)
             .HasConversion<string>();
-        
+
         modelBuilder.Entity<TicketComments>()
             .HasOne(c => c.Ticket)
             .WithMany(t => t.Comments)
