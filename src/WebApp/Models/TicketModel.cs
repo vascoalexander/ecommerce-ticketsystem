@@ -18,7 +18,7 @@ public class TicketModel
     [StringLength(60, ErrorMessage = "Der Titel darf maximal 60 Zeichen lang sein.")]
     [Required]
     public string Title { get; set; }
-    [StringLength(2000, ErrorMessage = "Die Beschreibung darf maximal 400 Zeichen lang sein.")]
+    [StringLength(2000, ErrorMessage = "Die Beschreibung darf maximal 2000 Zeichen lang sein.")]
     [Required]
     public string Description { get; set; }
     [Required]

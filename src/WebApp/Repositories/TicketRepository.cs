@@ -48,6 +48,16 @@ public class TicketRepository
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<List<TicketModel>> GetTicketsForUserAsync(string userId)
+    {
+        return await _context.Tickets
+            .Where(t => t.CreatorUserId == userId || t.AssignedUserId == userId)
+            .Include(t => t.Project)
+            .Include(t => t.AssignedUser)
+            .Include(t => t.CreatorUser)
+            .ToListAsync();
+    }
 
     // Delete 
     public async Task DeleteTicketAsync(int id)
