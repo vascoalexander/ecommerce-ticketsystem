@@ -34,6 +34,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();
+builder.Services.AddScoped<FileRepository>();
 builder.Services.AddScoped<TicketHistoryRepository>();
 
 
@@ -63,6 +64,9 @@ app.Use(async (context, next) =>
 
     await next();
 });
+
+var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+Directory.CreateDirectory(uploadPath);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
