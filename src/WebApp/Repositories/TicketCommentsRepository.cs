@@ -16,6 +16,7 @@ public class TicketCommentsRepository
     public async Task<List<TicketComments>> GetAllCommentsForTicketAsync(int ticketId)
     {
         return await _context.Set<TicketComments>()
+            .Include(c => c.CreatorUser)
             .Where(x => x.TicketId == ticketId)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
@@ -26,7 +27,7 @@ public class TicketCommentsRepository
         var comment = new TicketComments();
         {
             comment.TicketId = ticketId;
-            comment.CreatedAt = DateTime.Now;
+            comment.CreatedAt = DateTime.Now.ToUniversalTime();
             comment.Content = content;
             comment.CreatorUserId = creatorUserId;
         };

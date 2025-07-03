@@ -313,11 +313,14 @@ public class TicketController : Controller
         }
 
         var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
+        var comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(id);
+
 
         var viewModel = new TicketDetailViewModel
         {
             Ticket = ticket,
-            History = history
+            History = history,
+            Comments = comments
         };
 
         return View(viewModel);
@@ -339,16 +342,15 @@ public class TicketController : Controller
             return Unauthorized();
         }
 
-        if (!ModelState.IsValid)
+        if (string.IsNullOrWhiteSpace(viewModel.NewCommentContent))
         {
-            // Kommentare und History nochmal laden, falls das Formular ungültig ist
+            ModelState.AddModelError(nameof(viewModel.NewCommentContent), "Kommentar darf nicht leer sein.");
             viewModel.Ticket = ticket;
             viewModel.History = await _ticketHistoryRepository.GetHistoryForTicketAsync(ticket.Id);
             viewModel.Comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(ticket.Id);
             return View(viewModel);
         }
-
-        // Kommentar anlegen und speichern
+        
         _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
         await _ticketCommentsRepository.SaveCommentAsync();
 
