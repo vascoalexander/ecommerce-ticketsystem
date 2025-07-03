@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebApp.Data;
@@ -11,9 +12,11 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702112331_refactorTicketHistory")]
+    partial class refactorTicketHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,38 +261,6 @@ namespace WebApp.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("WebApp.Models.TicketFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("OriginalName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("StoredName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("TicketId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UploadDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketId");
-
-                    b.ToTable("TicketFiles");
-                });
-
             modelBuilder.Entity("WebApp.Models.TicketHistoryModel", b =>
                 {
                     b.Property<int>("Id")
@@ -428,17 +399,6 @@ namespace WebApp.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebApp.Models.TicketFile", b =>
-                {
-                    b.HasOne("WebApp.Models.TicketModel", "Ticket")
-                        .WithMany("Files")
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Ticket");
-                });
-
             modelBuilder.Entity("WebApp.Models.TicketHistoryModel", b =>
                 {
                     b.HasOne("WebApp.Models.AppUser", "ChangedByUser")
@@ -494,8 +454,6 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.TicketModel", b =>
                 {
-                    b.Navigation("Files");
-
                     b.Navigation("History");
                 });
 #pragma warning restore 612, 618

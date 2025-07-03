@@ -10,6 +10,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<TicketModel> Tickets { get; set; }
     public DbSet<ProjectModel> Projects { get; set; }
     public DbSet<TicketFile> TicketFiles { get; set; }
+    public DbSet<TicketHistoryModel> TicketHistories { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
 
@@ -54,6 +55,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(t => t.History)
             .HasForeignKey(h => h.TicketId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TicketHistoryModel>()
+            .Property(h => h.PropertyName)
+            .HasConversion<string>();
 
     }
 }

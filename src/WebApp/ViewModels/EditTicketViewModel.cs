@@ -23,4 +23,6 @@ public class EditTicketViewModel
 
     public List<ProjectModel> AvailableProjects { get; set; } = new();
     public List<AppUser> AvailableUsers { get; set; } = new();
+    public TicketStatus Status { get; set; }
+
 }
