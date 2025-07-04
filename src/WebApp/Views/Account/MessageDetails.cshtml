@@ -1,0 +1,64 @@
+@using System.Security.Claims
+@model WebApp.Models.Message
+@{
+    ViewBag.Title = "Nachricht Details";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+<div class="mt-4">
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    @if (Model != null)
+    {
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    @if (Model.SenderId == currentUserId)
+                    {
+                        <h5>
+                            <span class="badge bg-primary">Gesendet</span>
+                            An: @Model.Receiver.UserName (@Model.Receiver.Email)
+                        </h5>
+                    }
+                    else
+                    {
+                        <h5>
+                            <span class="badge bg-success">Empfangen</span>
+                            Von: @Model.Sender.UserName (@Model.Sender.Email)
+                        </h5>
+                    }
+                    <small class="text-muted">@Model.SentAt.ToString("g")</small>
+                </div>
+                <h4>@Model.Subject</h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">@Model.Body</p>
+            </div>
+            <div class="card-footer text-muted">
+                @if (Model.IsRead)
+                {
+                    <span>Gelesen: @Model.SentAt.ToString("g")</span> @* Kannst auch ein 'Gelesen am' Datum speichern *@
+                }
+                else
+                {
+                    <span>Status: Ungelesen</span>
+                }
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a asp-action="Messages" class="btn btn-outline-secondary">Zurück zur Nachrichtenübersicht</a>
+            @if (Model.ReceiverId == currentUserId)
+            {
+                <a asp-action="SendMessage" asp-route-replyToMessageId="@Model.Id" class="btn btn-dark">Antworten</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            Nachricht nicht gefunden.
+        </div>
+    }
+</div>
+

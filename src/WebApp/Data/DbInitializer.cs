@@ -87,6 +87,38 @@ public static class DbInitializer
             context.Tickets.AddRange(tickets);
             context.SaveChanges();
         }
+
+        if (!context.Messages.Any())
+        {
+            var users = context.Users.ToList();
+            var messages = new List<Message>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var sentDate = DateTime.UtcNow.AddDays(random.Next(-365, 0));
+                AppUser sender;
+                AppUser receiver;
+                do
+                {
+                    sender =  users[random.Next(users.Count)];
+                    receiver =  users[random.Next(users.Count)];
+                } while (sender == receiver);
+
+                var message = new Message
+                {
+                    Sender = sender,
+                    SenderId = sender.Id,
+                    Receiver = receiver,
+                    ReceiverId = receiver.Id,
+                    SentAt = sentDate,
+                    Subject = GetRandomTicketTitle(random),
+                    Body = longDescription,
+                };
+                messages.Add(message);
+            }
+            context.Messages.AddRange(messages);
+            context.SaveChanges();
+        }
     }
     static string GetRandomTicketTitle(Random random)
     {
