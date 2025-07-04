@@ -8,18 +8,22 @@ public static class EnsureIdentity
     private const string AdminRole = "Admin";
     private const string TesterRole = "Tester";
     private const string DeveloperRole = "Developer";
+    private const string SystemRole = "System";
 
     private const string AdminName = "admin";
     private const string TesterName = "tester";
     private const string DeveloperName = "developer";
+    private const string SystemName = "system";
 
     private const string AdminPassword = "Admin123$";
     private const string TesterPassword = "Tester123$";
     private const string DeveloperPassword = "Developer123$";
+    private const string SystemPassword = "System123$";
 
     private const string AdminEmail = "admin@lushwear.com";
     private const string TesterEmail = "tester@lushwear.com";
     private const string DeveloperEmail = "developer@lushwear.com";
+    private const string SystemEmail = "system@lushwear.com";
 
     public static async Task SeedDefaultAccounts(IApplicationBuilder app)
     {
@@ -45,6 +49,12 @@ public static class EnsureIdentity
         if (!await roleManager.RoleExistsAsync(DeveloperRole))
         {
             IdentityRole role = new IdentityRole(DeveloperRole);
+            await roleManager.CreateAsync(role);
+        }
+
+        if (!await roleManager.RoleExistsAsync(SystemRole))
+        {
+            IdentityRole role = new IdentityRole(SystemRole);
             await roleManager.CreateAsync(role);
         }
 
@@ -83,6 +93,17 @@ public static class EnsureIdentity
             await userManager.CreateAsync(developer, DeveloperPassword);
             await userManager.AddToRoleAsync(developer, DeveloperRole);
         }
+        AppUser? system = await userManager.FindByNameAsync(SystemName);
+        if (system == null)
+        {
+            system = new AppUser(SystemName)
+            {
+                Email = SystemEmail,
+                EmailConfirmed = true,
+            };
+            await userManager.CreateAsync(system, SystemPassword);
+            await userManager.AddToRoleAsync(system, SystemRole);
+        }
 
         if (string.IsNullOrEmpty(admin.Email) || admin.Email != AdminEmail)
         {
@@ -103,6 +124,13 @@ public static class EnsureIdentity
             developer.Email = DeveloperEmail;
             developer.EmailConfirmed = true;
             await userManager.UpdateAsync(developer);
+        }
+
+        if (string.IsNullOrEmpty(system.Email) || system.Email != SystemEmail)
+        {
+            system.Email = SystemEmail;
+            system.EmailConfirmed = true;
+            await userManager.UpdateAsync(system);
         }
     }
 }
