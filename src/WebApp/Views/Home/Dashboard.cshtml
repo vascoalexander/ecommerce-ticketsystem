@@ -1,33 +1,12 @@
-﻿@model WebApp.ViewModels.DashboardViewModel
+@model WebApp.ViewModels.DashboardViewModel
 @{
-ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
+    ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
 }
-<div class="d-flex flex-column flex-md-row min-vh-100">
-    <!-- Sidebar -->
-    @* <nav class="sidebar bg-light border-end p-3"> *@
-    @*     <h4 class="text-center mb-4 " style="color: black">Lushwear Dashboard</h4> *@
-    @*     <ul class="nav flex-column"> *@
-    @*         <li class="nav-item mb-2"> *@
-    @*             <a href="#" class="nav-link active fw-semibold" style="color: black">Übersicht</a> *@
-    @*         </li> *@
-    @*         <li class="nav-item mb-2"> *@
-    @*             <a href="#" class="nav-link text-secondary">Meine Tickets</a> *@
-    @*         </li> *@
-    @*         <li class="nav-item mb-2"> *@
-    @*             <a href="#" class="nav-link text-secondary">Ticket erstellen</a> *@
-    @*         </li> *@
-    @*         <li class="nav-item mb-2"> *@
-    @*             <a href="#" class="nav-link text-secondary">Ticket bearbeiten</a> *@
-    @*         </li> *@
-    @*         <li class="nav-item mb-2"> *@
-    @*             <a href="#" class="nav-link text-secondary">Ticket schließen</a> *@
-    @*         </li> *@
-    @*     </ul> *@
-    @* </nav> *@
 
-    <!-- Main Content -->
-    <main class="flex-grow-1 p-4 bg-white">
-        <h2 class="mb-4" style="color: black">Willkommen,
+<div class="d-flex flex-column flex-md-row min-vh-100">
+    <main class="flex-grow-1 p-4 dashboard-main">
+        <h2 class="mb-4">Willkommen,
+
             @if (User.Identity != null)
             {
                 @User.Identity.Name
@@ -78,42 +57,95 @@ ViewBag.Title = "Dashboard - Lushwear Ticketsystem";
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('dashboardBarChart').getContext('2d');
-    const myBarChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-            datasets: [{
-                label: 'Tickets',
-                data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
-                backgroundColor: 'rgba(59, 39, 93, 0.7)',
-                borderColor: 'rgba(59, 39, 93, 1)',
-                borderWidth: 1,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const docElement = document.documentElement;
+            let myBarChart;
+
+            function createChart() {
+                const isDarkMode = docElement.classList.contains('dark-mode');
+
+                const barColor = isDarkMode
+                    ? 'rgba(235, 195, 255, 1)' // Dark mode color
+                    : '#3b275d'; // Light mode color
+
+                const borderColor = isDarkMode
+                    ? 'rgba(235, 195, 255, 1)'
+                    : '#3b275d';
+
+                const labelColor = isDarkMode ? '#c38ffa' : '#3b275d';
+                const gridColor = isDarkMode ? 'rgba(195, 127, 250, 0.3)' : '#ccc';
+
+                const ctx = document.getElementById('dashboardBarChart').getContext('2d');
+
+                if (myBarChart) {
+                    myBarChart.destroy();
                 }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#3b275d',
-                        font: {
-                            size: 14,
-                            weight: 'bold'
+
+                myBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+                        datasets: [{
+                            label: 'Tickets',
+                            data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
+                            backgroundColor: barColor,
+                            borderColor: borderColor,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
-        }
-    });
-</script>
+
+            // Initial Chart erstellen
+            createChart();
+
+            // Observer, um auf Änderungen der html-Klasse zu reagieren (dark-mode)
+            const observer = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        createChart();
+                    }
+                }
+            });
+
+            observer.observe(docElement, { attributes: true });
+        });
+    </script>
 }
