@@ -82,11 +82,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const body = document.body;
+            const docElement = document.documentElement;
             let myBarChart;
 
             function createChart() {
-                const isDarkMode = body.classList.contains('dark-mode');
+                const isDarkMode = docElement.classList.contains('dark-mode');
 
                 const barColor = isDarkMode
                     ? 'rgba(235, 195, 255, 1)' // Dark mode color
@@ -158,7 +158,7 @@
             // Initial Chart erstellen
             createChart();
 
-            // Observer, um auf Änderungen der body-Klasse zu reagieren (dark-mode)
+            // Observer, um auf Änderungen der html-Klasse zu reagieren (dark-mode)
             const observer = new MutationObserver((mutationsList) => {
                 for (const mutation of mutationsList) {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
@@ -167,7 +167,7 @@
                 }
             });
 
-            observer.observe(body, { attributes: true });
+            observer.observe(docElement, { attributes: true });
         });
     </script>
 }
