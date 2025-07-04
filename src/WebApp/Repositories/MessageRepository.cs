@@ -13,7 +13,7 @@ public class MessageRepository
         _context = context;
     }
 
-    public async Task<Message> GetMessageById(int id)
+    public async Task<Message?> GetMessageById(int id)
     {
         return (await _context.Messages
             .Include(m => m.Sender)
@@ -51,7 +51,7 @@ public class MessageRepository
         await _context.Messages.AddAsync(message);
     }
 
-    public async Task UpdateMessage(Message message)
+    public void UpdateMessage(Message message)
     {
         _context.Messages.Update(message);
     }

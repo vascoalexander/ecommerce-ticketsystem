@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
@@ -222,7 +221,7 @@ public class AccountController : Controller
         if (message.ReceiverId == currentUser.Id && !message.IsRead)
         {
             message.IsRead = true;
-            await _messageRepository.UpdateMessage(message);
+            _messageRepository.UpdateMessage(message);
             await _messageRepository.SaveChangesAsync();
         }
         return View("MessageDetails", message);
@@ -234,10 +233,6 @@ public class AccountController : Controller
     {
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null) { return View("Login"); }
-        var users = await _userManager.Users
-            .Where(u => u.Id != currentUser.Id)
-            .OrderBy(u => u.UserName)
-            .ToListAsync();
 
         var model = new SendMessageViewModel();
         model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
