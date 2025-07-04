@@ -30,7 +30,8 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
         // Sign in settings
         options.SignIn.RequireConfirmedEmail = false;
     })
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();

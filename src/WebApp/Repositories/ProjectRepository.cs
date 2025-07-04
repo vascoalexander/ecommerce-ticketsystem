@@ -19,12 +19,16 @@ public class ProjectRepository
             .ToListAsync();
     }
 
-    public async Task<ProjectModel?> GetProjectById(int Id)
+    public async Task<ProjectModel?> GetProjectById(int id)
     {
         return await _context.Projects
             .Include(p => p.Tickets)
-            .FirstOrDefaultAsync(p => p.Id == Id);
+            .ThenInclude(t => t.CreatorUser)
+            .Include(p => p.Tickets)
+            .ThenInclude(t => t.AssignedUser)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
+
 
 
 
