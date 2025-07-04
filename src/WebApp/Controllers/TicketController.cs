@@ -328,7 +328,7 @@ public class TicketController : Controller
             ReceiverId = assignedUser!.Id,
             SentAt = DateTime.Now.ToUniversalTime(),
             Subject = $"Sie wurden dem Ticket mit der ID: {ticketToUpdate.Id} für die bearbeitung zugewiesen",
-            Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUser!.UserName} um {ticketToUpdate.CreatedAt}"
+            Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUser!.UserName} um {DateTime.Now.ToUniversalTime()}"
 
         };
         await _messageRepository.AddMessage(message);
@@ -403,7 +403,7 @@ public class TicketController : Controller
             SentAt = DateTime.Now.ToUniversalTime(),
             Subject = $"Es wurde ein Neues Kommentar für das Ticket: {ticket.Id} erstellt",
             Body = $"""
-                    Das Kommentar wurde vom Benutzer: {currentUser!.UserName} um {DateTime.Now} hinterlassen:
+                    Das Kommentar wurde vom Benutzer: {currentUser!.UserName} um {DateTime.Now.ToUniversalTime()} hinterlassen:
                     {viewModel.NewCommentContent}
                     """
 
