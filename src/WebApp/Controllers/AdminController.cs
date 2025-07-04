@@ -28,42 +28,91 @@ namespace WebApp.Controllers
         }
 
 
-        public IActionResult AdminPage()
+        public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
         {
-            return View();
-        }
-        public IActionResult UserManagement()
-        {
-            return View();
+            var projects = await _projectRepository.GetAllProjectsAsync();
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                projects = projects
+                    .Where(p => p.Category == category)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                projects = projects
+                    .Where(p =>
+                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+            }
+
+            projects = sortOrder switch
+            {
+                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
+                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
+                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
+                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
+                _ => projects.OrderBy(p => p.Title).ToList(),
+            };
+
+            return View(projects);
         }
 
-        public async Task<IActionResult> UsersList(string? roleFilter, string? search, string? sortOrder)
+
+        public async Task<IActionResult> UserManagement(string? roleFilter, string? search, string? sortOrder,
+            bool includeInactive = false)
         {
             var users = await _userManager.Users.ToListAsync();
-
-            if (!string.IsNullOrWhiteSpace(search))
-                users = users
-                    .Where(u => u.UserName
-                        .Contains(search, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            users = sortOrder switch
+            if (!includeInactive)
             {
-                "name_desc" => users.OrderByDescending(s => s.UserName).ToList(),
-                "id_desc" => users.OrderByDescending(s => s.Id).ToList(),
-                _ => users.OrderBy(s => s.UserName).ToList(),
-            };
-            var model = new List<AdminUserViewModel>();
+                users.Where(u => u.IsActive).ToList();
+            }
+
+            var viewModel = new AdminUserManagementViewModel();
+
             foreach (var user in users)
             {
-                model.Add(new AdminUserViewModel
+                var userRoles = await _userManager.GetRolesAsync(user);
+                viewModel.Users.Add(new AdminUserViewModel
                 {
                     Id = user.Id,
                     UserName = user.UserName,
-                    AssignedRoles = await _userManager.GetRolesAsync(user)
-
+                    Email = user.Email,
+                    IsActive = user.IsActive,
+                    AssignedRoles = userRoles
                 });
+                
+                viewModel.Users = viewModel.Users.Where(u => u.IsActive).ToList();
             }
+
+            return View(viewModel);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            var model = new AdminUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                AssignedRoles = await _userManager.GetRolesAsync(user)
+            };
             return View(model);
+        }
+
+        [HttpPost, ActionName("DeleteUser")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUserConfirmend(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            await _userManager.DeleteAsync(user);
+            return RedirectToAction("UserManagement");
         }
 
         [HttpGet]
@@ -71,61 +120,139 @@ namespace WebApp.Controllers
         {
             var model = new AdminUserViewModel
             {
-                AvailableRoles = _roleManager.Roles
+                AvailableRoles = await _roleManager.Roles
                     .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList()
+                    .ToListAsync()
             };
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateUser(AdminUserViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                model.AvailableRoles = _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList();
-                return View(model);
-            }
-            var user = new AppUser { UserName = model.UserName };
-            var result = await _userManager.CreateAsync(user, model.Password!);
-            if (result.Succeeded)
-            {
-                var roleResult = await _userManager.AddToRoleAsync(user, model.SelectedRole!);
-                if (roleResult.Succeeded)
+                var user = new AppUser
                 {
-                    return RedirectToAction("UsersList");
-                }
-                else
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    PasswordHash = model.Password,
+
+                    IsActive = true
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
                 {
-                    foreach (var error in result.Errors)
+                    if (!string.IsNullOrEmpty(model.SelectedRole))
                     {
-
-                        ModelState.AddModelError("", error.Description);
-
+                        await _userManager.AddToRoleAsync(user, model.SelectedRole);
                     }
+
+                    return RedirectToAction(nameof(UserManagement));
                 }
-            }
-            else
-            {
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
-
-                model.AvailableRoles = _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList();
-
             }
-            return View(model);
 
+          
+            model.AvailableRoles = await _roleManager.Roles
+                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                .ToListAsync();
+
+            return View(model);
+        }
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);;
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var model = new AdminUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                IsActive = user.IsActive == true,
+                AssignedRoles = userRoles,
+                SelectedRole = userRoles.FirstOrDefault(),
+                AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync()
+            };
+
+            return View(model);   
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser( AdminUserViewModel model)
+        {
+            var existinguser = await _userManager.FindByIdAsync(model.Id);
+            ;
+            
 
-        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
+            if (existinguser == null) return NotFound();
+            existinguser.UserName = model.UserName;
+            existinguser.IsActive = model.IsActive;
+            existinguser.Email = model.Email;
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(existinguser);
+                var passwordResult = await _userManager.ResetPasswordAsync(existinguser, token, model.Password);
+                if (!passwordResult.Succeeded)
+                {
+                    foreach (var error in passwordResult.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                        model.AvailableRoles = await _roleManager.Roles
+                            .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                            .ToListAsync();
+                        return View(model);
+                    }
+                }
+            }
+            var result = await _userManager.UpdateAsync(existinguser);
+            if (result.Succeeded)
+            {
+                var currentRoles = await _userManager.GetRolesAsync(existinguser);
+
+                if (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1)
+                {
+                    await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
+                    if (!string.IsNullOrEmpty(model.SelectedRole))
+                    {
+                        await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
+                    }
+                }
+                
+                TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
+                return RedirectToAction(nameof(UserManagement));
+            }
+            model.AvailableRoles = await _roleManager.Roles
+                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                .ToListAsync();
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        
+    }
+    
+
+
+public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
 
@@ -168,8 +295,10 @@ namespace WebApp.Controllers
             {
                 return View(model);
             }
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             await _projectRepository.CreateProject(model);
-            return RedirectToAction("ProjectsList");
+            return RedirectToAction("AdminPage");
         }
 
         [HttpGet]
@@ -207,20 +336,25 @@ namespace WebApp.Controllers
             {
                 return View(model);
             }
+            
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
 
-
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             existingproject.Title = model.Title;
             existingproject.Description = model.Description;
             existingproject.Category = model.Category;
             existingproject.StartDate = model.StartDate;
             existingproject.EndDate = model.EndDate;
+            
 
             await _projectRepository.UpdateProject(existingproject);
 
-            return RedirectToAction("ProjectsList");
+          
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
+            return RedirectToAction(nameof(AdminPage));
         }
 
         [HttpGet]
@@ -235,7 +369,8 @@ namespace WebApp.Controllers
         public async Task<IActionResult> DeleteProjectConfirmend(int id)
         {
             await _projectRepository.GetProjectById(id);
-            return RedirectToAction("ProjectsList");
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
+            return RedirectToAction("AdminPage");
         }
 
         public async Task<IActionResult> DetailsProject(int id)
@@ -249,7 +384,7 @@ namespace WebApp.Controllers
                 Tickets = tickets,
             };
 
-            return View(project);
+            return View(viewModel);
 
         }
 
