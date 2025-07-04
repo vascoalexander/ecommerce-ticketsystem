@@ -113,7 +113,7 @@
             </div>
         </div>
     }
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mt-5">
         <div class="card-body">
             <h5 class="text-secondary mb-3">Kommentare</h5>
 
@@ -127,7 +127,7 @@
                     <span asp-validation-for="NewCommentContent" class="text-danger"></span>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Kommentar hinzufügen</button>
+                <button type="submit" class="btn btn-dark">Kommentar hinzufügen</button>
             </form>
 
             <hr />
@@ -137,7 +137,7 @@
             {
                 @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
                 {
-                    <div class="border-start border-3 border-primary ps-3 my-3">
+                    <div class="border-start border-3 comment-separator ps-3 my-3">
                         <div class="small text-muted">
                             <strong>@comment.CreatorUser?.UserName</strong> am @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
                         </div>

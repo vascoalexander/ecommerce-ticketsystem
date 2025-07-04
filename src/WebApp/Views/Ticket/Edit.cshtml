@@ -25,6 +25,7 @@
                        placeholder="Bitte Titel eingeben" 
                        maxlength="60" 
                        id="titleInput" />
+                <span asp-validation-for="Title" class="text-danger"></span>
                 <small id="titleCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
                     0 / 60
                 </small>
@@ -34,6 +35,7 @@
                 <select asp-for="@Model.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title", Model.ProjectId))">
                     <option value="">-- Projekt wählen --</option>
                 </select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
         </div>
 
@@ -44,6 +46,7 @@
                       rows="4" 
                       maxlength="2000" 
                       id="descriptionInput"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
             <small id="descriptionCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
                 0 / 2000
             </small>
@@ -56,13 +59,13 @@
             </select>
         </div>
 
-        <div class="d-flex justify-content-between flex-wrap gap-2 mt-4">
-            <div>
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-4">
+            <div class="d-flex gap-2">
                 <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-danger">Abbrechen</a>
                 <a asp-action="Upload" asp-route-id="@Model.TicketId" class="btn btn-primary">Upload File</a>
             </div>
 
-            <div class="d-flex gap-2 ms-auto">
+            <div class="d-flex gap-2 justify-content-md-end mt-2 mt-md-0">
                 @if (Model.Status == TicketStatus.Closed)
                 {
                     <button type="submit" name="submitAction" value="reopen" class="btn btn-success">Wieder öffnen</button>

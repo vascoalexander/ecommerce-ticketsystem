@@ -4,34 +4,43 @@
 }
 
 <div class="container my-5">
-    <h2 class="mb-4">Neuen Benutzer anlegen</h2>
-    <form asp-action="CreateUser" method="post" autocomplete="off">
-        <div class="mb-3">
-            <label asp-for="UserName" class="form-label">Name</label>
-            <input asp-for="UserName" class="form-control" autocomplete="username" />
-            <span asp-validation-for="UserName" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label">Email</label>
-            <input asp-for="Email" class="form-control" autocomplete="username"/>
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Password" class="form-label">Passwort</label>
-            <input asp-for="Password" type="password" class="form-control" autocomplete="new-password"/>
-            <span asp-validation-for="Password" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="SelectedRole" class="form-label">Rolle</label>
-            <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
-                <option value="">-- Rolle auswählen --</option>
-            </select>
-            <span asp-validation-for="SelectedRole" class="text-danger"></span>
-        </div>
+    <div class="mb-4">
+        <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-secondary">
+            Zurück zur Übersicht
+        </a>
+    </div>
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4">Neuen Benutzer anlegen</h2>
+        <form asp-action="CreateUser" method="post" autocomplete="off">
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label">Name</label>
+                <input asp-for="UserName" class="form-control" autocomplete="username" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Passwort</label>
+                <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="SelectedRole" class="form-label">Rolle</label>
+                <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                    <option value="">-- Rolle auswählen --</option>
+                </select>
+                <span asp-validation-for="SelectedRole" class="text-danger"></span>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Speichern</button>
-        <a asp-action="UserManagement" class="btn btn-outline-secondary ms-2">Abbrechen</a>
-    </form>
+            <div class="d-flex justify-content-end mt-4">
+                <a asp-action="UserManagement" class="btn btn-outline-secondary me-2">Abbrechen</a>
+                <button type="submit" class="btn btn-dark">Speichern</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {

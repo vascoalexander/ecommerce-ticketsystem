@@ -9,7 +9,7 @@
         </a>
     </div>
 
-    <div class="mb-4">
+    <div class="card shadow-sm p-4 mb-4">
         <h2 class="fw-bold mb-1">@Model.Project.Title</h2>
         <div class="text-muted">
             Kategorie: <strong>@Model.Project.Category</strong><br />
@@ -22,52 +22,61 @@
             <h5 class="text-secondary mb-3">Projektbeschreibung</h5>
             <p class="mb-0">@Model.Project.Description</p>
         </div>
-         <h4 class="mb-3">Tickets im Projekt</h4>
-    <div class="table-responsive shadow-sm rounded mb-5">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Titel</th>
-                    <th>Status</th>
-                    <th>Ersteller</th>
-                    <th>Zugewiesen an</th>
-                    <th>Erstellt am</th>
-                    <th>Aktionen</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.Tickets == null || !Model.Tickets.Any())
-                {
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">Keine Tickets zu diesem Projekt gefunden.</td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var ticket in Model.Tickets)
-                    {
-                        <tr>
-                            <td>@ticket.Id</td>
-                            <td>
-                                <strong>@ticket.Title</strong>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">@ticket.Status</span>
-                            </td>
-                            <td>@ticket.CreatorUser?.UserName</td>
-                            <td>@ticket.AssignedUser?.UserName</td>
-                            <td>@ticket.CreatedAt.ToString("dd.MM.yyyy")</td>
-                            <td>
-                                <a href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })" class="btn btn-sm btn-outline-info me-1">Details</a>
-                                <a href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })" class="btn btn-sm btn-outline-primary">Bearbeiten</a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
     </div>
 
+    <div class="card shadow-sm p-4">
+        <h4 class="mb-3">Tickets im Projekt</h4>
+
+        @if (Model.Tickets == null || !Model.Tickets.Any())
+        {
+            <div class="pt-3 text-muted">Keine Tickets zu diesem Projekt gefunden.</div>
+        }
+        else
+        {
+            <div class="row fw-semibold border-bottom pb-2 d-none d-md-flex">
+                <div class="col-md-2">ID</div>
+                <div class="col-md-2 ">Titel</div>
+                <div class="col-md-2 text-center">Ersteller</div>
+                <div class="col-md-2 text-center">Status</div>
+                <div class="col-md-2 text-center">Zugewiesen an</div>
+                <div class="col-md-2 text-center">Aktionen</div>
+            </div>
+
+            @foreach (var ticket in Model.Tickets)
+            {
+                string statusClass = ticket.Status switch
+                {
+                    TicketStatus.Open => "bg-success",
+                    TicketStatus.InProgress => "bg-warning",
+                    TicketStatus.Closed => "bg-danger",
+                    _ => "bg-secondary"
+                };
+
+                <div class="row align-items-start py-3 border-bottom text-nowrap text-md-wrap text-break">
+                    <div class="col-12 col-md-2 mb-2 mb-md-0">
+                        <strong>#@ticket.Id</strong>
+                    </div>
+                    <div class="col-12 col-md-2 mb-2 mb-md-0">
+                        @ticket.Title
+                    </div>
+                    <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
+                        @ticket.CreatorUser?.UserName
+                    </div>
+                    <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
+                        <span class="badge text-white @statusClass w-100 text-center d-inline-block"
+                              style="padding: 0.5rem 0.6rem; border-radius: 0.6rem; font-size: 0.85rem;">
+                            @ticket.Status
+                        </span>
+                    </div>
+                    <div class="col-12 col-md-2 mb-2 mb-md-0 text-center">
+                        @ticket.AssignedUser?.UserName
+                    </div>
+                    <div class="col-12 col-md-2 d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-primary flex-fill" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })">Details</a>
+                        <a class="btn btn-sm btn-outline-success flex-fill" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
