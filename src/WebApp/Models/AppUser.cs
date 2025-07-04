@@ -13,12 +13,9 @@ public class AppUser : IdentityUser
     public ICollection<TicketModel>? Tickets { get; set; }
     [DefaultValue(true)] public bool IsActive { get; set; } = true;
 
+    public ICollection<Message> SentMessages { get; set; } = new List<Message>();
+    public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
 
-    public AppUser(string userName) : base(userName)
-    {
-    }
-
-    public AppUser()
-    {
-    }
+    public AppUser() : base() { }
+    public AppUser(string userName) : base(userName) { }
 }

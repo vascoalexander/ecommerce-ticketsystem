@@ -9,7 +9,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
 {
     public DbSet<TicketModel> Tickets { get; set; }
     public DbSet<ProjectModel> Projects { get; set; }
+    public DbSet<TicketFile> TicketFiles { get; set; }
     public DbSet<TicketHistoryModel> TicketHistories { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<TicketComments> TicketComments { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
 
@@ -35,9 +38,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(t => t.AssignedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<AppUser>()
-            .Property(u => u.UserTheme)
-            .HasDefaultValue("default");
+        modelBuilder.Entity<TicketModel>()
+            .HasMany(t => t.Files)
+            .WithOne(f => f.Ticket)
+            .HasForeignKey(t => t.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<TicketModel>()
             .Property(t => t.Status)
@@ -52,6 +57,28 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<TicketHistoryModel>()
             .Property(h => h.PropertyName)
             .HasConversion<string>();
+
+        modelBuilder.Entity<AppUser>()
+            .Property(u => u.UserTheme)
+            .HasDefaultValue("standard");
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Receiver)
+            .WithMany(u => u.ReceivedMessages)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany(u => u.SentMessages)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TicketComments>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(t => t.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
 
     }
 }
