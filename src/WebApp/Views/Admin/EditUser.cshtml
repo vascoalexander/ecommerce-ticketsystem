@@ -1,0 +1,72 @@
+﻿@model WebApp.ViewModels.AdminUserViewModel
+@{
+    ViewBag.Title = "Benutzer bearbeiten";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4">Benutzer bearbeiten</h2>
+
+    <form asp-action="EditUser" method="post" autocomplete="off">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="UserName" class="form-label">Benutzername</label>
+            <input asp-for="UserName" class="form-control" autocomplete="username" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">E-Mail</label>
+            <input asp-for="Email" type="email" class="form-control" autocomplete="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        
+
+        <div class="mb-3">
+            <label asp-for="IsActive" class="form-label">Status</label>
+            <select asp-for="IsActive" class="form-select">
+                <option value="true" selected="@Model.IsActive">Aktiv</option>
+                <option value="false" selected="!@Model.IsActive">Inaktiv</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SelectedRole" class="form-label">Rolle</label>
+            <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                <option value="">-- Rolle auswählen --</option>
+            </select>
+            <span asp-validation-for="SelectedRole" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Neues Passwort</label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+            <label asp-for="ConfirmNewPassword" class="form-label">Passwort wiederholen</label>
+            <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
+            <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+        </div>
+
+
+        <div class="d-flex gap-2 ms-auto">
+            
+            <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-danger">Abbrechen</a>
+            @if (Model.IsActive == false)
+            {
+                <button type="submit" name="submitAction" value="reopen" class="btn btn-outline-success">User aktivieren</button>
+            }
+            else
+            {
+               
+                <a href="@Url.Action("DeleteUser", "Admin")" class="btn btn-outline-danger">User deaktivieren</a>
+            }
+
+            <button type="submit" name="submitAction" value="save" class="btn btn-outline-success">Speichern</button>
+
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
