@@ -39,14 +39,12 @@ public class MessageRepository
             .ToListAsync();
     }
 
-    // public async Task GetUnreadMessages(string userId)
-    // {
-    //     var user = _context.Users.FirstOrDefault(u => u.Id == userId);
-    //     return await user.ReceivedMessages
-    //         .Where(m => m.ReceiverId == userId)
-    //         .Select(m => m.IsRead == false)
-    //         .Count();
-    // }
+    public async Task<int> GetUnreadMessages(string userId)
+    {
+        return await _context.Messages
+            .Where(m => m.SenderId ==  userId && !m.IsRead)
+            .CountAsync();
+    }
 
     public async Task AddMessage(Message message)
     {
