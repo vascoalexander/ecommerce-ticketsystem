@@ -9,6 +9,7 @@ using System.Data.SqlTypes;
 using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.ViewModels;
+using WebApp.Helper;
 
 namespace WebApp.Controllers;
 
@@ -48,7 +49,7 @@ public class TicketController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         var userId = currentUser?.Id;
         var projects = await _projectRepository.GetAllProjectsAsync();
-        var users = _userManager.Users.ToList();
+        var users = await Utility.GetUsersExcludingSystemAsync(_userManager);
         if (show != "all" && !string.IsNullOrEmpty(userId))
         {
             tickets = tickets.Where(t =>
@@ -137,7 +138,7 @@ public class TicketController : Controller
         var viewModel = new CreateTicketViewModel
         {
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList()
+            AvailableUsers = await Utility.GetUsersExcludingSystemAsync(_userManager)
         };
 
         return View(viewModel);
@@ -216,7 +217,7 @@ public class TicketController : Controller
             ProjectId = ticket.ProjectId,
             AssignedUserId = ticket.AssignedUser?.Id,
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList(),
+            AvailableUsers = await Utility.GetUsersExcludingSystemAsync(_userManager),
             Status = ticket.Status
 
         };

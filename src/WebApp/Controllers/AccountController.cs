@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using WebApp.Helper;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
@@ -314,15 +315,20 @@ public class AccountController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetAvailableReceivers(String currentUserId)
     {
-        var users = await _userManager.Users
+        // Get all users excluding system user
+        var users = await Utility.GetUsersExcludingSystemAsync(_userManager);
+
+        // Filter out current user and order by username, project to SelectListItem
+        var filteredUsers = users
             .Where(u => u.Id != currentUserId)
             .OrderBy(u => u.UserName)
             .Select(u => new SelectListItem
             {
                 Value = u.Id,
                 Text = u.UserName
-            }).ToListAsync();
-        return users;
+            });
+
+        return filteredUsers;
     }
     private void AddErrors(IdentityResult result)
     {
