@@ -54,15 +54,15 @@
             </div>
         </div>
 
-        <div class="mt-4">
-            @if (Model.ReceiverId == currentUserId)
+        <div class="mt-4 d-flex justify-content-end">
+            <form asp-action="MarkAsDeleted" method="post">
+                <input type="hidden" name="messageId" value="@Model.Id" />
+                <button type="submit" class="btn btn-outline-danger me-1">Delete</button>
+            </form>
+            @if (Model.ReceiverId == currentUserId && Model.Sender.UserName != "system")
             {
                 <a asp-action="SendMessage" asp-route-replyToMessageId="@Model.Id" class="btn btn-dark">Antworten</a>
             }
-            <form asp-action="MarkAsDeleted" method="post">
-                <input type="hidden" name="messageId" value="@Model.Id" />
-                <button type="submit" class="btn btn-outline-danger">Delete</button>
-            </form>
         </div>
     }
     else
