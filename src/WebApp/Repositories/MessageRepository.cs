@@ -24,7 +24,16 @@ public class MessageRepository
     public async Task<IEnumerable<Message>> GetMessagesReceived(string userId)
     {
         return await _context.Messages
-            .Where(m => m.ReceiverId == userId)
+            .Where(m => m.ReceiverId == userId && m.Sender.UserName != "system")
+            .Include(m => m.Sender)
+            .OrderByDescending(m => m.SentAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Message>> GetSystemMessageReceived(string userId)
+    {
+        return await _context.Messages
+            .Where(m => m.ReceiverId == userId && m.Sender.UserName == "system")
             .Include(m => m.Sender)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
