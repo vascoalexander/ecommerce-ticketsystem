@@ -209,6 +209,7 @@ public class AccountController : Controller
         return View(model);
     }
 
+
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> MessageDetails(int messageId)
@@ -231,6 +232,31 @@ public class AccountController : Controller
             await _messageRepository.SaveChangesAsync();
         }
         return View("MessageDetails", message);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkAsDeleted(int messageId)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) { return View("Login"); }
+
+        var message = await _messageRepository.GetMessageById(messageId);
+        if (message == null) return View("Messages");
+
+        if (message.ReceiverId == currentUser.Id)
+        {
+            message.IsDeletedReceiver = true;
+        }
+        else if (message.SenderId == currentUser.Id)
+        {
+            message.IsDeletedSender = true;
+        }
+
+        _messageRepository.UpdateMessage(message);
+        await _messageRepository.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Messages));
     }
 
     [HttpGet]
