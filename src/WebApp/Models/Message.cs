@@ -22,4 +22,6 @@ public class Message
 
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
     public bool IsRead { get; set; }
+    public bool IsDeletedSender { get; set; }
+    public bool IsDeletedReceiver { get; set; }
 }
