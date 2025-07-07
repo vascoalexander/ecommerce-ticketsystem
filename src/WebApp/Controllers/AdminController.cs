@@ -92,7 +92,7 @@ namespace WebApp.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> DeleteUser(string id)
+        public async Task<IActionResult> DeactivateUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
@@ -105,9 +105,9 @@ namespace WebApp.Controllers
             return View(model);
         }
 
-        [HttpPost, ActionName("DeleteUser")]
+        [HttpPost, ActionName("DeactivateUser")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUserConfirmend(string id)
+        public async Task<IActionResult> DeactivateUserConfirmend(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
@@ -171,7 +171,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);;
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
