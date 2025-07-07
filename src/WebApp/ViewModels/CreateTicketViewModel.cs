@@ -16,7 +16,7 @@ public class CreateTicketViewModel
     [Required(ErrorMessage = "Projekt muss ausgewählt werden.")]
     public int ProjectId { get; set; }
 
-    public string? AssignedUserId { get; set; }
+    public string AssignedUserId { get; set; } = null!;
 
     // Für Dropdowns
     public List<ProjectModel> AvailableProjects { get; set; } = new();

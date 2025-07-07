@@ -61,8 +61,9 @@ public static class EnsureIdentity
         AppUser? admin = await userManager.FindByNameAsync(AdminName);
         if (admin == null)
         {
-            admin = new AppUser(AdminName)
+            admin = new AppUser()
             {
+                UserName = AdminName,
                 Email = AdminEmail,
                 EmailConfirmed = true,
             };
@@ -74,8 +75,9 @@ public static class EnsureIdentity
         AppUser? tester = await userManager.FindByNameAsync(TesterName);
         if (tester == null)
         {
-            tester = new AppUser(TesterName)
+            tester = new AppUser()
             {
+                UserName = TesterName,
                 Email = TesterEmail,
                 EmailConfirmed = true,
             };
@@ -85,8 +87,9 @@ public static class EnsureIdentity
         AppUser? developer = await userManager.FindByNameAsync(DeveloperName);
         if (developer == null)
         {
-            developer = new AppUser(DeveloperName)
+            developer = new AppUser()
             {
+                UserName = DeveloperName,
                 Email = DeveloperEmail,
                 EmailConfirmed = true,
             };
@@ -96,8 +99,9 @@ public static class EnsureIdentity
         AppUser? system = await userManager.FindByNameAsync(SystemName);
         if (system == null)
         {
-            system = new AppUser(SystemName)
+            system = new AppUser()
             {
+                UserName = SystemName,
                 Email = SystemEmail,
                 EmailConfirmed = true,
             };
