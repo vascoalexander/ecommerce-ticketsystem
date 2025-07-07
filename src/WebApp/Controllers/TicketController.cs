@@ -171,14 +171,6 @@ public class TicketController : Controller
 
         await _ticketRepository.CreateTicketAsync(ticket);
 
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Title, null, ticket.Title, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Description, null, ticket.Description, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Project, null, project?.Title, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.AssignedUser, null, assignedUser?.UserName, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status, null, ticket.Status.ToString(), currentUser?.Id);
-
-        await _ticketHistoryRepository.SaveChangesAsync();
-
         var systemUser = await _userManager.FindByNameAsync("system");
 
         if (ticket.AssignedUser != null)
@@ -223,8 +215,7 @@ public class TicketController : Controller
 
         return View(viewModel);
     }
-
-    [HttpPost]
+    
     [HttpPost]
     public async Task<IActionResult> Edit(EditTicketViewModel viewModel, string submitAction)
     {
@@ -235,34 +226,53 @@ public class TicketController : Controller
 
         if (submitAction == "close")
         {
-            ticketToUpdate.Status = TicketStatus.Closed;
             _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.Closed), currentUser?.Id);
-            await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
             await _ticketHistoryRepository.SaveChangesAsync();
+            ticketToUpdate.Status = TicketStatus.Closed;
+            await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
             TempData["ToastMessage"] = "Ticket erfolgreich geschlossen.";
             return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
         }
 
-        if (submitAction == "reopen")
-        {
-            var previousStatus = ticketToUpdate.Status;
-            ticketToUpdate.Status = TicketStatus.Open;
-            ticketToUpdate.AssignedUser = null;
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, previousStatus.ToString(), nameof(TicketStatus.Open), currentUser?.Id);
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, ticketToUpdate.AssignedUser?.UserName, null, currentUser?.Id);
-            await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
-            await _ticketHistoryRepository.SaveChangesAsync();
-            TempData["ToastMessage"] = "Ticket wurde wieder geöffnet.";
-            return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
-        }
-
-        // Normales Speichern
+        
+        
         if (!ModelState.IsValid)
         {
             viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
             viewModel.AvailableUsers = _userManager.Users.ToList();
             TempData["ToastMessage"] = "Ticket konnte nicht bearbeitet werden.";
             return View(viewModel);
+        }
+        if (submitAction == "reopen")
+        {
+            var previousStatus = ticketToUpdate.Status;
+            var previousUser = ticketToUpdate.AssignedUser;
+
+            _ticketHistoryRepository.TrackChange(
+                ticketToUpdate,
+                TicketProperty.Status,
+                previousStatus.ToString(),
+                nameof(TicketStatus.Open),
+                currentUser?.Id
+            );
+
+            ticketToUpdate.Status = TicketStatus.Open;
+
+            if (previousUser?.UserName != ticketToUpdate.AssignedUser?.UserName)
+            {
+                _ticketHistoryRepository.TrackChange(
+                    ticketToUpdate,
+                    TicketProperty.AssignedUser,
+                    previousUser?.UserName,
+                    ticketToUpdate.AssignedUser?.UserName,
+                    currentUser?.Id
+                );
+            }
+
+            await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
+            await _ticketHistoryRepository.SaveChangesAsync();
+
+            TempData["ToastMessage"] = "Ticket wurde wieder geöffnet.";
         }
 
         var assignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId!);
@@ -297,19 +307,7 @@ public class TicketController : Controller
             var newUserName = assignedUser.UserName;
 
             _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
-
-            if (string.IsNullOrEmpty(newAssignedUserId))
-            {
-                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.Open), currentUser?.Id);
-                ticketToUpdate.Status = TicketStatus.Open;
-                ticketToUpdate.AssignedUser = null;
-            }
-            else
-            {
-                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.InProgress), currentUser?.Id);
-                ticketToUpdate.Status = TicketStatus.InProgress;
-                ticketToUpdate.AssignedUser = assignedUser;
-            }
+            
         }
         else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
         {
