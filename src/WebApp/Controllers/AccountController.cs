@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using WebApp.Helper;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
@@ -44,6 +44,11 @@ public class AccountController : Controller
             var user = await _userManager.FindByEmailAsync(viewModel.Email);
             if (user != null)
             {
+                if (!user.IsActive)
+                {
+                    viewModel.ErrorMessage = "Ihr Benutzerkonto ist deaktiviert.";
+                    return View(viewModel);
+                }
                 await _signInManager.SignOutAsync();
                 var result = await _signInManager
                     .PasswordSignInAsync(
@@ -246,7 +251,9 @@ public class AccountController : Controller
                 if (!string.IsNullOrEmpty(originalMessage.Subject) && !originalMessage.Subject.StartsWith("Re: "))
                 {
                     model.Subject = $"Re: {originalMessage.Subject}";
-                } else if (!string.IsNullOrEmpty(originalMessage.Subject)) {
+                }
+                else if (!string.IsNullOrEmpty(originalMessage.Subject))
+                {
                     model.Subject = originalMessage.Subject;
                 }
             }
@@ -309,15 +316,20 @@ public class AccountController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetAvailableReceivers(String currentUserId)
     {
-        var users = await _userManager.Users
+        // Get all users excluding system user
+        var users = await Utility.GetUsersExcludingSystemAsync(_userManager);
+
+        // Filter out current user and order by username, project to SelectListItem
+        var filteredUsers = users
             .Where(u => u.Id != currentUserId)
             .OrderBy(u => u.UserName)
             .Select(u => new SelectListItem
             {
                 Value = u.Id,
                 Text = u.UserName
-            }).ToListAsync();
-        return users;
+            });
+
+        return filteredUsers;
     }
     private void AddErrors(IdentityResult result)
     {

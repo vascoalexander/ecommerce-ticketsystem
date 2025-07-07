@@ -14,6 +14,7 @@ namespace WebApp.ViewModels
 
         [DataType(DataType.Password)]
         [Display(Name = "Neues Passwort bestätigen")]
+
         [Compare("Password", ErrorMessage = "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.")]
         public string ConfirmNewPassword { get; set; } = null!;
         public string? Email { get; set; }
@@ -25,7 +26,7 @@ namespace WebApp.ViewModels
         public List<SelectListItem> AvailableRoles { get; set; } = new();
         [Required(ErrorMessage = "Rolle muss zugewiesen werden.")]
         public string? SelectedRole { get; set; }
-        
+
 
     }
 }
