@@ -9,6 +9,7 @@ using System.Data.SqlTypes;
 using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.ViewModels;
+using WebApp.Helper;
 
 namespace WebApp.Controllers;
 
@@ -48,7 +49,7 @@ public class TicketController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         var userId = currentUser?.Id;
         var projects = await _projectRepository.GetAllProjectsAsync();
-        var users = _userManager.Users.ToList();
+        var users = await Utility.GetUsersExcludingSystemAsync(_userManager);
         if (show != "all" && !string.IsNullOrEmpty(userId))
         {
             tickets = tickets.Where(t =>
@@ -137,7 +138,7 @@ public class TicketController : Controller
         var viewModel = new CreateTicketViewModel
         {
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList()
+            AvailableUsers = await Utility.GetUsersExcludingSystemAsync(_userManager)
         };
 
         return View(viewModel);
@@ -178,9 +179,9 @@ public class TicketController : Controller
         _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status, null, ticket.Status.ToString(), currentUser?.Id);
 
         await _ticketHistoryRepository.SaveChangesAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-        
+
         if (ticket.AssignedUser != null)
         {
             var message = new Message
@@ -216,7 +217,7 @@ public class TicketController : Controller
             ProjectId = ticket.ProjectId,
             AssignedUserId = ticket.AssignedUser?.Id,
             AvailableProjects = await _projectRepository.GetAllProjectsAsync(),
-            AvailableUsers = _userManager.Users.ToList(),
+            AvailableUsers = await Utility.GetUsersExcludingSystemAsync(_userManager),
             Status = ticket.Status
 
         };
@@ -317,9 +318,9 @@ public class TicketController : Controller
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
         await _ticketHistoryRepository.SaveChangesAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-            
+
         var message = new Message
         {
             Sender = systemUser!,
@@ -391,9 +392,9 @@ public class TicketController : Controller
 
         _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
         await _ticketCommentsRepository.SaveCommentAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-            
+
         var message = new Message
         {
             Sender = systemUser!,

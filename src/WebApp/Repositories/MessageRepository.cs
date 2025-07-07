@@ -24,7 +24,7 @@ public class MessageRepository
     public async Task<IEnumerable<Message>> GetMessagesReceived(string userId)
     {
         return await _context.Messages
-            .Where(m => m.ReceiverId ==  userId)
+            .Where(m => m.ReceiverId == userId)
             .Include(m => m.Sender)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
@@ -33,7 +33,7 @@ public class MessageRepository
     public async Task<IEnumerable<Message>> GetMessagesSent(string userId)
     {
         return await _context.Messages
-            .Where(m => m.SenderId ==  userId)
+            .Where(m => m.SenderId == userId)
             .Include(m => m.Receiver)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
