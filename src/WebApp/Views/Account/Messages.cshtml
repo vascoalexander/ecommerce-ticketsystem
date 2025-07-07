@@ -17,12 +17,12 @@
 <ul class="nav nav-tabs" id="myMessageTabs" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab" aria-controls="received" aria-selected="true">
-            Empfangen (@Model.ReceivedMessages.Count())
+            Empfangen (@Model.ReceivedMessages.Where(m => m.IsDeletedReceiver == false).Count())
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab" aria-controls="sent" aria-selected="false">
-            Gesendet (@Model.SentMessages.Count())
+            Gesendet (@Model.SentMessages.Where(m => m.IsDeletedSender == false).Count())
         </button>
     </li>
 </ul>
@@ -34,18 +34,20 @@
         {
             <div class="list-group">
                 @foreach (var message in Model.ReceivedMessages)
-                {
-                    <div class="list-group-item list-group-item-action @(message.IsRead ? "" : "unread-message")" aria-current="true">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">@message.Subject@if (!message.IsRead){<span class="badge bg-primary ms-2" style="font-size: 12px; vertical-align: text-top;">NEU</span>}</h5>
-                            <small class="text-muted">@message.SentAt.ToString("g")</small>
+                {   @if (!message.IsDeletedReceiver)
+                    {
+                        <div class="list-group-item list-group-item-action @(message.IsRead ? "" : "unread-message")" aria-current="true">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">@message.Subject@if (!message.IsRead){<span class="badge bg-primary ms-2" style="font-size: 12px; vertical-align: text-top;">NEU</span>}</h5>
+                                <small class="text-muted">@message.SentAt.ToString("g")</small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Von:</strong> @message.Sender.UserName (@message.Sender.Email)
+                            </p>
+                            <small>@Utility.Truncate(@message.Body, @messageLength)...</small>
+                            <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })" class="stretched-link"></a>
                         </div>
-                        <p class="mb-1">
-                            <strong>Von:</strong> @message.Sender.UserName (@message.Sender.Email)
-                        </p>
-                        <small>@Utility.Truncate(@message.Body, @messageLength)...</small>
-                        <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })" class="stretched-link"></a>
-                    </div>
+                    }
                 }
             </div>
         }
@@ -62,17 +64,20 @@
             <div class="list-group">
                 @foreach (var message in Model.SentMessages)
                 {
-                    <div class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">@message.Subject</h5>
-                            <small class="text-muted">@message.SentAt.ToString("g")</small>
+                    @if (!message.IsDeletedSender)
+                    {
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">@message.Subject</h5>
+                                <small class="text-muted">@message.SentAt.ToString("g")</small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>An:</strong> @message.Receiver.UserName (@message.Receiver.Email)
+                            </p>
+                            <small>@Utility.Truncate(@message.Body, @messageLength)...</small>
+                            <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })" class="stretched-link"></a>
                         </div>
-                        <p class="mb-1">
-                            <strong>An:</strong> @message.Receiver.UserName (@message.Receiver.Email)
-                        </p>
-                        <small>@Utility.Truncate(@message.Body, @messageLength)...</small>
-                        <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })" class="stretched-link"></a>
-                    </div>
+                    }
                 }
             </div>
         }
