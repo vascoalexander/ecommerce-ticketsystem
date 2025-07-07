@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using WebApp.Repositories;
@@ -18,7 +17,6 @@ namespace WebApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-
         public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ProjectRepository projectRepository)
 
         {
@@ -26,7 +24,6 @@ namespace WebApp.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
 
         public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
         {
@@ -113,7 +110,6 @@ namespace WebApp.Controllers
             return View(model);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateUser(AdminUserViewModel model)
@@ -151,10 +147,11 @@ namespace WebApp.Controllers
 
             return View(model);
         }
+
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id); ;
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -165,14 +162,13 @@ namespace WebApp.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                IsActive = user.IsActive == true,
+                IsActive = user.IsActive,
                 AssignedRoles = userRoles,
                 SelectedRole = userRoles.FirstOrDefault(),
                 AvailableRoles = await _roleManager.Roles
                     .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                     .ToListAsync()
             };
-
             return View(model);
         }
 
@@ -180,7 +176,7 @@ namespace WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(AdminUserViewModel model, string? changeStatus)
         {
-            var existinguser = await _userManager.FindByIdAsync(model.Id);
+            var existinguser = await _userManager.FindByIdAsync(model.Id!);
 
             if (existinguser == null) return NotFound();
             if (!string.IsNullOrEmpty(changeStatus))
@@ -236,7 +232,7 @@ namespace WebApp.Controllers
             if (result.Succeeded)
             {
                 var currentRoles = await _userManager.GetRolesAsync(existinguser);
-                if (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1)
+                if (model.SelectedRole != null && (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1))
                 {
                     await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
                     if (!string.IsNullOrEmpty(model.SelectedRole))
@@ -260,7 +256,38 @@ namespace WebApp.Controllers
 
             return View(model);
         }
-        
+
+        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
+        {
+            var projects = await _projectRepository.GetAllProjectsAsync();
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                projects = projects
+                    .Where(p => p.Category == category)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                projects = projects
+                    .Where(p =>
+                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+            }
+
+            projects = sortOrder switch
+            {
+                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
+                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
+                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
+                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
+                _ => projects.OrderBy(p => p.Title).ToList(),
+            };
+            return View(projects);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProject(ProjectModel model)
@@ -276,21 +303,18 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreateProject()
+        public Task<IActionResult> CreateProject()
         {
 
-            return View(new ProjectModel
+            return Task.FromResult<IActionResult>(View(new ProjectModel
             {
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddYears(1),
                 Title = string.Empty,
                 Description = string.Empty,
-                
-    
 
-            });
+            }));
         }
-
 
         [HttpGet]
         public async Task<IActionResult> EditProject(int id)
@@ -306,24 +330,15 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProject(ProjectModel model, string changeStatus)
+        public async Task<IActionResult> EditProject(ProjectModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
-            if (!string.IsNullOrEmpty(changeStatus))
-            {
-                existingproject.ProjectActive = changeStatus == "activate";
-                await _projectRepository.UpdateProject(existingproject);
-                TempData["SuccessMessage"] = existingproject.ProjectActive
-                    ? "Projekt wurde aktiviert." : "Projekt wurde deaktiviert.";
-                return RedirectToAction(nameof(EditProject), new { id = existingproject.Id });
-            }
 
             model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
             model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
@@ -332,7 +347,6 @@ namespace WebApp.Controllers
             existingproject.Category = model.Category;
             existingproject.StartDate = model.StartDate;
             existingproject.EndDate = model.EndDate;
-
 
             await _projectRepository.UpdateProject(existingproject);
 
@@ -348,42 +362,28 @@ namespace WebApp.Controllers
             if (project == null) return NotFound();
             return View(project);
         }
+
         [HttpPost, ActionName("DeleteProject")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteProjectConfirmend(int id)
+        public async Task<IActionResult> DeleteProjectConfirmed(int id)
         {
             await _projectRepository.GetProjectById(id);
-            await _projectRepository.DeleteProject(id);
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
             return RedirectToAction("AdminPage");
         }
 
-        [HttpGet]
         public async Task<IActionResult> DetailsProject(int id)
         {
             var project = await _projectRepository.GetProjectById(id);
-            if (project == null)
-                return NotFound();
-
-            // ProjectActive nur im Speicher berechnen, z.B. aktiv wenn EndDate in der Zukunft:
-            project.ProjectActive = project.EndDate >= DateTime.Today;
-
-            var tickets = project.Tickets?.ToList() ?? new List<TicketModel>();
-
+            if (project == null) return NotFound();
+            var tickets = project.Tickets.ToList();
             var viewModel = new ProjectDetailViewModel
             {
                 Project = project,
-                Tickets = tickets
+                Tickets = tickets,
             };
 
-            return View(viewModel); 
+            return View(viewModel);
         }
-
-
-
-
-
-
-
     }
 }

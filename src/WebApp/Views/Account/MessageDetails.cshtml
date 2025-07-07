@@ -4,32 +4,40 @@
     ViewBag.Title = "Nachricht Details";
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
-<div class="mt-4">
-    <h1>@ViewData["Title"]</h1>
-    <hr />
+
+<div class="container my-5">
+    <div class="mb-4">
+        <a href="@Url.Action("Messages", "Account")" class="btn btn-outline-secondary">
+            Zurück zur Nachrichtenübersicht
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">@ViewData["Title"]</h2>
+    </div>
 
     @if (Model != null)
     {
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
                     @if (Model.SenderId == currentUserId)
                     {
                         <h5>
-                            <span class="badge bg-primary">Gesendet</span>
+                            <span class="badge bg-primary me-2">Gesendet</span>
                             An: @Model.Receiver.UserName (@Model.Receiver.Email)
                         </h5>
                     }
                     else
                     {
                         <h5>
-                            <span class="badge bg-success">Empfangen</span>
+                            <span class="badge bg-success me-2">Empfangen</span>
                             Von: @Model.Sender.UserName (@Model.Sender.Email)
                         </h5>
                     }
-                    <small class="text-muted">@Model.SentAt.ToString("g")</small>
+                    <h4 class="mb-0">@Model.Subject</h4>
                 </div>
-                <h4>@Model.Subject</h4>
+                <small class="text-muted">@Model.SentAt.ToString("g")</small>
             </div>
             <div class="card-body">
                 <pre class="card-text">@Model.Body</pre>
@@ -37,7 +45,7 @@
             <div class="card-footer text-muted">
                 @if (Model.IsRead)
                 {
-                    <span>Gelesen: @Model.SentAt.ToString("g")</span> @* Kannst auch ein 'Gelesen am' Datum speichern *@
+                    <span>Gelesen: @Model.SentAt.ToString("g")</span>
                 }
                 else
                 {
@@ -46,8 +54,7 @@
             </div>
         </div>
 
-        <div class="mt-3">
-            <a asp-action="Messages" class="btn btn-outline-secondary">Zurück zur Nachrichtenübersicht</a>
+        <div class="mt-4">
             @if (Model.ReceiverId == currentUserId)
             {
                 <a asp-action="SendMessage" asp-route-replyToMessageId="@Model.Id" class="btn btn-dark">Antworten</a>
@@ -62,3 +69,10 @@
     }
 </div>
 
+<style>
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: inherit;
+    }
+</style>

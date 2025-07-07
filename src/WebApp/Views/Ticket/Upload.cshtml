@@ -3,18 +3,31 @@
 }
 @model WebApp.ViewModels.UploadViewModel
 
-<div class="container mt-4">
-    <h1>Upload Image</h1>
-    <form asp-action="Upload" method="post" enctype="multipart/form-data">
-        <input type="hidden" asp-for="TicketId" />
-        <div class="mb-2">
-            <label asp-for="UploadedFile" class="form-label"></label>
-            <input asp-for="UploadedFile" class="form-control"></input>
-            <span asp-validation-for="UploadedFile"></span>
+<div class="container mt-5">
+    <div class="mb-3">
+        <a href="@Url.Action("Ticketlist", "Ticket")" class="btn btn-outline-secondary">
+            ← Zurück zur Ticketliste
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-White text-black">
+            <h4 class="mb-0">Datei hochladen</h4>
         </div>
-        <div class="mb-2">
-            <a asp-action="TicketList" asp-controller="Ticket" class="btn btn-outline-secondary">Zurück zur Übersicht</a>
-            <button type="submit" class="btn btn-success">Speichern</button>
+        <div class="card-body">
+            <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="TicketId" />
+
+                <div class="mb-3">
+                    <label asp-for="UploadedFile" class="form-label">Datei auswählen</label>
+                    <input asp-for="UploadedFile" class="form-control" type="file" />
+                    <span asp-validation-for="UploadedFile" class="text-danger"></span>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-dark">Speichern</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>

@@ -13,7 +13,7 @@ public class MessageRepository
         _context = context;
     }
 
-    public async Task<Message> GetMessageById(int id)
+    public async Task<Message?> GetMessageById(int id)
     {
         return (await _context.Messages
             .Include(m => m.Sender)
@@ -24,7 +24,16 @@ public class MessageRepository
     public async Task<IEnumerable<Message>> GetMessagesReceived(string userId)
     {
         return await _context.Messages
-            .Where(m => m.ReceiverId == userId)
+            .Where(m => m.ReceiverId == userId && m.Sender.UserName != "system")
+            .Include(m => m.Sender)
+            .OrderByDescending(m => m.SentAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Message>> GetSystemMessageReceived(string userId)
+    {
+        return await _context.Messages
+            .Where(m => m.ReceiverId == userId && m.Sender.UserName == "system")
             .Include(m => m.Sender)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
@@ -39,21 +48,19 @@ public class MessageRepository
             .ToListAsync();
     }
 
-    // public async Task GetUnreadMessages(string userId)
-    // {
-    //     var user = _context.Users.FirstOrDefault(u => u.Id == userId);
-    //     return await user.ReceivedMessages
-    //         .Where(m => m.ReceiverId == userId)
-    //         .Select(m => m.IsRead == false)
-    //         .Count();
-    // }
+    public async Task<int> GetUnreadMessages(string userId)
+    {
+        return await _context.Messages
+            .Where(m => m.SenderId ==  userId && !m.IsRead)
+            .CountAsync();
+    }
 
     public async Task AddMessage(Message message)
     {
         await _context.Messages.AddAsync(message);
     }
 
-    public async Task UpdateMessage(Message message)
+    public void UpdateMessage(Message message)
     {
         _context.Messages.Update(message);
     }
