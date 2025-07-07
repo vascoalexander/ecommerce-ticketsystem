@@ -6,7 +6,7 @@
 <div class="container my-5">
     <h2 class="mb-4">Benutzer bearbeiten</h2>
 
-    <form asp-action="EditUser" method="post" autocomplete="off">
+    <form asp-action="EditUser" method="post" autocomplete="off" id="editForm">
         <input type="hidden" asp-for="Id" />
 
         <div class="mb-3">
@@ -20,16 +20,9 @@
             <input asp-for="Email" type="email" class="form-control" autocomplete="email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
+      
 
-        
-
-        <div class="mb-3">
-            <label asp-for="IsActive" class="form-label">Status</label>
-            <select asp-for="IsActive" class="form-select">
-                <option value="true" selected="@Model.IsActive">Aktiv</option>
-                <option value="false" selected="!@Model.IsActive">Inaktiv</option>
-            </select>
-        </div>
+     
 
         <div class="mb-3">
             <label asp-for="SelectedRole" class="form-label">Rolle</label>
@@ -51,22 +44,54 @@
         <div class="d-flex gap-2 ms-auto">
             
             <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-danger">Abbrechen</a>
-            @if (Model.IsActive == false)
+           
+            @if (Model.IsActive)
             {
-                <button type="submit" name="submitAction" value="reopen" class="btn btn-outline-success">User aktivieren</button>
+                <button name="changeStatus" value="deactivate" class="btn btn-warning">User deaktivieren</button>
             }
             else
             {
-               
-                <a href="@Url.Action("DeleteUser", "Admin")" class="btn btn-outline-danger">User deaktivieren</a>
+                <button name="changeStatus" value="activate" class="btn btn-outline-success">User aktivieren</button>
             }
 
-            <button type="submit" name="submitAction" value="save" class="btn btn-outline-success">Speichern</button>
+         
 
+            <button type="button" id="saveBtn" name="submitAction" value="save" class="btn btn-outline-success">Speichern</button>
+     
         </div>
+
+<div id="confirmBox" style="display:none; position:fixed; left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2000;">
+    <div style="background:white;padding:30px;border-radius:10px;max-width:350px;margin:10vh auto;box-shadow:0 3px 10px #0002;">
+        <p>Sind Sie sicher, dass Sie speichern wollen?</p>
+        <button id="confirmYes" class="btn btn-success">Ja, speichern</button>
+        <button id="confirmNo" class="btn btn-secondary">Abbrechen</button>
+    </div>
+</div>
     </form>
+
 </div>
 
+
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        // Speichern-Button öffnet das Modal
+        document.getElementById("saveBtn").addEventListener("click", function (e) {
+            e.preventDefault(); // Damit kein Submit passiert
+            document.getElementById("confirmBox").style.display = "block";
+        });
+
+        // Ja, speichern: Formular absenden
+        document.getElementById("confirmYes").addEventListener("click", function () {
+            document.getElementById("editForm").submit();
+        });
+
+        // Abbrechen: Modal schließen, Formular NICHT absenden
+        document.getElementById("confirmNo").addEventListener("click", function () {
+            document.getElementById("confirmBox").style.display = "none";
+        });
+    </script>
 }
+
+
+

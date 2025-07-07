@@ -100,8 +100,8 @@ public static class DbInitializer
                 AppUser receiver;
                 do
                 {
-                    sender =  users[random.Next(users.Count)];
-                    receiver =  users[random.Next(users.Count)];
+                    sender = users[random.Next(users.Count)];
+                    receiver = users[random.Next(users.Count)];
                 } while (sender == receiver);
 
                 var message = new Message
