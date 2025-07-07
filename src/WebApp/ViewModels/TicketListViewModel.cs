@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using WebApp.Models;
 
 namespace WebApp.ViewModels;

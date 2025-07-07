@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using WebApp.Repositories;
@@ -18,7 +17,6 @@ namespace WebApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-
         public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ProjectRepository projectRepository)
 
         {
@@ -26,7 +24,6 @@ namespace WebApp.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
 
         public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
         {
@@ -65,10 +62,6 @@ namespace WebApp.Controllers
             bool includeInactive = false)
         {
             var users = await _userManager.Users.ToListAsync();
-            if (!includeInactive)
-            {
-                users.Where(u => u.IsActive).ToList();
-            }
 
             var viewModel = new AdminUserManagementViewModel();
 
@@ -90,31 +83,6 @@ namespace WebApp.Controllers
             return View(viewModel);
         }
 
-
-        [HttpGet]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-            var model = new AdminUserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                AssignedRoles = await _userManager.GetRolesAsync(user)
-            };
-            return View(model);
-        }
-
-        [HttpPost, ActionName("DeleteUser")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUserConfirmend(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-            await _userManager.DeleteAsync(user);
-            return RedirectToAction("UserManagement");
-        }
-
         [HttpGet]
         public async Task<IActionResult> CreateUser()
         {
@@ -126,7 +94,6 @@ namespace WebApp.Controllers
             };
             return View(model);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -143,7 +110,7 @@ namespace WebApp.Controllers
                     IsActive = true
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user, model.Password!);
 
                 if (result.Succeeded)
                 {
@@ -160,18 +127,17 @@ namespace WebApp.Controllers
                     ModelState.AddModelError("", error.Description);
                 }
             }
-
-          
             model.AvailableRoles = await _roleManager.Roles
                 .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                 .ToListAsync();
 
             return View(model);
         }
+
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);;
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -182,14 +148,13 @@ namespace WebApp.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                IsActive = user.IsActive == true,
+                IsActive = user.IsActive,
                 AssignedRoles = userRoles,
                 SelectedRole = userRoles.FirstOrDefault(),
                 AvailableRoles = await _roleManager.Roles
                     .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                     .ToListAsync()
             };
-
             return View(model);   
         }
 
@@ -197,94 +162,59 @@ namespace WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser( AdminUserViewModel model)
         {
-            var existinguser = await _userManager.FindByIdAsync(model.Id);
-            ;
-            
-
-            if (existinguser == null) return NotFound();
-            existinguser.UserName = model.UserName;
-            existinguser.IsActive = model.IsActive;
-            existinguser.Email = model.Email;
-
-            if (!string.IsNullOrWhiteSpace(model.Password))
+            if (model.Id != null)
             {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(existinguser);
-                var passwordResult = await _userManager.ResetPasswordAsync(existinguser, token, model.Password);
-                if (!passwordResult.Succeeded)
+                var existinguser = await _userManager.FindByIdAsync(model.Id);
+
+                if (existinguser == null) return NotFound();
+                existinguser.UserName = model.UserName;
+                existinguser.IsActive = model.IsActive;
+                existinguser.Email = model.Email;
+
+                if (!string.IsNullOrWhiteSpace(model.Password))
                 {
-                    foreach (var error in passwordResult.Errors)
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(existinguser);
+                    var passwordResult = await _userManager.ResetPasswordAsync(existinguser, token, model.Password);
+                    if (!passwordResult.Succeeded)
                     {
-                        ModelState.AddModelError("", error.Description);
-                        model.AvailableRoles = await _roleManager.Roles
-                            .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                            .ToListAsync();
-                        return View(model);
+                        foreach (var error in passwordResult.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                            model.AvailableRoles = await _roleManager.Roles
+                                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                                .ToListAsync();
+                            return View(model);
+                        }
                     }
                 }
-            }
-            var result = await _userManager.UpdateAsync(existinguser);
-            if (result.Succeeded)
-            {
-                var currentRoles = await _userManager.GetRolesAsync(existinguser);
 
-                if (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1)
+                var result = await _userManager.UpdateAsync(existinguser);
+                if (result.Succeeded)
                 {
-                    await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
-                    if (!string.IsNullOrEmpty(model.SelectedRole))
+                    var currentRoles = await _userManager.GetRolesAsync(existinguser);
+
+                    if (model.SelectedRole != null && (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1))
                     {
-                        await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
+                        await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
+                        if (!string.IsNullOrEmpty(model.SelectedRole))
+                        {
+                            await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
+                        }
                     }
+
+                    TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
+                    return RedirectToAction(nameof(UserManagement));
                 }
-                
-                TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
-                return RedirectToAction(nameof(UserManagement));
-            }
-            model.AvailableRoles = await _roleManager.Roles
-                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                .ToListAsync();
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
+
+                model.AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync();
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
             }
             return View(model);
-        
-    }
-    
-
-
-public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
-        {
-            var projects = await _projectRepository.GetAllProjectsAsync();
-
-
-            if (!string.IsNullOrEmpty(category))
-            {
-                projects = projects
-                    .Where(p => p.Category == category)
-                    .ToList();
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                projects = projects
-                    .Where(p =>
-                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
-                    .ToList();
-            }
-
-            projects = sortOrder switch
-            {
-                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
-                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
-                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
-                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
-                _ => projects.OrderBy(p => p.Title).ToList(),
-            };
-
-
-
-            return View(projects);
         }
 
         [HttpPost]
@@ -302,19 +232,18 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreateProject()
+        public Task<IActionResult> CreateProject()
         {
 
-            return View(new ProjectModel
+            return Task.FromResult<IActionResult>(View(new ProjectModel
             {
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddYears(1),
                 Title = string.Empty,
                 Description = string.Empty,
 
-            });
+            }));
         }
-
 
         [HttpGet]
         public async Task<IActionResult> EditProject(int id)
@@ -336,7 +265,6 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
             {
                 return View(model);
             }
-            
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
@@ -348,11 +276,10 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
             existingproject.Category = model.Category;
             existingproject.StartDate = model.StartDate;
             existingproject.EndDate = model.EndDate;
-            
 
             await _projectRepository.UpdateProject(existingproject);
 
-          
+
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
             return RedirectToAction(nameof(AdminPage));
         }
@@ -366,7 +293,7 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
         }
         [HttpPost, ActionName("DeleteProject")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteProjectConfirmend(int id)
+        public async Task<IActionResult> DeleteProjectConfirmed(int id)
         {
             await _projectRepository.GetProjectById(id);
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
@@ -385,14 +312,6 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
             };
 
             return View(viewModel);
-
         }
-
-
-
-
-
-
-
     }
 }

@@ -10,12 +10,9 @@ public class AppUser : IdentityUser
     [StringLength(20)]
     public string UserTheme { get; set; } = "standard";
 
-    public ICollection<TicketModel>? Tickets { get; set; }
+    public ICollection<TicketModel> Tickets { get; set; } = new List<TicketModel>();
     [DefaultValue(true)] public bool IsActive { get; set; } = true;
 
     public ICollection<Message> SentMessages { get; set; } = new List<Message>();
     public ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
-
-    public AppUser() : base() { }
-    public AppUser(string userName) : base(userName) { }
 }

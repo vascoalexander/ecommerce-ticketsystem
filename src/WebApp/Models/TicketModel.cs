@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 
 namespace WebApp.Models;
 
@@ -15,12 +14,13 @@ public enum TicketStatus
 public class TicketModel
 {
     public int Id { get; set; }
+
     [StringLength(60, ErrorMessage = "Der Titel darf maximal 60 Zeichen lang sein.")]
     [Required]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
     [StringLength(2000, ErrorMessage = "Die Beschreibung darf maximal 2000 Zeichen lang sein.")]
     [Required]
-    public string Description { get; set; }
+    public string Description { get; set; } = null!;
     [Required]
     public DateTime CreatedAt { get; set; }
     [Required]
@@ -30,11 +30,11 @@ public class TicketModel
 
     public int ProjectId { get; set; }
     [Required]
-    public ProjectModel Project { get; set; }
+    public ProjectModel Project { get; set; } = null!;
 
     public string CreatorUserId { get; set; } = string.Empty;
     [Required]
-    public AppUser CreatorUser { get; set; }
+    public AppUser CreatorUser { get; set; } = null!;
 
     public string? AssignedUserId { get; set; }
     public AppUser? AssignedUser { get; set; }

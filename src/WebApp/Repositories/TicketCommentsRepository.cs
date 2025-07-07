@@ -31,7 +31,6 @@ public class TicketCommentsRepository
             comment.Content = content;
             comment.CreatorUserId = creatorUserId;
         }
-        ;
 
         _context.Add(comment);
     }
