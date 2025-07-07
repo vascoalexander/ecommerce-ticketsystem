@@ -13,7 +13,7 @@ public static class Utility
         }
         return s;
     }
-    
+
     public static async Task<List<AppUser>> GetUsersExcludingSystemAsync(UserManager<AppUser> userManager)
     {
         var systemUser = await userManager.FindByNameAsync("system");

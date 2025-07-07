@@ -48,7 +48,7 @@ public class TicketRepository
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
     }
-    
+
     public async Task<List<TicketModel>> GetTicketsForUserAsync(string userId)
     {
         return await _context.Tickets
