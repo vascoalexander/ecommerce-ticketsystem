@@ -46,6 +46,11 @@ public class AccountController : Controller
             var user = await _userManager.FindByEmailAsync(viewModel.Email);
             if (user != null)
             {
+                if (!user.IsActive)
+                {
+                    viewModel.ErrorMessage = "Ihr Benutzerkonto ist deaktiviert.";
+                    return View(viewModel);
+                }
                 await _signInManager.SignOutAsync();
                 var result = await _signInManager
                     .PasswordSignInAsync(
@@ -252,7 +257,9 @@ public class AccountController : Controller
                 if (!string.IsNullOrEmpty(originalMessage.Subject) && !originalMessage.Subject.StartsWith("Re: "))
                 {
                     model.Subject = $"Re: {originalMessage.Subject}";
-                } else if (!string.IsNullOrEmpty(originalMessage.Subject)) {
+                }
+                else if (!string.IsNullOrEmpty(originalMessage.Subject))
+                {
                     model.Subject = originalMessage.Subject;
                 }
             }

@@ -14,7 +14,7 @@ public class ProjectModel
     [StringLength(40)]
     public string? Category { get; set; } = String.Empty;
 
-    public DateTime StartDate { get; set; } 
+    public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public virtual ICollection<TicketModel>? Tickets { get; set; }
 }

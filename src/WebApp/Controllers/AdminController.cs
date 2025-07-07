@@ -67,10 +67,23 @@ namespace WebApp.Controllers
             var users = await _userManager.Users.ToListAsync();
             if (!includeInactive)
             {
-                users.Where(u => u.IsActive).ToList();
+                users = users.Where(u => u.IsActive).ToList();
             }
 
-            var viewModel = new AdminUserManagementViewModel();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users
+                    .Where(u => u.UserName != null && u.UserName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var viewModel = new AdminUserManagementViewModel
+            {
+                IncludeInactive = includeInactive,
+                Search = search,
+                Users = new List<AdminUserViewModel>()
+            }
+            ;
 
             foreach (var user in users)
             {
@@ -83,38 +96,11 @@ namespace WebApp.Controllers
                     IsActive = user.IsActive,
                     AssignedRoles = userRoles
                 });
-                
-                viewModel.Users = viewModel.Users.Where(u => u.IsActive).ToList();
+
             }
 
             return View(viewModel);
         }
-
-
-        [HttpGet]
-        public async Task<IActionResult> DeactivateUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-            var model = new AdminUserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                AssignedRoles = await _userManager.GetRolesAsync(user)
-            };
-            return View(model);
-        }
-
-        [HttpPost, ActionName("DeactivateUser")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeactivateUserConfirmend(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-            await _userManager.DeleteAsync(user);
-            return RedirectToAction("UserManagement");
-        }
-
         [HttpGet]
         public async Task<IActionResult> CreateUser()
         {
@@ -138,12 +124,10 @@ namespace WebApp.Controllers
                 {
                     UserName = model.UserName,
                     Email = model.Email,
-                    PasswordHash = model.Password,
-
                     IsActive = true
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await _userManager.CreateAsync(user, model.Password!);
 
                 if (result.Succeeded)
                 {
@@ -161,7 +145,6 @@ namespace WebApp.Controllers
                 }
             }
 
-          
             model.AvailableRoles = await _roleManager.Roles
                 .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                 .ToListAsync();
@@ -171,7 +154,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id); ;
             if (user == null)
             {
                 return NotFound();
@@ -190,21 +173,47 @@ namespace WebApp.Controllers
                     .ToListAsync()
             };
 
-            return View(model);   
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser( AdminUserViewModel model)
+        public async Task<IActionResult> EditUser(AdminUserViewModel model, string? changeStatus)
         {
             var existinguser = await _userManager.FindByIdAsync(model.Id);
-            ;
-            
 
             if (existinguser == null) return NotFound();
+            if (!string.IsNullOrEmpty(changeStatus))
+            {
+                existinguser.IsActive = changeStatus == "activate";
+                await _userManager.UpdateAsync(existinguser);
+                TempData["SuccessMessage"] = existinguser.IsActive
+                    ? "User wurde aktiviert." : "User wurde deaktiviert.";
+                return RedirectToAction(nameof(EditUser), new { id = existinguser.Id });
+            }
+
             existinguser.UserName = model.UserName;
-            existinguser.IsActive = model.IsActive;
             existinguser.Email = model.Email;
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
+                {
+                    ModelState.AddModelError("ConfirmNewPassword", "Bitte bestätigen Sie das neue Passwort.");
+                }
+                else if (model.Password != model.ConfirmNewPassword)
+                {
+                    ModelState.AddModelError("ConfirmNewPassword", "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync();
+                return View(model);
+            }
 
             if (!string.IsNullOrWhiteSpace(model.Password))
             {
@@ -215,18 +224,18 @@ namespace WebApp.Controllers
                     foreach (var error in passwordResult.Errors)
                     {
                         ModelState.AddModelError("", error.Description);
-                        model.AvailableRoles = await _roleManager.Roles
-                            .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                            .ToListAsync();
-                        return View(model);
                     }
+                    model.AvailableRoles = await _roleManager.Roles
+                        .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                        .ToListAsync();
+                    return View(model);
                 }
             }
+
             var result = await _userManager.UpdateAsync(existinguser);
             if (result.Succeeded)
             {
                 var currentRoles = await _userManager.GetRolesAsync(existinguser);
-
                 if (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1)
                 {
                     await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
@@ -235,24 +244,27 @@ namespace WebApp.Controllers
                         await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
                     }
                 }
-                
+
                 TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
                 return RedirectToAction(nameof(UserManagement));
             }
+
             model.AvailableRoles = await _roleManager.Roles
                 .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
                 .ToListAsync();
+
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error.Description);
             }
+
             return View(model);
-        
-    }
-    
+        }
 
 
-public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
+
+
+        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
 
@@ -336,7 +348,7 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
             {
                 return View(model);
             }
-            
+
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
@@ -348,11 +360,11 @@ public async Task<IActionResult> ProjectsList(string? search, int? id, string? c
             existingproject.Category = model.Category;
             existingproject.StartDate = model.StartDate;
             existingproject.EndDate = model.EndDate;
-            
+
 
             await _projectRepository.UpdateProject(existingproject);
 
-          
+
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
             return RedirectToAction(nameof(AdminPage));
         }

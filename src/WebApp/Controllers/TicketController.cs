@@ -179,9 +179,9 @@ public class TicketController : Controller
         _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status, null, ticket.Status.ToString(), currentUser?.Id);
 
         await _ticketHistoryRepository.SaveChangesAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-        
+
         if (ticket.AssignedUser != null)
         {
             var message = new Message
@@ -318,9 +318,9 @@ public class TicketController : Controller
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
         await _ticketHistoryRepository.SaveChangesAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-            
+
         var message = new Message
         {
             Sender = systemUser!,
@@ -392,9 +392,9 @@ public class TicketController : Controller
 
         _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
         await _ticketCommentsRepository.SaveCommentAsync();
-        
+
         var systemUser = await _userManager.FindByNameAsync("system");
-            
+
         var message = new Message
         {
             Sender = systemUser!,
