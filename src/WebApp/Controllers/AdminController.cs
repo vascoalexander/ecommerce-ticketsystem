@@ -260,45 +260,7 @@ namespace WebApp.Controllers
 
             return View(model);
         }
-
-
-
-
-        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
-        {
-            var projects = await _projectRepository.GetAllProjectsAsync();
-
-
-            if (!string.IsNullOrEmpty(category))
-            {
-                projects = projects
-                    .Where(p => p.Category == category)
-                    .ToList();
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                projects = projects
-                    .Where(p =>
-                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
-                    .ToList();
-            }
-
-            projects = sortOrder switch
-            {
-                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
-                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
-                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
-                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
-                _ => projects.OrderBy(p => p.Title).ToList(),
-            };
-
-
-
-            return View(projects);
-        }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProject(ProjectModel model)
@@ -323,6 +285,8 @@ namespace WebApp.Controllers
                 EndDate = DateTime.Today.AddYears(1),
                 Title = string.Empty,
                 Description = string.Empty,
+                
+    
 
             });
         }
@@ -342,7 +306,7 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProject(ProjectModel model)
+        public async Task<IActionResult> EditProject(ProjectModel model, string changeStatus)
         {
             if (!ModelState.IsValid)
             {
@@ -352,6 +316,14 @@ namespace WebApp.Controllers
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
+            if (!string.IsNullOrEmpty(changeStatus))
+            {
+                existingproject.ProjectActive = changeStatus == "activate";
+                await _projectRepository.UpdateProject(existingproject);
+                TempData["SuccessMessage"] = existingproject.ProjectActive
+                    ? "Projekt wurde aktiviert." : "Projekt wurde deaktiviert.";
+                return RedirectToAction(nameof(EditProject), new { id = existingproject.Id });
+            }
 
             model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
             model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
@@ -381,23 +353,30 @@ namespace WebApp.Controllers
         public async Task<IActionResult> DeleteProjectConfirmend(int id)
         {
             await _projectRepository.GetProjectById(id);
+            await _projectRepository.DeleteProject(id);
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
             return RedirectToAction("AdminPage");
         }
 
+        [HttpGet]
         public async Task<IActionResult> DetailsProject(int id)
         {
             var project = await _projectRepository.GetProjectById(id);
-            if (project == null) return NotFound();
+            if (project == null)
+                return NotFound();
+
+            // ProjectActive nur im Speicher berechnen, z.B. aktiv wenn EndDate in der Zukunft:
+            project.ProjectActive = project.EndDate >= DateTime.Today;
+
             var tickets = project.Tickets?.ToList() ?? new List<TicketModel>();
+
             var viewModel = new ProjectDetailViewModel
             {
                 Project = project,
-                Tickets = tickets,
+                Tickets = tickets
             };
 
-            return View(viewModel);
-
+            return View(viewModel); 
         }
 
 

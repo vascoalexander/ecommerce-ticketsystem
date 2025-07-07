@@ -1,4 +1,5 @@
-﻿@model List<WebApp.Models.ProjectModel>
+﻿@using WebApp.ViewModels
+@model List<WebApp.Models.ProjectModel>
 @{
     ViewBag.Title = "Admin-Bereich";
 }
@@ -69,7 +70,14 @@
                             <div class="text-muted small">@projcet.Description</div>
                         </td>
                         <td>@projcet.Category</td>
-                        <td><span class="badge bg-success">Aktiv</span></td>
+                        <td>  @if (projcet.ProjectActive)
+                              {
+                                  <span class="badge bg-success">Aktiv</span>
+                              }
+                              else
+                              {
+                                  <span class="badge bg-secondary">Inaktiv</span>
+                              }</td>
                         <td>@projcet.StartDate.ToString("dd.MM.yyyy")</td>
                         <td>@projcet.EndDate.ToString("dd.MM.yyyy")</td>
                         <td>
