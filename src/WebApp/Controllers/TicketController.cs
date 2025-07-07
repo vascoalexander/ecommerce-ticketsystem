@@ -171,14 +171,6 @@ public class TicketController : Controller
 
         await _ticketRepository.CreateTicketAsync(ticket);
 
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Title, null, ticket.Title, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Description, null, ticket.Description, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Project, null, project?.Title, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.AssignedUser, null, assignedUser?.UserName, currentUser?.Id);
-        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status, null, ticket.Status.ToString(), currentUser?.Id);
-
-        await _ticketHistoryRepository.SaveChangesAsync();
-
         var systemUser = await _userManager.FindByNameAsync("system");
 
         if (ticket.AssignedUser != null)
@@ -223,8 +215,7 @@ public class TicketController : Controller
 
         return View(viewModel);
     }
-
-    [HttpPost]
+    
     [HttpPost]
     public async Task<IActionResult> Edit(EditTicketViewModel viewModel, string submitAction)
     {
@@ -235,10 +226,24 @@ public class TicketController : Controller
 
         if (submitAction == "close")
         {
+            if (ticketToUpdate.AssignedUser != null)
+            {
+                var oldUserName = ticketToUpdate.AssignedUser?.UserName;
+
+                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser,
+                    oldUserName, null, currentUser?.Id);
+            }
+            
+            ticketToUpdate.AssignedUser = null;
+
+            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status,
+                ticketToUpdate.Status.ToString(), TicketStatus.Closed.ToString(), currentUser?.Id);
+            
             ticketToUpdate.Status = TicketStatus.Closed;
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.Closed), currentUser?.Id);
+
             await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
             await _ticketHistoryRepository.SaveChangesAsync();
+
             TempData["ToastMessage"] = "Ticket erfolgreich geschlossen.";
             return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
         }
@@ -246,12 +251,29 @@ public class TicketController : Controller
         if (submitAction == "reopen")
         {
             var previousStatus = ticketToUpdate.Status;
+            var previousAssignee = ticketToUpdate.AssignedUser;
+
             ticketToUpdate.Status = TicketStatus.Open;
-            ticketToUpdate.AssignedUser = null;
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, previousStatus.ToString(), nameof(TicketStatus.Open), currentUser?.Id);
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, ticketToUpdate.AssignedUser?.UserName, null, currentUser?.Id);
+
+            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status,
+                previousStatus.ToString(), TicketStatus.Open.ToString(), currentUser?.Id);
+
+            var newAssignedUser = await _userManager.FindByIdAsync(viewModel.AssignedUserId);
+
+            var oldUserName = previousAssignee?.UserName;
+            var newUserName = newAssignedUser?.UserName;
+
+            if (oldUserName != newUserName)
+            {
+                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser,
+                    oldUserName, newUserName, currentUser?.Id);
+
+                ticketToUpdate.AssignedUser = newAssignedUser;
+            }
+
             await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
             await _ticketHistoryRepository.SaveChangesAsync();
+
             TempData["ToastMessage"] = "Ticket wurde wieder geöffnet.";
             return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
         }
@@ -270,13 +292,15 @@ public class TicketController : Controller
 
         if (ticketToUpdate.Title != viewModel.Title)
         {
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Title, ticketToUpdate.Title, viewModel.Title, currentUser?.Id);
+            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Title,
+                ticketToUpdate.Title, viewModel.Title, currentUser?.Id);
             ticketToUpdate.Title = viewModel.Title;
         }
 
         if (ticketToUpdate.Description != viewModel.Description)
         {
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Description, ticketToUpdate.Description, viewModel.Description, currentUser?.Id);
+            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Description,
+                ticketToUpdate.Description, viewModel.Description, currentUser?.Id);
             ticketToUpdate.Description = viewModel.Description;
         }
 
@@ -284,60 +308,23 @@ public class TicketController : Controller
         {
             var oldProject = ticketToUpdate.Project.Title;
             var newProject = (await _projectRepository.GetProjectById(viewModel.ProjectId))?.Title;
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Project, oldProject, newProject, currentUser?.Id);
+
+            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Project,
+                oldProject, newProject, currentUser?.Id);
+
             ticketToUpdate.ProjectId = viewModel.ProjectId;
         }
 
-        var oldAssignedUserId = ticketToUpdate.AssignedUser?.Id;
-        var newAssignedUserId = viewModel.AssignedUserId;
-
-        if (oldAssignedUserId != newAssignedUserId)
-        {
-            var oldUserName = ticketToUpdate.AssignedUser?.UserName;
-            var newUserName = assignedUser.UserName;
-
-            _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
-
-            if (string.IsNullOrEmpty(newAssignedUserId))
-            {
-                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.Open), currentUser?.Id);
-                ticketToUpdate.Status = TicketStatus.Open;
-                ticketToUpdate.AssignedUser = null;
-            }
-            else
-            {
-                _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.Status, ticketToUpdate.Status.ToString(), nameof(TicketStatus.InProgress), currentUser?.Id);
-                ticketToUpdate.Status = TicketStatus.InProgress;
-                ticketToUpdate.AssignedUser = assignedUser;
-            }
-        }
-        else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
-        {
-            ticketToUpdate.Status = TicketStatus.InProgress;
-        }
+        await HandleUserAssignmentChanges(ticketToUpdate, viewModel, currentUser);
 
         await _ticketRepository.UpdateTicketAsync(ticketToUpdate);
         await _ticketHistoryRepository.SaveChangesAsync();
 
-        var systemUser = await _userManager.FindByNameAsync("system");
-
-        var message = new Message
-        {
-            Sender = systemUser!,
-            SenderId = systemUser!.Id,
-            Receiver = assignedUser,
-            ReceiverId = assignedUser.Id,
-            SentAt = DateTime.Now.ToUniversalTime(),
-            Subject = $"Sie wurden dem Ticket mit der ID: {ticketToUpdate.Id} für die bearbeitung zugewiesen",
-            Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUser!.UserName} um {DateTime.Now.ToUniversalTime()}"
-
-        };
-        await _messageRepository.AddMessage(message);
-        await _messageRepository.SaveChangesAsync();
-
         TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
         return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
     }
+
+
 
 
 
@@ -517,4 +504,66 @@ public class TicketController : Controller
 
         return File(memory, "application/octet-stream", file.OriginalName);
     }
+    
+    private async Task HandleUserAssignmentChanges(TicketModel ticket, EditTicketViewModel viewModel, AppUser? currentUser)
+{
+    var oldAssignedUserId = ticket.AssignedUser?.Id;
+    var newAssignedUserId = viewModel.AssignedUserId;
+    var assignedUser = !string.IsNullOrEmpty(newAssignedUserId)
+        ? await _userManager.FindByIdAsync(newAssignedUserId)
+        : null;
+
+    if (oldAssignedUserId != newAssignedUserId)
+    {
+        var oldUserName = ticket.AssignedUser?.UserName;
+        var newUserName = assignedUser?.UserName;
+
+        _ticketHistoryRepository.TrackChange(ticket, TicketProperty.AssignedUser,
+            oldUserName, newUserName, currentUser?.Id);
+
+        if (string.IsNullOrEmpty(newAssignedUserId))
+        {
+            if (ticket.Status != TicketStatus.Open)
+            {
+                _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status,
+                    ticket.Status.ToString(), TicketStatus.Open.ToString(), currentUser?.Id);
+                ticket.Status = TicketStatus.Open;
+            }
+
+            ticket.AssignedUser = null;
+        }
+        else
+        {
+            if (ticket.Status != TicketStatus.InProgress)
+            {
+                _ticketHistoryRepository.TrackChange(ticket, TicketProperty.Status,
+                    ticket.Status.ToString(), TicketStatus.InProgress.ToString(), currentUser?.Id);
+                ticket.Status = TicketStatus.InProgress;
+            }
+
+            ticket.AssignedUser = assignedUser;
+
+            var systemUser = await _userManager.FindByNameAsync("system");
+
+            var message = new Message
+            {
+                Sender = systemUser!,
+                SenderId = systemUser.Id,
+                Receiver = assignedUser!,
+                ReceiverId = assignedUser.Id,
+                SentAt = DateTime.Now.ToUniversalTime(),
+                Subject = $"Sie wurden dem Ticket mit der ID: {ticket.Id} für die Bearbeitung zugewiesen",
+                Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUser!.UserName} um {DateTime.Now.ToUniversalTime()}"
+            };
+
+            await _messageRepository.AddMessage(message);
+            await _messageRepository.SaveChangesAsync();
+        }
+    }
+    else if (ticket.Status == TicketStatus.Open && ticket.AssignedUser != null)
+    {
+        ticket.Status = TicketStatus.InProgress;
+    }
+}
+
 }
