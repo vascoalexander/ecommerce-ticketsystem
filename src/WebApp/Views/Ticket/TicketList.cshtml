@@ -23,6 +23,14 @@ ViewBag.Title = "Ticket-Liste";
     <div class="card shadow-sm p-3 mb-4">
         <div class="row row-cols-1 row-cols-md-4 g-3">
             <div>
+                <label for="ticketView" class="form-label">Anzeigen</label>
+                <select id="ticketView" class="form-select">
+                    <option value="mine">Nur meine Tickets</option>
+                    <option value="all">Alle Tickets</option>
+                </select>
+            </div>
+            
+            <div>
                 <label for="status" class="form-label">Status</label>
                 <select id="status" class="form-select">
                     <option value="">Alle</option>
@@ -31,21 +39,14 @@ ViewBag.Title = "Ticket-Liste";
                     <option value="closed">Closed</option>
                 </select>
             </div>
-            <div>
-                <label for="ticketView" class="form-label">Anzeigen</label>
-                <select id="ticketView" class="form-select">
-                    <option value="mine">Nur meine Tickets</option>
-                    <option value="all">Alle Tickets</option>
-                </select>
-            </div>
-
+            
             <div>
                 <label for="projekt" class="form-label">Projekt</label>
-                <input id="projekt" type="text" class="form-control" placeholder="Nach Projekt suchen..." />
+                <input id="projekt" type="text" class="form-control" placeholder="Nach Projekt suchen..."/>
             </div>
             <div>
                 <label for="suche" class="form-label">Suche</label>
-                <input id="suche" type="text" class="form-control" placeholder="Ticket suchen..." />
+                <input id="suche" type="text" class="form-control" placeholder="Ticket suchen..."/>
             </div>
         </div>
     </div>
@@ -54,7 +55,7 @@ ViewBag.Title = "Ticket-Liste";
     <div class="card shadow-sm p-3 mb-4">
         <div class="row fw-semibold border-bottom pb-2 d-none d-md-flex">
             <div class="col-md-3 ">Ticket</div>
-            <div class="col-md-3 ">Projekt</div>
+            <div class="col-md-3 text-center">Projekt</div>
             <div class="col-md-2 text-center">Status</div>
             <div class="col-md-4 text-center">Aktionen</div>
         </div>
@@ -68,7 +69,7 @@ ViewBag.Title = "Ticket-Liste";
                 <strong>#@ticket.Id</strong><br />
                 @ticket.Title
             </div>
-            <div class="col-12 col-md-3 mb-2 mb-md-0">
+            <div class="col-12 col-md-3 mb-2 mb-md-0 text-center">
                 @ticket.Project.Title
             </div>
             @{

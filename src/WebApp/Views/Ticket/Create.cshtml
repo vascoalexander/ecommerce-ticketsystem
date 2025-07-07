@@ -16,6 +16,7 @@
             <div class="col-md-6 position-relative">
                 <label asp-for="@Model.Title" class="form-label">Titel</label>
                 <input asp-for="@Model.Title" class="form-control pe-5" placeholder="Bitte Titel eingeben" maxlength="60" id="titleInput" />
+                <span asp-validation-for="Title" class="text-danger"></span>
                 <small id="titleCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0/60</small>
             </div>
 
@@ -24,11 +25,13 @@
                 <select asp-for="@Model.ProjectId" class="form-control" asp-items="@(new SelectList(Model.AvailableProjects, "Id", "Title"))">
                     <option value="">-- Projekt wählen --</option>
                 </select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
         </div>
         <div class="mb-3 position-relative">
             <label asp-for="@Model.Description" class="form-label">Beschreibung</label>
             <textarea asp-for="@Model.Description" class="form-control pe-5" rows="4" maxlength="2000" id="descriptionInput"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
             <small id="descriptionCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0/2000</small>
         </div>
 
@@ -39,7 +42,7 @@
             </select>
         </div>
         <div class="d-flex justify-content-end gap-2">
-            <button type="button" id="btnTicketAbbrechen" class="btn btn-outline-danger">Abbrechen</button>
+            <a href="@Url.Action("Ticketlist", "Ticket")" class="btn btn-outline-danger">Abbrechen</a>
             <button type="submit" id="btnTicketErstellen" class="btn btn-dark mt-2 mt-md-0">Erstellen</button>
         </div>
     }

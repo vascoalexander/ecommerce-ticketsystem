@@ -4,16 +4,22 @@
 }
 
 <div class="container my-5">
-    <h2 class="mb-4">Benutzer bearbeiten</h2>
+    <div class="mb-4">
+        <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-secondary">
+            Zurück zur Übersicht
+        </a>
+    </div>
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4">Benutzer bearbeiten</h2>
 
     <form asp-action="EditUser" method="post" autocomplete="off" id="editForm">
         <input type="hidden" asp-for="Id" />
 
-        <div class="mb-3">
-            <label asp-for="UserName" class="form-label">Benutzername</label>
-            <input asp-for="UserName" class="form-control" autocomplete="username" />
-            <span asp-validation-for="UserName" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label">Benutzername</label>
+                <input asp-for="UserName" class="form-control" autocomplete="username" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
 
         <div class="mb-3">
             <label asp-for="Email" class="form-label">E-Mail</label>
@@ -24,21 +30,21 @@
 
      
 
-        <div class="mb-3">
-            <label asp-for="SelectedRole" class="form-label">Rolle</label>
-            <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
-                <option value="">-- Rolle auswählen --</option>
-            </select>
-            <span asp-validation-for="SelectedRole" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Password" class="form-label">Neues Passwort</label>
-            <input asp-for="Password" type="password" class="form-control" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-            <label asp-for="ConfirmNewPassword" class="form-label">Passwort wiederholen</label>
-            <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
-            <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
-        </div>
+            <div class="mb-3">
+                <label asp-for="SelectedRole" class="form-label">Rolle</label>
+                <select asp-for="SelectedRole" asp-items="Model.AvailableRoles" class="form-select">
+                    <option value="">-- Rolle auswählen --</option>
+                </select>
+                <span asp-validation-for="SelectedRole" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Neues Passwort</label>
+                <input asp-for="Password" type="password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+                <label asp-for="ConfirmNewPassword" class="form-label">Passwort wiederholen</label>
+                <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
+                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+            </div>
 
 
         <div class="d-flex gap-2 ms-auto">
@@ -93,5 +99,5 @@
     </script>
 }
 
-
+</div>
 

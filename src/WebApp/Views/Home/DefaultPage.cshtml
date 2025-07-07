@@ -4,14 +4,14 @@ ViewBag.Title = "Willkommen - Lushwear Ticketsystem";
 
 <div class="container py-5" style="max-width: 900px;">
     <div class="text-center mb-4">
-        <h2 class="fs-1 fw-bold" style="color:#3b275d;">Willkommen beim Lushwear Ticketsystem</h2>
+        <h2 class="fs-1 fw-bold welcome-text" style="color:#3b275d;">Willkommen beim Lushwear Ticketsystem</h2>
         <p class="text-secondary fs-5">
             Hier findest du öffentliche Statistiken und aktuelle Ankündigungen rund um unser Ticketsystem.
         </p>
     </div>
 
     <div class="card shadow-sm mb-5">
-        <div class="card-header bg-transparent" style="color:#3b275d; font-weight: 600;">
+        <div class_="card-header bg-transparent">
             Tickets pro Monat (letztes Jahr)
         </div>
         <div class="card-body">
@@ -19,8 +19,8 @@ ViewBag.Title = "Willkommen - Lushwear Ticketsystem";
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-transparent" style="color:#3b275d; font-weight: 600;">
+    <div class="card shadow-sm announcement-card">
+        <div class="card-header bg-transparent">
             Letzte Ankündigungen
         </div>
         <ul class="list-group list-group-flush">
@@ -32,44 +32,95 @@ ViewBag.Title = "Willkommen - Lushwear Ticketsystem";
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('myBarChart').getContext('2d');
-    const myBarChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
-            datasets: [{
-                label: 'Tickets',
-                data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
-                backgroundColor: 'rgba(59, 39, 93, 0.7)',
-                borderColor: 'rgba(59, 39, 93, 1)',
-                borderWidth: 1,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const docElement = document.documentElement;
+            let myBarChart;
+
+            function createChart() {
+                const isDarkMode = docElement.classList.contains('dark-mode');
+
+                const barColor = isDarkMode
+                    ? 'rgba(235, 195, 255, 1)' // Dark mode color
+                    : '#3b275d'; // Light mode color
+
+                const borderColor = isDarkMode
+                    ? 'rgba(235, 195, 255, 1)'
+                    : '#3b275d';
+
+                const labelColor = isDarkMode ? '#c38ffa' : '#3b275d';
+                const gridColor = isDarkMode ? 'rgba(195, 127, 250, 0.3)' : '#ccc';
+
+                const ctx = document.getElementById('myBarChart').getContext('2d');
+
+                if (myBarChart) {
+                    myBarChart.destroy();
                 }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#3b275d',
-                        font: {
-                            size: 14,
-                            weight: 'bold'
+
+                myBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+                        datasets: [{
+                            label: 'Tickets',
+                            data: [12, 19, 3, 5, 2, 8, 10, 4, 7, 20, 2, 6],
+                            backgroundColor: barColor,
+                            borderColor: borderColor,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: labelColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
-        }
-    });
-</script>
+
+            // Initial Chart erstellen
+            createChart();
+
+            // Observer, um auf Änderungen der html-Klasse zu reagieren (dark-mode)
+            const observer = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        createChart();
+                    }
+                }
+            });
+
+            observer.observe(docElement, { attributes: true });
+        });
+    </script>
 }

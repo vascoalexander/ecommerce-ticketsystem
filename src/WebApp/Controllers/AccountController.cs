@@ -202,7 +202,8 @@ public class AccountController : Controller
         var model = new MessagesViewModel()
         {
             ReceivedMessages = await _messageRepository.GetMessagesReceived(currentUser.Id),
-            SentMessages = await _messageRepository.GetMessagesSent(currentUser.Id)
+            SentMessages = await _messageRepository.GetMessagesSent(currentUser.Id),
+            SystemMessages = await _messageRepository.GetSystemMessageReceived(currentUser.Id)
         };
 
         return View(model);
