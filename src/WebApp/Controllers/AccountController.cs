@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApp.Helper;
 using WebApp.Repositories;
+using WebApp.Services;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers;
@@ -16,12 +17,14 @@ public class AccountController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly MessageRepository _messageRepository;
+    private readonly MessageService _messageService;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageRepository messageRepository)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageRepository messageRepository, MessageService messageService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _messageRepository = messageRepository;
+        _messageService = messageService;
     }
 
     [HttpGet]
@@ -199,13 +202,7 @@ public class AccountController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null) { return View("Login"); }
 
-        var model = new MessagesViewModel()
-        {
-            ReceivedMessages = await _messageRepository.GetMessagesReceived(currentUser.Id),
-            SentMessages = await _messageRepository.GetMessagesSent(currentUser.Id),
-            SystemMessages = await _messageRepository.GetSystemMessageReceived(currentUser.Id)
-        };
-
+        var model = await _messageService.GetAllUserMessages(currentUser.Id);
         return View(model);
     }
 

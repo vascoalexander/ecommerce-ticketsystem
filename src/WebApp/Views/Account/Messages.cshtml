@@ -4,6 +4,7 @@
 }
 @using WebApp.Helper
 @model WebApp.ViewModels.MessagesViewModel
+
 <div class="my-4">
     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">
         Zurück zum Dashboard
@@ -61,7 +62,7 @@
                                         <small class="text-muted">@message.SentAt.ToString("g")</small>
                                     </div>
                                     <p class="mb-1">
-                                        <strong>Von:</strong> @message.Sender.UserName (@message.Sender.Email)
+                                        <strong>Von:</strong> @message.SenderName (@message.SenderEmail)
                                     </p>
                                     <small>@Utility.Truncate(message.Body, messageLength)...</small>
                                     <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })"
@@ -128,7 +129,7 @@
                                         <small class="text-muted">@message.SentAt.ToString("g")</small>
                                     </div>
                                     <p class="mb-1">
-                                        <strong>An:</strong> @message.Receiver.UserName (@message.Receiver.Email)
+                                        <strong>An:</strong> @message.ReceiverName (@message.ReceiverEmail)
                                     </p>
                                     <small>@Utility.Truncate(message.Body, messageLength)...</small>
                                     <a href="@Url.Action("MessageDetails", "Account", new { messageId = message.Id })" class="stretched-link"></a>

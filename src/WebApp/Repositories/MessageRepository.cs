@@ -4,7 +4,7 @@ using WebApp.Models;
 
 namespace WebApp.Repositories;
 
-public class MessageRepository
+public class MessageRepository : IMessageRepository
 {
     private readonly AppDbContext _context;
 
@@ -13,12 +13,26 @@ public class MessageRepository
         _context = context;
     }
 
-    public async Task<Message?> GetMessageById(int id)
+    public async Task<Message?> GetByIdAsync(int id)
     {
-        return (await _context.Messages
+        return await _context.Messages
             .Include(m => m.Sender)
             .Include(m => m.Receiver)
-            .FirstOrDefaultAsync(m => m.Id == id))!;
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+    public IQueryable<Message> GetAll()
+    {
+        return _context.Messages.AsQueryable();
+    }
+
+    public async Task AddAsync(Message message)
+    {
+        await _context.Messages.AddAsync(message);
+    }
+
+    public void UpdateAsync(Message message)
+    {
+        _context.Messages.Update(message);
     }
 
     public async Task<IEnumerable<Message>> GetMessagesReceived(string userId)
@@ -53,16 +67,6 @@ public class MessageRepository
         return await _context.Messages
             .Where(m => m.SenderId ==  userId && !m.IsRead)
             .CountAsync();
-    }
-
-    public async Task AddMessage(Message message)
-    {
-        await _context.Messages.AddAsync(message);
-    }
-
-    public void UpdateMessage(Message message)
-    {
-        _context.Messages.Update(message);
     }
 
     public async Task SaveChangesAsync()
