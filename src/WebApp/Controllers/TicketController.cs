@@ -215,7 +215,7 @@ public class TicketController : Controller
 
         return View(viewModel);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Edit(EditTicketViewModel viewModel, string submitAction)
     {
@@ -234,8 +234,8 @@ public class TicketController : Controller
             return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
         }
 
-        
-        
+
+
         if (!ModelState.IsValid)
         {
             viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
@@ -307,7 +307,7 @@ public class TicketController : Controller
             var newUserName = assignedUser.UserName;
 
             _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
-            
+
         }
         else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
         {
