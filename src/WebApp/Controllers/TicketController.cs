@@ -340,9 +340,10 @@ public class TicketController : Controller
 
 
     [HttpGet]
-    public async Task<IActionResult> Detail(int id)
+    public async Task<IActionResult> Detail(int id, string returnUrl = "")
     {
         var ticket = await _ticketRepository.GetTicketByIdAsync(id);
+        TempData["ReturnUrl"] = returnUrl;
         if (ticket == null)
         {
             TempData["ToastMessage"] = "Ticket nicht gefunden.";
@@ -514,5 +515,13 @@ public class TicketController : Controller
         memory.Position = 0;
 
         return File(memory, "application/octet-stream", file.OriginalName);
+    }
+    public IActionResult BackOrRedirect()
+    {
+        var source = TempData["ReturnUrl"] as string;
+        if (source == "AdminPage")
+            return RedirectToAction("AdminPage", "Admin");
+
+        return RedirectToAction("TicketList", "Ticket");
     }
 }
