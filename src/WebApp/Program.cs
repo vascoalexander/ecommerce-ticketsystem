@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Data;
+using WebApp.Helper;
 using WebApp.Models;
 using WebApp.Repositories;
 
@@ -39,6 +40,11 @@ builder.Services.AddScoped<FileRepository>();
 builder.Services.AddScoped<TicketHistoryRepository>();
 builder.Services.AddScoped<TicketCommentsRepository>();
 builder.Services.AddScoped<MessageRepository>();
+builder.Services.AddScoped<ThemeFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ThemeFilter>();
+});
 
 var app = builder.Build();
 
