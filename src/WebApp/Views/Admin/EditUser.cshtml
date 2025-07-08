@@ -83,18 +83,15 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial"/>
     <script>
-        // Speichern-Button öffnet das Modal
         document.getElementById("saveBtn").addEventListener("click", function (e) {
-            e.preventDefault(); // Damit kein Submit passiert
+            e.preventDefault();
             document.getElementById("confirmBox").style.display = "block";
         });
 
-        // Ja, speichern: Formular absenden
         document.getElementById("confirmYes").addEventListener("click", function () {
             document.getElementById("editForm").submit();
         });
 
-        // Abbrechen: Modal schließen, Formular NICHT absenden
         document.getElementById("confirmNo").addEventListener("click", function () {
             document.getElementById("confirmBox").style.display = "none";
         });

@@ -25,36 +25,38 @@ namespace WebApp.Controllers
             _roleManager = roleManager;
         }
 
-        public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
+        public async Task<IActionResult> AdminPage(string? search,
+            bool showInactive = false)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
+            if (!showInactive)
+            {
+                projects = projects.Where(u => u.ProjectActive).ToList();
+            }
 
-            if (!string.IsNullOrEmpty(category))
+            if (!string.IsNullOrWhiteSpace(search))
             {
                 projects = projects
-                    .Where(p => p.Category == category)
+                    .Where(p => p.Title != null && p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
-            if (!string.IsNullOrEmpty(search))
+            var viewModel = new ProjectPageViewModel()
             {
-                projects = projects
-                    .Where(p =>
-                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
-                    .ToList();
-            }
-
-            projects = sortOrder switch
-            {
-                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
-                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
-                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
-                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
-                _ => projects.OrderBy(p => p.Title).ToList(),
+                IncludeInactive = showInactive,
+                Projects = projects.Select(project => new ProjectModel
+                {
+                    Id = project.Id,
+                    Description = project.Description,
+                    Title = project.Title,
+                    Category = project.Category,
+                    ProjectActive = project.ProjectActive,
+                    StartDate = project.StartDate,
+                    EndDate = project.EndDate,
+                    Tickets = project.Tickets?.ToList() ?? new List<TicketModel>()
+                }).ToList()
             };
-
-            return View(projects);
+            return View(viewModel);
         }
 
 
@@ -256,38 +258,7 @@ namespace WebApp.Controllers
 
             return View(model);
         }
-
-        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
-        {
-            var projects = await _projectRepository.GetAllProjectsAsync();
-
-            if (!string.IsNullOrEmpty(category))
-            {
-                projects = projects
-                    .Where(p => p.Category == category)
-                    .ToList();
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                projects = projects
-                    .Where(p =>
-                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
-                    .ToList();
-            }
-
-            projects = sortOrder switch
-            {
-                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
-                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
-                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
-                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
-                _ => projects.OrderBy(p => p.Title).ToList(),
-            };
-            return View(projects);
-        }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProject(ProjectModel model)
@@ -312,7 +283,7 @@ namespace WebApp.Controllers
                 EndDate = DateTime.Today.AddYears(1),
                 Title = string.Empty,
                 Description = string.Empty,
-
+                ProjectActive = true
             }));
         }
 
@@ -330,7 +301,7 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProject(ProjectModel model)
+        public async Task<IActionResult> EditProject(ProjectModel model, string? changeStatus = null)
         {
             if (!ModelState.IsValid)
             {
@@ -339,6 +310,15 @@ namespace WebApp.Controllers
 
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
+            if (!string.IsNullOrEmpty(changeStatus))
+            {
+                existingproject.ProjectActive= changeStatus == "activate";
+                await _projectRepository.UpdateProject(existingproject);
+                TempData["SuccessMessage"] = existingproject.ProjectActive
+                    ? "User wurde aktiviert." : "User wurde deaktiviert.";
+                return RedirectToAction(nameof(EditProject), new { id = existingproject.Id });
+            }
+
 
             model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
             model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
@@ -353,23 +333,6 @@ namespace WebApp.Controllers
 
             TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
             return RedirectToAction(nameof(AdminPage));
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DeleteProject(int id)
-        {
-            var project = await _projectRepository.GetProjectById(id);
-            if (project == null) return NotFound();
-            return View(project);
-        }
-
-        [HttpPost, ActionName("DeleteProject")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteProjectConfirmed(int id)
-        {
-            await _projectRepository.GetProjectById(id);
-            TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
-            return RedirectToAction("AdminPage");
         }
 
         public async Task<IActionResult> DetailsProject(int id)
