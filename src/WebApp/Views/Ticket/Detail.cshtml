@@ -2,17 +2,49 @@
 @{
     ViewBag.Title = "Ticket-Detail";
 }
-
+@if (TempData["ToastMessage"] != null)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+        <div class="toast show align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @TempData["ToastMessage"]
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+}
 <div class="container my-5">
     <div class="mb-4">
-        <a href="@Url.Action("TicketList", "Ticket")" class="btn btn-outline-secondary">
+        <a href="@Url.Action("BackOrRedirect", "Ticket")" class="btn btn-outline-secondary">
             Zurück zur Übersicht
         </a>
     </div>
 
     <div class="mb-4">
-        <h2 class="fw-bold mb-1">@Model.Ticket.Title</h2>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center flex-wrap gap-3 mb-2">
+            <h2 class="fw-bold mb-0">@Model.Ticket.Title</h2>
+
+            @{
+                string statusClass = Model.Ticket.Status switch
+                {
+                    TicketStatus.Open => "bg-success",
+                    TicketStatus.InProgress => "bg-warning",
+                    TicketStatus.Closed => "bg-danger",
+                    _ => "bg-secondary"
+                };
+            }
+
+            <span class="badge text-white @statusClass px-3 py-2"
+                  style="border-radius: 0.6rem; font-size: 0.85rem;">
+                @Model.Ticket.Status.ToString()
+            </span>
+        </div>
+        
         <p class="text-muted">Projekt: <strong>@Model.Ticket.Project.Title</strong></p>
+
     </div>
 
     <div class="card shadow-sm mb-4">
@@ -28,9 +60,8 @@
                 <div class="col-md-3">@Model.Ticket.CreatedAt.ToString("dd.MM.yyyy")</div>
                 <div class="col-md-3">@Model.Ticket.AssignedUser?.UserName</div>
                 <div class="col-md-3">
-                    @(Model.Ticket.AssignedUser != null 
-                        ? Model.Ticket.AssignedAt.ToString("dd.MM.yyyy") ?? "-" 
-                        : "-")
+                    @(Model.Ticket.AssignedUser != null
+                        ? Model.Ticket.AssignedAt.ToString("dd.MM.yyyy") : "-")
                 </div>
             </div>
         </div>
@@ -101,4 +132,55 @@
             </div>
         </div>
     }
+    <div class="card shadow-sm mt-5">
+        <div class="card-body">
+            <h5 class="text-secondary mb-3">Kommentare</h5>
+
+            <!-- Neue Kommentar-Eingabe -->
+            <form asp-action="Detail" method="post">
+                <input type="hidden" asp-for="@Model.Ticket.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="NewCommentContent" class="form-label">Neuer Kommentar</label>
+                    <textarea asp-for="NewCommentContent" class="form-control" rows="3" placeholder="Kommentar schreiben..."></textarea>
+                    <span asp-validation-for="NewCommentContent" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-dark">Kommentar hinzufügen</button>
+            </form>
+
+            <hr />
+
+            <!-- Bestehende Kommentare -->
+            @if (Model.Comments != null && Model.Comments.Any())
+            {
+                @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                {
+                    <div class="border-start border-3 comment-separator ps-3 my-3">
+                        <div class="small text-muted">
+                            <strong>@comment.CreatorUser?.UserName</strong> am @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                        </div>
+                        <div>@comment.Content</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">Keine Kommentare vorhanden.</p>
+            }
+        </div>
+    </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        setTimeout(() => {
+            const toastEl = document.querySelector('.toast');
+            if (toastEl) {
+                const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+                toast.hide();
+            }
+        }, 4000);
+    </script>
+}

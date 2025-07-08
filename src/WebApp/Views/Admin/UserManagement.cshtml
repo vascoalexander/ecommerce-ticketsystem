@@ -1,0 +1,141 @@
+@model WebApp.ViewModels.AdminUserManagementViewModel
+@{
+ViewBag.Title = "User-Management";
+}
+
+<div class="container my-5">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+    </div>
+    }
+
+    <div class="mb-4">
+        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary">Zurück zum Dashboard</a>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Admin" asp-action="AdminPage">Projekte</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" asp-controller="Admin" asp-action="UserManagement">Benutzer</a>
+        </li>
+    </ul>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center flex-wrap mb-4 gap-3">
+        <div>
+            <h2 class="mb-1">Benutzer Übersicht</h2>
+            <p class="text-muted mb-0">Verwalten Sie hier alle Benutzer der Anwendung.</p>
+        </div>
+        <a href="@Url.Action("CreateUser", "Admin")" class="btn btn-dark">Neuen Benutzer anlegen</a>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="searchInput" placeholder="Benutzer suchen..." value="@Model.Search" />
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="includeInactive" @(Model.IncludeInactive ? "checked" : "") />
+                <label class="form-check-label" for="includeInactive">
+                    Inaktive Benutzer anzeigen
+                </label>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Users.Any())
+    {
+    <div class="text-center text-muted">Keine Benutzer gefunden.</div>
+    }
+    else
+    {
+    <div class="card shadow-sm p-3">
+        <div class="row fw-semibold border-bottom pb-2 d-none d-md-flex">
+            <div class="col-md-3">Name</div>
+            <div class="col-md-4">Email</div>
+            <div class="col-md-3 text-center">Rolle(n)</div>
+            <div class="col-md-2 text-center">Status</div>
+        </div>
+
+        @foreach (var user in Model.Users)
+        {
+        <div class="row align-items-center py-3 border-bottom user-row" data-href="@Url.Action("EditUser", "Admin", new { id = user.Id })" style="cursor:pointer;">
+            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                <strong>@user.UserName</strong>
+            </div>
+            <div class="col-12 col-md-4 mb-2 mb-md-0">
+                @user.Email
+            </div>
+            <div class="col-12 col-md-3 mb-2 mb-md-0 text-center">
+                @if (user.AssignedRoles != null && user.AssignedRoles.Any())
+                {
+                @string.Join(", ", user.AssignedRoles)
+                }
+                else
+                {
+                <span class="text-muted">Keine Rolle</span>
+                }
+            </div>
+            <div class="col-12 col-md-2 text-center">
+                @if (user.IsActive)
+                {
+                <span class="badge bg-success">Aktiv</span>
+                }
+                else
+                {
+                <span class="badge bg-secondary">Inaktiv</span>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Pagination optional, falls du es brauchst -->
+</div>
+
+@section Scripts {
+<script>
+    // Klickbar machen
+    document.querySelectorAll('.user-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            window.location = row.dataset.href;
+        });
+    });
+
+    // Checkbox-Verhalten: Seite neu laden mit Query-Param
+    document.getElementById("includeInactive").addEventListener("change", function () {
+        const search = document.getElementById("searchInput").value;
+        const includeInactive = this.checked ? "true" : "false";
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("includeInactive", includeInactive);
+        if (search) {
+            url.searchParams.set("search", search);
+        } else {
+            url.searchParams.delete("search");
+        }
+
+        window.location.href = url.toString();
+    });
+
+    // Enter-Taste im Suchfeld: neue Anfrage
+    document.getElementById("searchInput").addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            const search = this.value;
+            const includeInactive = document.getElementById("includeInactive").checked ? "true" : "false";
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("search", search);
+            url.searchParams.set("includeInactive", includeInactive);
+
+            window.location.href = url.toString();
+        }
+    });
+</script>
+}

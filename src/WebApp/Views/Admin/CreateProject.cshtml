@@ -1,0 +1,67 @@
+@model WebApp.Models.ProjectModel
+@{
+    ViewBag.Title = "Neues Projekt erstellen";
+}
+
+<div class="container my-5">
+
+    <div class="mb-4">
+        <a href="@Url.Action("AdminPage", "Admin")" class="btn btn-outline-secondary">Zurück zur Projektübersicht</a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">@ViewBag.Title</h2>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="CreateProject" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="form-label">Projekttitel</label>
+                            <input asp-for="Title" class="form-control" placeholder="Geben Sie einen Projekttitel ein" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Category" class="form-label">Kategorie</label>
+                            <input asp-for="Category" class="form-control" placeholder="z.B. Entwicklung, Marketing, etc." />
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="StartDate" class="form-label">Startdatum</label>
+                                <input asp-for="StartDate" class="form-control" type="date" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EndDate" class="form-label">Enddatum</label>
+                                <input asp-for="EndDate" class="form-control" type="date" />
+                                <span asp-validation-for="EndDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label">Beschreibung</label>
+                            <textarea asp-for="Description" class="form-control" rows="8" placeholder="Beschreiben Sie das Projekt"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a asp-action="AdminPage" class="btn btn-outline-secondary me-2">Abbrechen</a>
+                    <button type="submit" class="btn btn-dark">Projekt erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

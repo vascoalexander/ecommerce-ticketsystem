@@ -1,0 +1,112 @@
+﻿@model WebApp.Models.ProjectModel
+@{
+    ViewBag.Title = "Projekt bearbeiten";
+}
+
+<div class="container my-5">
+    <div class="mb-4">
+        <a href="@Url.Action("AdminPage", "Admin")" class="btn btn-outline-secondary">
+            Zurück zur Projektübersicht
+        </a>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center flex-wrap mb-4 gap-2">
+            <div>
+                <h2 class="mb-1">Projekt bearbeiten</h2>
+                <p class="text-muted mb-0">Bearbeiten Sie Projekttitel, Beschreibung und Zeitraum</p>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("EditProject", "Admin", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6 position-relative">
+                    <label asp-for="Title" class="form-label">Titel</label>
+                    <input asp-for="Title"
+                           class="form-control pe-5"
+                           placeholder="Bitte Titel eingeben"
+                           maxlength="60"
+                           id="titleInput"
+                           required />
+                    <small id="titleCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
+                        0 / 60
+                    </small>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Category" class="form-label">Kategorie</label>
+                    <input asp-for="Category" class="form-control" required />
+                    <span asp-validation-for="Category" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3 position-relative">
+                <label asp-for="Description" class="form-label">Beschreibung</label>
+                <textarea asp-for="Description"
+                          class="form-control pe-5"
+                          rows="4"
+                          maxlength="2000"
+                          id="descriptionInput"
+                          required></textarea>
+                <small id="descriptionCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">
+                    0 / 2000
+                </small>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label asp-for="StartDate" class="form-label">Startdatum</label>
+                    <input asp-for="StartDate" class="form-control" type="date" required />
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="EndDate" class="form-label">Enddatum</label>
+                    <input asp-for="EndDate" class="form-control" type="date" required />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end flex-wrap gap-2 mt-4">
+                <a href="@Url.Action("AdminPage", "Admin")" class="btn btn-outline-danger">Abbrechen</a>
+                <button type="submit" class="btn btn-dark">Speichern</button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        const maxTitleChars = 60;
+        const titleInput = document.getElementById("titleInput");
+        const titleCounter = document.getElementById("titleCounter");
+
+        function updateTitleCounter() {
+            const used = titleInput.value.length;
+            titleCounter.textContent = `${used} / ${maxTitleChars}`;
+        }
+
+        titleInput.addEventListener("input", updateTitleCounter);
+        updateTitleCounter();
+
+        const maxDescChars = 2000;
+        const descInput = document.getElementById("descriptionInput");
+        const descCounter = document.getElementById("descriptionCounter");
+
+        function updateDescCounter() {
+            const used = descInput.value.length;
+            descCounter.textContent = `${used} / ${maxDescChars}`;
+        }
+
+        descInput.addEventListener("input", updateDescCounter);
+        updateDescCounter();
+    </script>
+}

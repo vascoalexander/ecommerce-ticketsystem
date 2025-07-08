@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using WebApp.Repositories;
@@ -18,7 +17,6 @@ namespace WebApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ProjectRepository _projectRepository;
 
-
         public AdminController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ProjectRepository projectRepository)
 
         {
@@ -27,108 +25,9 @@ namespace WebApp.Controllers
             _roleManager = roleManager;
         }
 
-
-        public IActionResult AdminPage()
-        {
-            return View();
-        }
-        public IActionResult UserManagement()
-        {
-            return View();
-        }
-
-        public async Task<IActionResult> UsersList(string? roleFilter, string? search, string? sortOrder)
-        {
-            var users = await _userManager.Users.ToListAsync();
-
-            if (!string.IsNullOrWhiteSpace(search))
-                users = users
-                    .Where(u => u.UserName
-                        .Contains(search, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            users = sortOrder switch
-            {
-                "name_desc" => users.OrderByDescending(s => s.UserName).ToList(),
-                "id_desc" => users.OrderByDescending(s => s.Id).ToList(),
-                _ => users.OrderBy(s => s.UserName).ToList(),
-            };
-            var model = new List<AdminUserViewModel>();
-            foreach (var user in users)
-            {
-                model.Add(new AdminUserViewModel
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    AssignedRoles = await _userManager.GetRolesAsync(user)
-
-                });
-            }
-            return View(model);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> CreateUser()
-        {
-            var model = new AdminUserViewModel
-            {
-                AvailableRoles = _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList()
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateUser(AdminUserViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                model.AvailableRoles = _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList();
-                return View(model);
-            }
-            var user = new AppUser { UserName = model.UserName };
-            var result = await _userManager.CreateAsync(user, model.Password!);
-            if (result.Succeeded)
-            {
-                var roleResult = await _userManager.AddToRoleAsync(user, model.SelectedRole!);
-                if (roleResult.Succeeded)
-                {
-                    return RedirectToAction("UsersList");
-                }
-                else
-                {
-                    foreach (var error in result.Errors)
-                    {
-
-                        ModelState.AddModelError("", error.Description);
-
-                    }
-                }
-            }
-            else
-            {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                model.AvailableRoles = _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToList();
-
-            }
-            return View(model);
-
-        }
-
-
-        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
+        public async Task<IActionResult> AdminPage(string? search, string? category, string? sortOrder)
         {
             var projects = await _projectRepository.GetAllProjectsAsync();
-
 
             if (!string.IsNullOrEmpty(category))
             {
@@ -155,8 +54,237 @@ namespace WebApp.Controllers
                 _ => projects.OrderBy(p => p.Title).ToList(),
             };
 
+            return View(projects);
+        }
 
 
+        public async Task<IActionResult> UserManagement(string? roleFilter, string? search, string? sortOrder,
+            bool includeInactive = false)
+        {
+            var users = await _userManager.Users.ToListAsync();
+            if (!includeInactive)
+            {
+                users = users.Where(u => u.IsActive).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users
+                    .Where(u => u.UserName != null && u.UserName.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var viewModel = new AdminUserManagementViewModel
+            {
+                IncludeInactive = includeInactive,
+                Search = search,
+                Users = new List<AdminUserViewModel>()
+            }
+            ;
+
+            foreach (var user in users)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                viewModel.Users.Add(new AdminUserViewModel
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    IsActive = user.IsActive,
+                    AssignedRoles = userRoles
+                });
+
+            }
+
+            return View(viewModel);
+        }
+        [HttpGet]
+        public async Task<IActionResult> CreateUser()
+        {
+            var model = new AdminUserViewModel
+            {
+                AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync()
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(AdminUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new AppUser
+                {
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    IsActive = true
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password!);
+
+                if (result.Succeeded)
+                {
+                    if (!string.IsNullOrEmpty(model.SelectedRole))
+                    {
+                        await _userManager.AddToRoleAsync(user, model.SelectedRole);
+                    }
+
+                    return RedirectToAction(nameof(UserManagement));
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+
+            model.AvailableRoles = await _roleManager.Roles
+                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                .ToListAsync();
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var model = new AdminUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                IsActive = user.IsActive,
+                AssignedRoles = userRoles,
+                SelectedRole = userRoles.FirstOrDefault(),
+                AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync()
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(AdminUserViewModel model, string? changeStatus)
+        {
+            var existinguser = await _userManager.FindByIdAsync(model.Id!);
+
+            if (existinguser == null) return NotFound();
+            if (!string.IsNullOrEmpty(changeStatus))
+            {
+                existinguser.IsActive = changeStatus == "activate";
+                await _userManager.UpdateAsync(existinguser);
+                TempData["SuccessMessage"] = existinguser.IsActive
+                    ? "User wurde aktiviert." : "User wurde deaktiviert.";
+                return RedirectToAction(nameof(EditUser), new { id = existinguser.Id });
+            }
+
+            existinguser.UserName = model.UserName;
+            existinguser.Email = model.Email;
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
+                {
+                    ModelState.AddModelError("ConfirmNewPassword", "Bitte bestätigen Sie das neue Passwort.");
+                }
+                else if (model.Password != model.ConfirmNewPassword)
+                {
+                    ModelState.AddModelError("ConfirmNewPassword", "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.AvailableRoles = await _roleManager.Roles
+                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                    .ToListAsync();
+                return View(model);
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(existinguser);
+                var passwordResult = await _userManager.ResetPasswordAsync(existinguser, token, model.Password);
+                if (!passwordResult.Succeeded)
+                {
+                    foreach (var error in passwordResult.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                    model.AvailableRoles = await _roleManager.Roles
+                        .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                        .ToListAsync();
+                    return View(model);
+                }
+            }
+
+            var result = await _userManager.UpdateAsync(existinguser);
+            if (result.Succeeded)
+            {
+                var currentRoles = await _userManager.GetRolesAsync(existinguser);
+                if (model.SelectedRole != null && (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1))
+                {
+                    await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
+                    if (!string.IsNullOrEmpty(model.SelectedRole))
+                    {
+                        await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
+                    }
+                }
+
+                TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
+                return RedirectToAction(nameof(UserManagement));
+            }
+
+            model.AvailableRoles = await _roleManager.Roles
+                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+                .ToListAsync();
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> ProjectsList(string? search, int? id, string? category, string? status, string? sortOrder)
+        {
+            var projects = await _projectRepository.GetAllProjectsAsync();
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                projects = projects
+                    .Where(p => p.Category == category)
+                    .ToList();
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                projects = projects
+                    .Where(p =>
+                        (p.Title?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                          (p.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+            }
+
+            projects = sortOrder switch
+            {
+                "title_desc" => projects.OrderByDescending(p => p.Title).ToList(),
+                "date_asc" => projects.OrderBy(p => p.StartDate).ToList(),
+                "date_desc" => projects.OrderByDescending(p => p.StartDate).ToList(),
+                "id_desc" => projects.OrderByDescending(p => p.Id).ToList(),
+                _ => projects.OrderBy(p => p.Title).ToList(),
+            };
             return View(projects);
         }
 
@@ -168,24 +296,25 @@ namespace WebApp.Controllers
             {
                 return View(model);
             }
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             await _projectRepository.CreateProject(model);
-            return RedirectToAction("ProjectsList");
+            return RedirectToAction("AdminPage");
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreateProject()
+        public Task<IActionResult> CreateProject()
         {
 
-            return View(new ProjectModel
+            return Task.FromResult<IActionResult>(View(new ProjectModel
             {
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddYears(1),
                 Title = string.Empty,
                 Description = string.Empty,
 
-            });
+            }));
         }
-
 
         [HttpGet]
         public async Task<IActionResult> EditProject(int id)
@@ -211,7 +340,8 @@ namespace WebApp.Controllers
             var existingproject = await _projectRepository.GetProjectById(model.Id);
             if (existingproject == null) return NotFound();
 
-
+            model.StartDate = DateTime.SpecifyKind(model.StartDate, DateTimeKind.Utc);
+            model.EndDate = DateTime.SpecifyKind(model.EndDate, DateTimeKind.Utc);
             existingproject.Title = model.Title;
             existingproject.Description = model.Description;
             existingproject.Category = model.Category;
@@ -220,7 +350,9 @@ namespace WebApp.Controllers
 
             await _projectRepository.UpdateProject(existingproject);
 
-            return RedirectToAction("ProjectsList");
+
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich aktualisiert.";
+            return RedirectToAction(nameof(AdminPage));
         }
 
         [HttpGet]
@@ -230,34 +362,28 @@ namespace WebApp.Controllers
             if (project == null) return NotFound();
             return View(project);
         }
+
         [HttpPost, ActionName("DeleteProject")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteProjectConfirmend(int id)
+        public async Task<IActionResult> DeleteProjectConfirmed(int id)
         {
             await _projectRepository.GetProjectById(id);
-            return RedirectToAction("ProjectsList");
+            TempData["SuccessMessage"] = "Projekt wurde erfolgreich gelöscht.";
+            return RedirectToAction("AdminPage");
         }
 
         public async Task<IActionResult> DetailsProject(int id)
         {
             var project = await _projectRepository.GetProjectById(id);
             if (project == null) return NotFound();
-            var tickets = project.Tickets?.ToList() ?? new List<TicketModel>();
+            var tickets = project.Tickets.ToList();
             var viewModel = new ProjectDetailViewModel
             {
                 Project = project,
                 Tickets = tickets,
             };
 
-            return View(project);
-
+            return View(viewModel);
         }
-
-
-
-
-
-
-
     }
 }

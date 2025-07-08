@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
@@ -11,6 +10,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<ProjectModel> Projects { get; set; }
     public DbSet<TicketFile> TicketFiles { get; set; }
     public DbSet<TicketHistoryModel> TicketHistories { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<TicketComments> TicketComments { get; set; }
     public AppDbContext(DbContextOptions<AppDbContext> options)
     : base(options) { }
 
@@ -42,10 +43,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(t => t.TicketId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<AppUser>()
-            .Property(u => u.UserTheme)
-            .HasDefaultValue("default");
-
         modelBuilder.Entity<TicketModel>()
             .Property(t => t.Status)
             .HasConversion<string>();
@@ -59,6 +56,28 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<TicketHistoryModel>()
             .Property(h => h.PropertyName)
             .HasConversion<string>();
+
+        modelBuilder.Entity<AppUser>()
+            .Property(u => u.UserTheme)
+            .HasDefaultValue("standard");
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Receiver)
+            .WithMany(u => u.ReceivedMessages)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany(u => u.SentMessages)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TicketComments>()
+            .HasOne(c => c.Ticket)
+            .WithMany(t => t.Comments)
+            .HasForeignKey(t => t.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
 
     }
 }

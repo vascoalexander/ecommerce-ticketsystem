@@ -1,0 +1,82 @@
+@using System.Security.Claims
+@model WebApp.Models.Message
+@{
+    ViewBag.Title = "Nachricht Details";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container my-5">
+    <div class="mb-4">
+        <a href="@Url.Action("Messages", "Account")" class="btn btn-outline-secondary">
+            Zurück zur Nachrichtenübersicht
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">@ViewData["Title"]</h2>
+    </div>
+
+    @if (Model != null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    @if (Model.SenderId == currentUserId)
+                    {
+                        <h5>
+                            <span class="badge bg-primary me-2">Gesendet</span>
+                            An: @Model.Receiver.UserName (@Model.Receiver.Email)
+                        </h5>
+                    }
+                    else
+                    {
+                        <h5>
+                            <span class="badge bg-success me-2">Empfangen</span>
+                            Von: @Model.Sender.UserName (@Model.Sender.Email)
+                        </h5>
+                    }
+                    <h4 class="mb-0">@Model.Subject</h4>
+                </div>
+                <small class="text-muted">@Model.SentAt.ToString("g")</small>
+            </div>
+            <div class="card-body">
+                <pre class="card-text">@Model.Body</pre>
+            </div>
+            <div class="card-footer text-muted">
+                @if (Model.IsRead)
+                {
+                    <span>Gelesen: @Model.SentAt.ToString("g")</span>
+                }
+                else
+                {
+                    <span>Status: Ungelesen</span>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <form asp-action="MarkAsDeleted" method="post">
+                <input type="hidden" name="messageId" value="@Model.Id" />
+                <button type="submit" class="btn btn-outline-danger me-1">Delete</button>
+            </form>
+            @if (Model.ReceiverId == currentUserId && Model.Sender.UserName != "system")
+            {
+                <a asp-action="SendMessage" asp-route-replyToMessageId="@Model.Id" class="btn btn-dark">Antworten</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            Nachricht nicht gefunden.
+        </div>
+    }
+</div>
+
+<style>
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: inherit;
+    }
+</style>

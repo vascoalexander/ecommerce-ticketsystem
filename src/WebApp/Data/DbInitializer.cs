@@ -15,15 +15,15 @@ public static class DbInitializer
         var random = new Random();
         var categories = new[] { "feature", "bug", "enhancement", "documentation", "maintenance" };
         var statuses = new[] { TicketStatus.Open, TicketStatus.Closed, TicketStatus.InProgress };
-        var longDescription = """
-                              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ante tortor,
-                               ornare sit amet bibendum vel, laoreet id leo. Donec vulputate tellus in 
-                               lobortis ornare. Praesent nec mattis felis. Praesent sollicitudin placerat 
-                               velit nec bibendum. Sed a massa diam. Integer metus nibh, 
-                               vehicula et efficitur vitae, commodo vitae elit. Nulla id lobortis enim. 
-                               Morbi hendrerit condimentum enim, vel suscipit est consectetur in. Fusce 
-                               vitae nunc ligula. Sed maximus condimentum posuere. Nunc porta vehicula elit. Nunc luctus lobortis magna vitae interdum. Mauris varius arcu non augue venenatis, vel tempor urna facilisis. Morbi vel lorem id risus ornare vulputate.
-                              """;
+        var longDescription = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ante " +
+                              "tortor, ornare sit amet bibendum vel, laoreet id leo. Donec vulputate " +
+                              "tellus in lobortis ornare. Praesent nec mattis felis. Praesent sollicitudin " +
+                              "placerat velit nec bibendum. Sed a massa diam. Integer metus nibh, vehicula et " +
+                              "efficitur vitae, commodo vitae elit. Nulla id lobortis enim. Morbi hendrerit " +
+                              "condimentum enim, vel suscipit est consectetur in. Fusce vitae nunc ligula. " +
+                              "Sed maximus condimentum posuere. Nunc porta vehicula elit. Nunc luctus lobortis " +
+                              "magna vitae interdum. Mauris varius arcu non augue venenatis, vel tempor urna " +
+                              "facilisis. Morbi vel lorem id risus ornare vulputate.";
 
         if (!context.Projects.Any())
         {
@@ -85,6 +85,38 @@ public static class DbInitializer
             }
 
             context.Tickets.AddRange(tickets);
+            context.SaveChanges();
+        }
+
+        if (!context.Messages.Any())
+        {
+            var users = context.Users.ToList();
+            var messages = new List<Message>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var sentDate = DateTime.UtcNow.AddDays(random.Next(-365, 0));
+                AppUser sender;
+                AppUser receiver;
+                do
+                {
+                    sender = users[random.Next(users.Count)];
+                    receiver = users[random.Next(users.Count)];
+                } while (sender == receiver);
+
+                var message = new Message
+                {
+                    Sender = sender,
+                    SenderId = sender.Id,
+                    Receiver = receiver,
+                    ReceiverId = receiver.Id,
+                    SentAt = sentDate,
+                    Subject = GetRandomTicketTitle(random),
+                    Body = longDescription,
+                };
+                messages.Add(message);
+            }
+            context.Messages.AddRange(messages);
             context.SaveChanges();
         }
     }
