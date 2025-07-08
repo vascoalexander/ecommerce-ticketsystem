@@ -1,0 +1,131 @@
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="de" class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Lushwear</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/lushware.css" asp-append-version="true" />
+</head>
+<body data-user-role="@string.Join(",", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value))">
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <div class="container-fluid">
+
+            <!-- Logo -->
+            <a class="navbar-brand"
+               asp-area=""
+               asp-controller="Home"
+               asp-action="@(User.Identity?.IsAuthenticated == true ? "Dashboard" : "DefaultPage")">
+                <img src="~/images/Logo.png" alt="Company Logo" class="logo" />
+            </a>
+
+            <!-- Burger Toggle für Mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" id="navbarToggle">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Dark Mode Toggle Switch -->
+            <div class="theme-switch-wrapper ms-2">
+                <label class="theme-switch" for="themeModeToggle">
+                    <input type="checkbox" id="themeModeToggle" @(Context.Request.Cookies["theme"] == "dark" ? "checked" : "") />
+                    <div class="slider round"></div>
+                </label>
+            </div>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-lg-center">
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link p-0 d-flex align-items-center" href="#" id="userDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="me-2 d-none d-lg-inline">Hallo @User.Identity.Name</span>
+                                <div class="position-relative d-none d-lg-block">
+                                    <img src="/images/Logo.png" class="rounded-circle" alt="Profilbild" width="40" height="40" />
+                                    <span id="messageDot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle d-none">
+                                        <span class="visually-hidden">Neue Nachricht</span>
+                                    </span>
+                                </div>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="AdminPage">Admin Panel</a></li>
+                                }
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Messages">Nachrichten</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Settings">Settings</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                            </ul>
+
+                            <!-- Mobil sichtbarer Bereich -->
+                            <div class="d-lg-none mt-3 ps-3 pe-3">
+                                <div class="mb-2">Hallo @User.Identity.Name</div>
+                                <ul class="list-unstyled">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="nav-link" asp-controller="Admin" asp-action="AdminPage">Admin Panel</a></li>
+                                    }
+                                    <li><a class="nav-link" asp-controller="Account" asp-action="Messages">Nachrichten</a></li>
+                                    <li><a class="nav-link" asp-controller="Account" asp-action="Settings">Settings</a></li>
+                                    <li><a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item" id="loginButton">
+                            <a class="btn btn-dark ms-lg-2 mt-2 mt-lg-0" asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+</header>
+
+<main role="main" class="pb-3">
+    <div class="container">
+        @RenderBody()
+    </div>
+</main>
+
+<footer class="border-top footer text-muted">
+    <div class="container">
+        &copy; 2025 - Copyright by Lushwear
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+
+<!-- Dark Mode Umschalter -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleSwitch = document.getElementById('themeModeToggle');
+
+        toggleSwitch.addEventListener('change', function () {
+            const isDark = this.checked;
+
+            // Klasse auf <html> setzen oder entfernen
+            document.documentElement.classList.toggle('dark-mode', isDark);
+
+            // Cookie speichern (1 Jahr gültig)
+            document.cookie = `theme=${isDark ? 'dark' : 'light'}; path=/; max-age=31536000`;
+        });
+    });
+</script>
+
+</body>
+</html>
