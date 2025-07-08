@@ -60,8 +60,7 @@ namespace WebApp.Controllers
         }
 
 
-        public async Task<IActionResult> UserManagement(string? roleFilter, string? search, string? sortOrder,
-            bool includeInactive = false)
+        public async Task<IActionResult> UserManagement(string? search, bool includeInactive = false)
         {
             var users = await _userManager.Users.ToListAsync();
             if (!includeInactive)
@@ -125,7 +124,7 @@ namespace WebApp.Controllers
                     IsActive = true
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password!);
+                var result = await _userManager.CreateAsync(user, model.Password);;
 
                 if (result.Succeeded)
                 {
@@ -174,90 +173,64 @@ namespace WebApp.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(AdminUserViewModel model, string? changeStatus)
+   [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> EditUser(AdminUserViewModel model, string? changeStatus)
+{
+    var existinguser = await _userManager.FindByIdAsync(model.Id!);
+    if (existinguser == null) return NotFound();
+
+    if (!string.IsNullOrEmpty(changeStatus))
+    {
+        existinguser.IsActive = changeStatus == "activate";
+        await _userManager.UpdateAsync(existinguser);
+        TempData["SuccessMessage"] = existinguser.IsActive
+            ? "User wurde aktiviert." : "User wurde deaktiviert.";
+        return RedirectToAction(nameof(EditUser), new { id = existinguser.Id });
+    }
+
+    
+    if (!ModelState.IsValid)
+    {
+        model.AvailableRoles = await _roleManager.Roles
+            .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+            .ToListAsync();
+        return View(model);
+    }
+
+    existinguser.UserName = model.UserName;
+    existinguser.Email = model.Email;
+   
+    var result = await _userManager.UpdateAsync(existinguser);
+    if (result.Succeeded)
+    {
+        
+        var currentRoles = await _userManager.GetRolesAsync(existinguser);
+        if (model.SelectedRole != null && (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1))
         {
-            var existinguser = await _userManager.FindByIdAsync(model.Id!);
-
-            if (existinguser == null) return NotFound();
-            if (!string.IsNullOrEmpty(changeStatus))
+            await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
+            if (!string.IsNullOrEmpty(model.SelectedRole))
             {
-                existinguser.IsActive = changeStatus == "activate";
-                await _userManager.UpdateAsync(existinguser);
-                TempData["SuccessMessage"] = existinguser.IsActive
-                    ? "User wurde aktiviert." : "User wurde deaktiviert.";
-                return RedirectToAction(nameof(EditUser), new { id = existinguser.Id });
+                await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
             }
-
-            existinguser.UserName = model.UserName;
-            existinguser.Email = model.Email;
-
-            if (!string.IsNullOrWhiteSpace(model.Password))
-            {
-                if (string.IsNullOrWhiteSpace(model.ConfirmNewPassword))
-                {
-                    ModelState.AddModelError("ConfirmNewPassword", "Bitte bestätigen Sie das neue Passwort.");
-                }
-                else if (model.Password != model.ConfirmNewPassword)
-                {
-                    ModelState.AddModelError("ConfirmNewPassword", "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.");
-                }
-            }
-
-            if (!ModelState.IsValid)
-            {
-                model.AvailableRoles = await _roleManager.Roles
-                    .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                    .ToListAsync();
-                return View(model);
-            }
-
-            if (!string.IsNullOrWhiteSpace(model.Password))
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(existinguser);
-                var passwordResult = await _userManager.ResetPasswordAsync(existinguser, token, model.Password);
-                if (!passwordResult.Succeeded)
-                {
-                    foreach (var error in passwordResult.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                    model.AvailableRoles = await _roleManager.Roles
-                        .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                        .ToListAsync();
-                    return View(model);
-                }
-            }
-
-            var result = await _userManager.UpdateAsync(existinguser);
-            if (result.Succeeded)
-            {
-                var currentRoles = await _userManager.GetRolesAsync(existinguser);
-                if (model.SelectedRole != null && (!currentRoles.Contains(model.SelectedRole) || currentRoles.Count > 1))
-                {
-                    await _userManager.RemoveFromRolesAsync(existinguser, currentRoles);
-                    if (!string.IsNullOrEmpty(model.SelectedRole))
-                    {
-                        await _userManager.AddToRoleAsync(existinguser, model.SelectedRole);
-                    }
-                }
-
-                TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
-                return RedirectToAction(nameof(UserManagement));
-            }
-
-            model.AvailableRoles = await _roleManager.Roles
-                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                .ToListAsync();
-
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error.Description);
-            }
-
-            return View(model);
         }
+
+        TempData["SuccessMessage"] = "User wurde erfolgreich aktualisiert.";
+        return RedirectToAction(nameof(UserManagement));
+    }
+
+    foreach (var error in result.Errors)
+    {
+        ModelState.AddModelError("", error.Description);
+    }
+
+
+    model.AvailableRoles = await _roleManager.Roles
+        .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
+        .ToListAsync();
+    return View(model);
+}
+        
 
         [HttpPost]
         [ValidateAntiForgeryToken]
