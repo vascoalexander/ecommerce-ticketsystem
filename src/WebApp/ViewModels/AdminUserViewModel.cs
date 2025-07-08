@@ -1,32 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using WebApp.Models;
 
 namespace WebApp.ViewModels
 {
-    public class AdminUserViewModel
-    {
-        public string? Id { get; set; }
-        [Required(ErrorMessage = "Name ist erforderlich")]
-        public string? UserName { get; set; }
+    
 
-        [DataType(DataType.Password)]
-        public string? Password { get; set; }
+public class AdminUserViewModel
+{
+    public string? Id { get; set; }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Neues Passwort bestätigen")]
+    [Required(ErrorMessage = "Name ist erforderlich")]
+    public string? UserName { get; set; }
 
-        [Compare("Password", ErrorMessage = "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.")]
-        public string? ConfirmNewPassword { get; set; }
-        public string? Email { get; set; }
+    [Required(ErrorMessage = "Email ist erforderlich")]
+    public string? Email { get; set; }
+    [Required]
+    [DataType(DataType.Password)]
+    public string? Password { get; set; }
 
-        public IList<string> AssignedRoles { get; set; } = new List<string>();
+    [DataType(DataType.Password)]
+    [Compare("Password", ErrorMessage = "Die Passwörter stimmen nicht überein.")]
+    public string? ConfirmPassword { get; set; }
+    
 
-        public bool IsActive { get; set; } = true;
+    public IList<string> AssignedRoles { get; set; } = new List<string>();
+    public bool IsActive { get; set; } = true;
+    public List<SelectListItem> AvailableRoles { get; set; } = new();
 
-        public List<SelectListItem> AvailableRoles { get; set; } = new();
-        [Required(ErrorMessage = "Rolle muss zugewiesen werden.")]
-        public string? SelectedRole { get; set; }
-
-
-    }
+    [Required(ErrorMessage = "Rolle muss zugewiesen werden.")]
+    public string? SelectedRole { get; set; }
+}
 }
