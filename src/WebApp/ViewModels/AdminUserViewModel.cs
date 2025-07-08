@@ -8,7 +8,7 @@ namespace WebApp.ViewModels
         public string? Id { get; set; }
         [Required(ErrorMessage = "Name ist erforderlich")]
         public string? UserName { get; set; }
-     
+
         [DataType(DataType.Password)]
         public string? Password { get; set; }
 
@@ -16,7 +16,7 @@ namespace WebApp.ViewModels
         [Display(Name = "Neues Passwort bestätigen")]
 
         [Compare("Password", ErrorMessage = "Das neue Passwort und das Bestätigungspasswort stimmen nicht überein.")]
-        public string ConfirmNewPassword { get; set; } = null!;
+        public string? ConfirmNewPassword { get; set; }
         public string? Email { get; set; }
 
         public IList<string> AssignedRoles { get; set; } = new List<string>();

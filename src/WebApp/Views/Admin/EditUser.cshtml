@@ -45,15 +45,16 @@
                 <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
                 <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
             </div>
-
-
-        <div class="d-flex gap-2 ms-auto">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end flex-wrap mb-4 gap-3">
+     
+      
             
-            <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-danger">Abbrechen</a>
-           
+            <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-danger">Abbrechen</a>
+
+        <div>
             @if (Model.IsActive)
             {
-                <button name="changeStatus" value="deactivate" class="btn btn-warning">User deaktivieren</button>
+                <button name="changeStatus" value="deactivate" class="btn btn-danger">User deaktivieren</button>
             }
             else
             {
@@ -62,8 +63,9 @@
 
          
 
-            <button type="button" id="saveBtn" name="submitAction" value="save" class="btn btn-outline-success">Speichern</button>
-     
+            <button type="button" id="saveBtn" name="submitAction" value="save" class="btn btn-dark">Speichern</button>
+        
+            </div>
         </div>
 
 <div id="confirmBox" style="display:none; position:fixed; left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2000;">
