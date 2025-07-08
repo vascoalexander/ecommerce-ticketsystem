@@ -18,7 +18,6 @@ public class CreateTicketViewModel
 
     public string AssignedUserId { get; set; } = null!;
 
-    // Für Dropdowns
     public List<ProjectModel> AvailableProjects { get; set; } = new();
     public List<AppUser> AvailableUsers { get; set; } = new();
 }
