@@ -49,7 +49,7 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="row fw-semibold text-secondary mb-2">
+            <div class="row fw-semibold text-secondary mb-2 tableText">
                 <div class="col-md-3">Ersteller</div>
                 <div class="col-md-3">Erstellt am</div>
                 <div class="col-md-3">Zugewiesen an</div>
@@ -89,7 +89,7 @@
                     // Nur Kurzform für Titel & Beschreibung
                     if (item.PropertyName == TicketProperty.Description || item.PropertyName == TicketProperty.Title)
                     {
-                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                        <div class="mb-3 ticket-history-entry">
                             <p class="mb-0">
                                 Am <strong>@datum</strong> wurde von <strong>@user</strong> die <strong>@eigenschaft</strong> geändert.
                             </p>
@@ -100,7 +100,7 @@
                         var alt = string.IsNullOrWhiteSpace(item.OldValue) ? "leer" : $"„{item.OldValue}“";
                         var neu = string.IsNullOrWhiteSpace(item.NewValue) ? "leer" : $"„{item.NewValue}“";
 
-                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                        <div class="mb-3 ticket-history-entry">
                             <p class="mb-0">
                                 Am <strong>@datum</strong> wurde von <strong>@user</strong> die Eigenschaft <strong>@eigenschaft</strong> von @alt auf @neu geändert.
                             </p>
