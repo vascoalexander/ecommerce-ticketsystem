@@ -224,12 +224,14 @@ public async Task<IActionResult> EditUser(AdminUserViewModel model, string? chan
         ModelState.AddModelError("", error.Description);
     }
 
+
     model.AvailableRoles = await _roleManager.Roles
         .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
         .ToListAsync();
     return View(model);
 }
         
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProject(ProjectModel model)
@@ -283,7 +285,7 @@ public async Task<IActionResult> EditUser(AdminUserViewModel model, string? chan
             if (existingproject == null) return NotFound();
             if (!string.IsNullOrEmpty(changeStatus))
             {
-                existingproject.ProjectActive= changeStatus == "activate";
+                existingproject.ProjectActive = changeStatus == "activate";
                 await _projectRepository.UpdateProject(existingproject);
                 TempData["SuccessMessage"] = existingproject.ProjectActive
                     ? "User wurde aktiviert." : "User wurde deaktiviert.";

@@ -19,8 +19,8 @@ public class ProjectModel
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public virtual ICollection<TicketModel> Tickets { get; set; } = new List<TicketModel>();
- [DefaultValue(true)] 
- public bool ProjectActive { get; set; } = true;
+    [DefaultValue(true)]
+    public bool ProjectActive { get; set; } = true;
 
 
 
