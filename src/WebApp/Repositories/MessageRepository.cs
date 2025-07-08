@@ -51,7 +51,7 @@ public class MessageRepository
     public async Task<int> GetUnreadMessages(string userId)
     {
         return await _context.Messages
-            .Where(m => m.SenderId ==  userId && !m.IsRead)
+            .Where(m => m.SenderId == userId && !m.IsRead)
             .CountAsync();
     }
 
