@@ -258,7 +258,7 @@ namespace WebApp.Controllers
 
             return View(model);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProject(ProjectModel model)
@@ -312,7 +312,7 @@ namespace WebApp.Controllers
             if (existingproject == null) return NotFound();
             if (!string.IsNullOrEmpty(changeStatus))
             {
-                existingproject.ProjectActive= changeStatus == "activate";
+                existingproject.ProjectActive = changeStatus == "activate";
                 await _projectRepository.UpdateProject(existingproject);
                 TempData["SuccessMessage"] = existingproject.ProjectActive
                     ? "User wurde aktiviert." : "User wurde deaktiviert.";
