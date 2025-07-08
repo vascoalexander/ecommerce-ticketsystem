@@ -33,21 +33,16 @@ body {
     color: #212529;
 }
 
-/* Overlay – weniger dunkel für bessere Sichtbarkeit */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.3); /* Weniger Abdunklung */
-    z-index: -1;
-}
+
 
 main {
     flex: 1;
     z-index: 1;
+}
+
+header {
+    position: relative;
+    z-index: 10;
 }
 
 /* ==========
@@ -392,4 +387,18 @@ input:checked + .slider:before {
 
 .dark-mode .logo {
     filter: brightness(0) invert(1);
+}
+
+.list-group-item {
+    margin-bottom: 0.75rem; /* z. B. 12px Abstand */
+}
+
+.form-select{
+    background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+
+.dark-mode .form-select option {
+        background-color: #212529; 
+        color: #fff;
 }

@@ -1,16 +1,24 @@
 @using System.Security.Claims
+@{
+    var userTheme = ViewData["UserTheme"]?.ToString();
+}
 <!DOCTYPE html>
 <html lang="de" class="@(Context.Request.Cookies["theme"] == "dark" ? "dark-mode" : "")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - Lushwear</title>
-    @if (ViewData["UserTheme"] == "Lushwear")
-    {
 
-    }
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @if (userTheme == "Lushwear")
+    {
+        <link rel="stylesheet" href="~/css/lushware.css" asp-append-version="true" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    }
 </head>
 <body data-user-role="@string.Join(",", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value))">
 
