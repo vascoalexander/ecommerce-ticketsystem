@@ -1,10 +1,9 @@
-﻿@model WebApp.ViewModels.ProjectDetailViewModel
+@model WebApp.ViewModels.ProjectDetailViewModel
 @{
     Layout = "_LayoutLushware";
     ViewBag.Title = "Details Project";
 
-    // Status-Logik – du kannst das hier anpassen, wenn du ein echtes Statusfeld hast:
-    string statusText = "Aktiv"; // z. B. Model.Project.Status, falls vorhanden
+    string statusText = "Aktiv";
     string statusClass = statusText switch
     {
         "Aktiv" => "bg-success",
@@ -96,4 +95,3 @@
         }
     </div>
 </div>
-

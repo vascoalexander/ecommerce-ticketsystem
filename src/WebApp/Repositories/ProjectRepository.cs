@@ -43,15 +43,9 @@ public class ProjectRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteProject(int id)
-    {
-        var project = await _context.Projects.FindAsync(id);
-        if (project != null)
-        {
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-        }
-    }
+
+
+
 
 
 }
