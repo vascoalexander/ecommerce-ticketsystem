@@ -1,10 +1,12 @@
 @{
-    ViewBag.Title = "Zugriff verweigert";
+    ViewData["Title"] = "Zugriff verweigert";
 }
 
-@model string
-
-<h1 class="text-danger">Zugriff verweigert</h1>
-
-<a asp-action="Login" class="btn btn-primary" asp-route-returnUrl="@Model">Login</a>
-<a asp-action="DefaultPage" asp-controller="Home"></a>
+<div class="text-center">
+    <h1 class="display-1 text-danger">403</h1>
+    <h2 class="mb-4">Zugriff verweigert</h2>
+    <p class="lead mb-4">
+        Sie haben keine Berechtigung, auf diese Seite zuzugreifen.
+    </p>
+    <a href="/" class="btn btn-dark">Zurück zur Startseite</a>
+</div>
