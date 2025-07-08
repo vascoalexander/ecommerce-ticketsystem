@@ -29,4 +29,6 @@ public class SettingsViewModel
 
     public string StatusMessage { get; set; } = "";
     public bool IsSuccess { get; set; } = false;
+    
+    
 }
