@@ -124,10 +124,10 @@
     {
         <div class="card shadow-sm my-3">
             <div class="card-body">
-                <h5 class="text-secondary mb-3">Uploaded Files</h5>
+                <h5 class="text-secondary mb-3 title-text">Uploaded Files</h5>
                 @foreach (TicketFile file in Model.Ticket.Files)
                 {
-                    <a href="@Url.Action("DownloadFile", "Ticket", new { fileId = file.Id })" class="btn btn-outline-dark">Download: @file.OriginalName</a>
+                    <a href="@Url.Action("DownloadFile", "Ticket", new { fileId = file.Id })" class="btn btn-dark">Download: @file.OriginalName</a>
                 }
             </div>
         </div>

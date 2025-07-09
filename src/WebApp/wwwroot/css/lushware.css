@@ -422,3 +422,7 @@ input:checked + .slider:before {
 .dark-mode .welcome-text {
     color: #e0e0e0 !important;
 }
+
+.dark-mode .title-text {
+    color: #e0e0e0 !important;
+}
