@@ -489,7 +489,7 @@ public class TicketController : Controller
         await _fileRepository.AddFileAsync(ticketFile);
         await _fileRepository.SaveChangesAsync();
 
-        return RedirectToAction("TicketList");
+        return RedirectToAction("Edit", new {id = ticketId });
     }
 
     [HttpGet]
