@@ -44,11 +44,7 @@
       
             
             <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-danger">Abbrechen</a>
-
-            <div>
-                    
-                <a asp-action="ChangePassword" asp-controller="Account" class="btn btn-outline-secondary">Passwort ändern</a>
-            </div>
+            
             <div>
             @if (Model.IsActive)
             {
@@ -62,7 +58,7 @@
       
 
             <button type="submit" value="save" class="btn btn-dark">Speichern</button>
-        
+            
             </div>
         </div>
         

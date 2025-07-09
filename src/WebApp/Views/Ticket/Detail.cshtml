@@ -140,10 +140,11 @@
             <form asp-action="Detail" method="post">
                 <input type="hidden" asp-for="@Model.Ticket.Id" />
 
-                <div class="mb-3">
+                <div class="mb-3 position-relative">
                     <label asp-for="NewCommentContent" class="form-label">Neuer Kommentar</label>
-                    <textarea asp-for="NewCommentContent" class="form-control" rows="3" placeholder="Kommentar schreiben..."></textarea>
+                    <textarea asp-for="NewCommentContent" class="form-control pe-5" rows="3" maxlength="4000" id="commentInput" placeholder="Kommentar schreiben..."></textarea>
                     <span asp-validation-for="NewCommentContent" class="text-danger"></span>
+                    <small id="commentCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0 / 4000</small>
                 </div>
 
                 <button type="submit" class="btn btn-dark">Kommentar hinzufügen</button>
@@ -183,4 +184,19 @@
             }
         }, 4000);
     </script>
+    
+    <script>
+    const maxCommentChars = 4000;
+    const commentInput = document.getElementById("commentInput");
+    const commentCounter = document.getElementById("commentCounter");
+
+    function updateCommentCounter() {
+        const used = commentInput.value.length;
+        commentCounter.textContent = `${used} / ${maxCommentChars}`;
+    }
+
+    commentInput.addEventListener("input", updateCommentCounter);
+    updateCommentCounter();
+</script>
+
 }

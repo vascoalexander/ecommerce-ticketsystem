@@ -390,6 +390,10 @@ input:checked + .slider:before {
     filter: brightness(0) invert(1);
 }
 
+.dark-mode .border-top{
+    border-top: none !important;
+}
+
 .dark-mode .rounded-circle{
     filter: brightness(0) invert(1);
 }
