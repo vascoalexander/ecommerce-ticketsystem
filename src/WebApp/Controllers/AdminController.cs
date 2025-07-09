@@ -37,7 +37,7 @@ namespace WebApp.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 projects = projects
-                    .Where(p => p.Title != null && p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
@@ -53,7 +53,7 @@ namespace WebApp.Controllers
                     ProjectActive = project.ProjectActive,
                     StartDate = project.StartDate,
                     EndDate = project.EndDate,
-                    Tickets = project.Tickets?.ToList() ?? new List<TicketModel>()
+                    Tickets = project.Tickets.ToList()
                 }).ToList()
             };
             return View(viewModel);
@@ -124,21 +124,24 @@ namespace WebApp.Controllers
                     IsActive = true
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);;
-
-                if (result.Succeeded)
+                if (model.Password != null)
                 {
-                    if (!string.IsNullOrEmpty(model.SelectedRole))
+                    var result = await _userManager.CreateAsync(user, model.Password);
+
+                    if (result.Succeeded)
                     {
-                        await _userManager.AddToRoleAsync(user, model.SelectedRole);
+                        if (!string.IsNullOrEmpty(model.SelectedRole))
+                        {
+                            await _userManager.AddToRoleAsync(user, model.SelectedRole);
+                        }
+
+                        return RedirectToAction(nameof(UserManagement));
                     }
 
-                    return RedirectToAction(nameof(UserManagement));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
                 }
             }
 
