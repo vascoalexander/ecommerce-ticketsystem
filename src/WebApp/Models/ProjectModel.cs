@@ -19,9 +19,9 @@ public class ProjectModel
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public virtual ICollection<TicketModel> Tickets { get; set; } = new List<TicketModel>();
- [NotMapped]
- [DefaultValue(true)] 
- public bool ProjectActive { get; set; }
-    
-   
+    [DefaultValue(true)]
+    public bool ProjectActive { get; set; } = true;
+
+
+
 }

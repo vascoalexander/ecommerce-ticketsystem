@@ -1,3 +1,4 @@
 ﻿@{
-    Layout = "_Layout";
+    var theme = Context.Request.Cookies["theme"];
+    Layout = theme == "Lushwear" ? "_LayoutLushware" : "_Layout";
 }

@@ -49,7 +49,7 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="row fw-semibold text-secondary mb-2">
+            <div class="row fw-semibold text-secondary mb-2 tableText">
                 <div class="col-md-3">Ersteller</div>
                 <div class="col-md-3">Erstellt am</div>
                 <div class="col-md-3">Zugewiesen an</div>
@@ -89,7 +89,7 @@
                     // Nur Kurzform für Titel & Beschreibung
                     if (item.PropertyName == TicketProperty.Description || item.PropertyName == TicketProperty.Title)
                     {
-                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                        <div class="mb-3 ticket-history-entry">
                             <p class="mb-0">
                                 Am <strong>@datum</strong> wurde von <strong>@user</strong> die <strong>@eigenschaft</strong> geändert.
                             </p>
@@ -100,7 +100,7 @@
                         var alt = string.IsNullOrWhiteSpace(item.OldValue) ? "leer" : $"„{item.OldValue}“";
                         var neu = string.IsNullOrWhiteSpace(item.NewValue) ? "leer" : $"„{item.NewValue}“";
 
-                        <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                        <div class="mb-3 ticket-history-entry">
                             <p class="mb-0">
                                 Am <strong>@datum</strong> wurde von <strong>@user</strong> die Eigenschaft <strong>@eigenschaft</strong> von @alt auf @neu geändert.
                             </p>
@@ -124,10 +124,10 @@
     {
         <div class="card shadow-sm my-3">
             <div class="card-body">
-                <h5 class="text-secondary mb-3">Uploaded Files</h5>
+                <h5 class="text-secondary mb-3 title-text">Uploaded Files</h5>
                 @foreach (TicketFile file in Model.Ticket.Files)
                 {
-                    <a href="@Url.Action("DownloadFile", "Ticket", new { fileId = file.Id })" class="btn btn-outline-dark">Download: @file.OriginalName</a>
+                    <a href="@Url.Action("DownloadFile", "Ticket", new { fileId = file.Id })" class="btn btn-dark">Download: @file.OriginalName</a>
                 }
             </div>
         </div>
@@ -140,10 +140,11 @@
             <form asp-action="Detail" method="post">
                 <input type="hidden" asp-for="@Model.Ticket.Id" />
 
-                <div class="mb-3">
+                <div class="mb-3 position-relative">
                     <label asp-for="NewCommentContent" class="form-label">Neuer Kommentar</label>
-                    <textarea asp-for="NewCommentContent" class="form-control" rows="3" placeholder="Kommentar schreiben..."></textarea>
+                    <textarea asp-for="NewCommentContent" class="form-control pe-5" rows="3" maxlength="4000" id="commentInput" placeholder="Kommentar schreiben..."></textarea>
                     <span asp-validation-for="NewCommentContent" class="text-danger"></span>
+                    <small id="commentCounter" class="position-absolute end-0 bottom-0 me-2 mb-1 text-muted" style="font-size: 0.75rem;">0 / 4000</small>
                 </div>
 
                 <button type="submit" class="btn btn-dark">Kommentar hinzufügen</button>
@@ -183,4 +184,19 @@
             }
         }, 4000);
     </script>
+    
+    <script>
+    const maxCommentChars = 4000;
+    const commentInput = document.getElementById("commentInput");
+    const commentCounter = document.getElementById("commentCounter");
+
+    function updateCommentCounter() {
+        const used = commentInput.value.length;
+        commentCounter.textContent = `${used} / ${maxCommentChars}`;
+    }
+
+    commentInput.addEventListener("input", updateCommentCounter);
+    updateCommentCounter();
+</script>
+
 }
