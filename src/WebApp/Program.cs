@@ -69,8 +69,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseStaticFiles();
 app.Use(async (context, next) =>
 {
+    var path = context.Request.Path.Value;
+
+    if (path.StartsWith("/css") || path.StartsWith("/js") || path.StartsWith("/images") || path.StartsWith("/lib"))
+    {
+        await next();
+        return;
+    }
+
     context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
     context.Response.Headers["Pragma"] = "no-cache";
     context.Response.Headers["Expires"] = "0";
@@ -82,7 +91,6 @@ var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
 Directory.CreateDirectory(uploadPath);
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();
