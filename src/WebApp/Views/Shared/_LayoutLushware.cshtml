@@ -30,7 +30,7 @@
 
             <!-- Dark Mode Toggle Switch -->
             <div class="theme-switch-wrapper ms-2">
-                <label class="theme-switch" for="themeModeToggle">
+                <label class="theme-switch" for="themeModeToggle" aria-label="theme-switch">
                     <input type="checkbox" id="themeModeToggle" @(Context.Request.Cookies["theme"] == "dark" ? "checked" : "") />
                     <div class="slider round"></div>
                 </label>
@@ -98,7 +98,7 @@
 </main>
 
 <footer class="border-top footer text-muted">
-    <div class="container">
+    <div class="container footerText">
         &copy; 2025 - Copyright by Lushwear
     </div>
 </footer>
