@@ -341,16 +341,17 @@ public class TicketController : Controller
 
     [HttpGet]
     public async Task<IActionResult> Detail(int id, string returnUrl = "")
-    {    TempData["ReturnUrl"] = returnUrl;
+    {
+        TempData["ReturnUrl"] = returnUrl;
         var ticket = await _ticketRepository.GetTicketByIdAsync(id);
-    
-        
+
+
         if (ticket == null)
         {
             TempData["ToastMessage"] = "Ticket nicht gefunden.";
             return NotFound();
         }
-      
+
 
         var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
         var comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(id);
@@ -491,7 +492,7 @@ public class TicketController : Controller
         await _fileRepository.AddFileAsync(ticketFile);
         await _fileRepository.SaveChangesAsync();
 
-        return RedirectToAction("Edit", new {id = ticketId });
+        return RedirectToAction("Edit", new { id = ticketId });
     }
 
     [HttpGet]
@@ -525,7 +526,7 @@ public class TicketController : Controller
         {
             return Redirect(returnUrl);
         }
-        
+
         return RedirectToAction("TicketList", "Ticket");
     }
 }

@@ -215,7 +215,7 @@ namespace WebApp.Controllers
 
             existinguser.UserName = model.UserName;
             existinguser.Email = model.Email;
-    
+
             var result = await _userManager.UpdateAsync(existinguser);
             if (result.Succeeded)
             {
@@ -243,7 +243,7 @@ namespace WebApp.Controllers
                 .ToListAsync();
             return View(model);
         }
-        
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
