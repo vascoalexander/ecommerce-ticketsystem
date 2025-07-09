@@ -86,7 +86,7 @@
                         @ticket.AssignedUser?.UserName
                     </div>
                     <div class="col-12 col-md-2 d-flex flex-wrap gap-2">
-                        <a class="btn btn-sm btn-outline-primary flex-fill" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id, returnUrl = "AdminPage" })">Details</a>
+                        <a class="btn btn-sm btn-outline-primary flex-fill" href="@Url.Action("Detail", "Ticket", new { id = ticket.Id, returnUrl = Url.Action("DetailsProject", "Admin", new {id = Model.Project.Id}) })">Details</a>
                         <a class="btn btn-sm btn-outline-success flex-fill" href="@Url.Action("Edit", "Ticket", new { id = ticket.Id })">Bearbeiten</a>
                     </div>
                 </div>

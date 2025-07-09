@@ -341,14 +341,16 @@ public class TicketController : Controller
 
     [HttpGet]
     public async Task<IActionResult> Detail(int id, string returnUrl = "")
-    {
+    {    TempData["ReturnUrl"] = returnUrl;
         var ticket = await _ticketRepository.GetTicketByIdAsync(id);
-        TempData["ReturnUrl"] = returnUrl;
+    
+        
         if (ticket == null)
         {
             TempData["ToastMessage"] = "Ticket nicht gefunden.";
             return NotFound();
         }
+      
 
         var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
         var comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(id);
@@ -518,10 +520,11 @@ public class TicketController : Controller
     }
     public IActionResult BackOrRedirect()
     {
-        var source = TempData["ReturnUrl"] as string;
-        if (source == "AdminPage")
-            return RedirectToAction("AdminPage", "Admin");
-
+        var returnUrl = TempData["ReturnUrl"] as string;
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
         return RedirectToAction("TicketList", "Ticket");
     }
 }
