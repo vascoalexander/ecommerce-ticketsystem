@@ -307,6 +307,7 @@ public class TicketController : Controller
             var newUserName = assignedUser.UserName;
 
             _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
+            ticketToUpdate.AssignedUser = assignedUser;
 
         }
         else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
