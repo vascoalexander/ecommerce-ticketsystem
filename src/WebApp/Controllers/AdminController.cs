@@ -124,6 +124,7 @@ namespace WebApp.Controllers
                     IsActive = true
                 };
 
+
                 if (model.Password != null)
                 {
                     var result = await _userManager.CreateAsync(user, model.Password);

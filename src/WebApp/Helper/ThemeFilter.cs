@@ -18,7 +18,7 @@ public class ThemeFilter : IAsyncActionFilter
     {
         var controller = context.Controller as Controller;
 
-        if (controller != null && controller.User.Identity.IsAuthenticated)
+        if (controller != null && controller.User.Identity != null && controller.User.Identity.IsAuthenticated)
         {
             var user = await _userManager.GetUserAsync(controller.User);
             controller.ViewData["UserTheme"] = user?.UserTheme ?? "standard";

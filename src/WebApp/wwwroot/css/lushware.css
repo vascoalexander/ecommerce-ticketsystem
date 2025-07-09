@@ -370,7 +370,7 @@ input:checked + .slider:before {
 }
 
 .tableText {
-    color: #212529 !important;
+    color: #212529;
 }
 
 .nav-tabs{
@@ -390,13 +390,17 @@ input:checked + .slider:before {
     filter: brightness(0) invert(1);
 }
 
+.dark-mode .rounded-circle{
+    filter: brightness(0) invert(1);
+}
+
 .list-group-item {
     margin-bottom: 0.75rem; /* z. B. 12px Abstand */
 }
 
 .form-select{
     background-color: rgba(255, 255, 255, 0.3) !important;
-    color: #e0e0e0;
+    color: #000;
 }
 
 
@@ -408,5 +412,9 @@ input:checked + .slider:before {
 .dark-mode .footerText,
 .dark-mode .footer,
 .dark-mode .text-muted {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .welcome-text {
     color: #e0e0e0 !important;
 }
