@@ -73,6 +73,16 @@ public class MessageService
             SentMessages = sent,
             SystemMessages = system
         };
+    }
+    public async Task<MessageDetailsViewModel> GetMessageDetails(int messageId)
+    {
+        var message = _messageRepository.GetByIdAsync(messageId).Result;
 
+        return new MessageDetailsViewModel
+        {
+            Id = message.Id,
+
+
+        };
     }
 }
