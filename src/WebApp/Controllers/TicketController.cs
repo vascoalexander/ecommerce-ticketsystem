@@ -525,6 +525,7 @@ public class TicketController : Controller
         {
             return Redirect(returnUrl);
         }
+        
         return RedirectToAction("TicketList", "Ticket");
     }
 }
