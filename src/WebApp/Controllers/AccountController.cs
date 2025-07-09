@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WebApp.Helper;
-using WebApp.Repositories;
 using WebApp.Services;
 using WebApp.ViewModels;
 
@@ -16,15 +14,15 @@ public class AccountController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
-    private readonly MessageRepository _messageRepository;
     private readonly MessageService _messageService;
+    private readonly IUserManagementService _userManagementService;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageRepository messageRepository, MessageService messageService)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageService messageService, IUserManagementService userManagementService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _messageRepository = messageRepository;
         _messageService = messageService;
+        _userManagementService = userManagementService;
     }
 
     [HttpGet]
@@ -206,7 +204,6 @@ public class AccountController : Controller
         return View(model);
     }
 
-
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> MessageDetails(int messageId)
@@ -214,21 +211,21 @@ public class AccountController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null) { return View("Login"); }
 
-        var message = await _messageRepository.GetMessageById(messageId);
-        if (message == null) { return View("Messages"); }
-
-        if (message.SenderId != currentUser.Id && message.ReceiverId != currentUser.Id)
+        try
         {
-            return Forbid();
+            var messageDetails = await _messageService.GetMessageDetails(messageId, currentUser.Id);
+            return View("MessageDetails", messageDetails);
         }
-
-        if (message.ReceiverId == currentUser.Id && !message.IsRead)
+        catch (KeyNotFoundException ex)
         {
-            message.IsRead = true;
-            _messageRepository.UpdateMessage(message);
-            await _messageRepository.SaveChangesAsync();
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Messages));
         }
-        return View("MessageDetails", message);
+        catch (UnauthorizedAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Messages));
+        }
     }
 
     [HttpPost]
@@ -238,20 +235,7 @@ public class AccountController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null) { return View("Login"); }
 
-        var message = await _messageRepository.GetMessageById(messageId);
-        if (message == null) return View("Messages");
-
-        if (message.ReceiverId == currentUser.Id)
-        {
-            message.IsDeletedReceiver = true;
-        }
-        else if (message.SenderId == currentUser.Id)
-        {
-            message.IsDeletedSender = true;
-        }
-
-        _messageRepository.UpdateMessage(message);
-        await _messageRepository.SaveChangesAsync();
+        await _messageService.MarkMessageAsDeleted(messageId, currentUser.Id);
 
         return RedirectToAction(nameof(Messages));
     }
@@ -263,25 +247,7 @@ public class AccountController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null) { return View("Login"); }
 
-        var model = new SendMessageViewModel();
-        model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
-
-        if (replyToMessageId.HasValue)
-        {
-            var originalMessage = await _messageRepository.GetMessageById(replyToMessageId.Value);
-            if (originalMessage != null && originalMessage.ReceiverId == currentUser.Id)
-            {
-                model.ReceiverId = originalMessage.SenderId;
-                if (!string.IsNullOrEmpty(originalMessage.Subject) && !originalMessage.Subject.StartsWith("Re: "))
-                {
-                    model.Subject = $"Re: {originalMessage.Subject}";
-                }
-                else if (!string.IsNullOrEmpty(originalMessage.Subject))
-                {
-                    model.Subject = originalMessage.Subject;
-                }
-            }
-        }
+        var model = await _messageService.PrepareSendMessageViewModelAsync(currentUser.Id, replyToMessageId);
         return View(model);
     }
 
@@ -294,32 +260,22 @@ public class AccountController : Controller
 
         if (!ModelState.IsValid)
         {
-            model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
+            model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUser.Id);
             return View(model);
         }
 
-        var receiverUser = await _userManager.FindByIdAsync(model.ReceiverId);
-        if (receiverUser == null)
+        try
         {
-            ModelState.AddModelError("ReceiverId", "Der ausgewählte Empfänger existiert nicht.");
-            model.AvailableReceivers = await GetAvailableReceivers(currentUser.Id);
+            await _messageService.SendNewMessageAsync(model, currentUser.Id);
+            TempData["SuccessMessage"] = "Nachricht erfolgreich gesendet!";
+            return RedirectToAction(nameof(Messages));
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUser.Id);
             return View(model);
         }
-
-        var message = new Message
-        {
-            SenderId = currentUser.Id,
-            Sender = currentUser,
-            ReceiverId = model.ReceiverId,
-            Receiver = receiverUser,
-            Body = model.Body,
-            Subject = model.Subject,
-            SentAt = DateTime.UtcNow,
-            IsRead = false
-        };
-        await _messageRepository.AddMessage(message);
-        await _messageRepository.SaveChangesAsync();
-        return RedirectToAction(nameof(Messages));
     }
 
     private List<SelectListItem> GetAvailableThemes()
@@ -336,24 +292,6 @@ public class AccountController : Controller
                     .GetName() ?? e.ToString()
             }).ToList();
         return themeOptions;
-    }
-
-    private async Task<IEnumerable<SelectListItem>> GetAvailableReceivers(String currentUserId)
-    {
-        // Get all users excluding system user
-        var users = await Utility.GetUsersExcludingSystemAsync(_userManager);
-
-        // Filter out current user and order by username, project to SelectListItem
-        var filteredUsers = users
-            .Where(u => u.Id != currentUserId)
-            .OrderBy(u => u.UserName)
-            .Select(u => new SelectListItem
-            {
-                Value = u.Id,
-                Text = u.UserName
-            });
-
-        return filteredUsers;
     }
     private void AddErrors(IdentityResult result)
     {
