@@ -20,10 +20,6 @@ public class MessageRepository : IMessageRepository
             .Include(m => m.Receiver)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
-    public IQueryable<Message> GetAll()
-    {
-        return _context.Messages.AsQueryable();
-    }
 
     public async Task AddAsync(Message message)
     {
@@ -40,6 +36,7 @@ public class MessageRepository : IMessageRepository
         return await _context.Messages
             .Where(m => m.ReceiverId == userId && m.Sender.UserName != "system")
             .Include(m => m.Sender)
+            .Include(m => m.Receiver)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
     }
@@ -49,6 +46,7 @@ public class MessageRepository : IMessageRepository
         return await _context.Messages
             .Where(m => m.ReceiverId == userId && m.Sender.UserName == "system")
             .Include(m => m.Sender)
+            .Include(m => m.Receiver)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
     }
@@ -58,15 +56,9 @@ public class MessageRepository : IMessageRepository
         return await _context.Messages
             .Where(m => m.SenderId == userId)
             .Include(m => m.Receiver)
+            .Include(m => m.Sender)
             .OrderByDescending(m => m.SentAt)
             .ToListAsync();
-    }
-
-    public async Task<int> GetUnreadMessages(string userId)
-    {
-        return await _context.Messages
-            .Where(m => m.SenderId ==  userId && !m.IsRead)
-            .CountAsync();
     }
 
     public async Task SaveChangesAsync()

@@ -34,6 +34,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<TicketRepository>();
 builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<FileRepository>();
@@ -41,7 +42,7 @@ builder.Services.AddScoped<TicketHistoryRepository>();
 builder.Services.AddScoped<TicketCommentsRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
-builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 var app = builder.Build();
 

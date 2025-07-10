@@ -22,8 +22,7 @@ public class TicketController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly TicketHistoryRepository _ticketHistoryRepository;
     private readonly TicketCommentsRepository _ticketCommentsRepository;
-    private readonly MessageService _messageService;
-    //private readonly MessageRepository _messageRepository;
+    private readonly IMessageService _messageService;
 
     public TicketController(
         TicketRepository ticketRepository,
@@ -31,9 +30,8 @@ public class TicketController : Controller
         FileRepository fileRepository,
         TicketHistoryRepository ticketHistoryRepository,
         TicketCommentsRepository ticketCommentsRepository,
-        //MessageRepository messageRepository,
         UserManager<AppUser> userManager,
-        MessageService messageService)
+        IMessageService messageService)
     {
         _ticketRepository = ticketRepository;
         _projectRepository = projectRepository;
@@ -42,7 +40,6 @@ public class TicketController : Controller
         _messageService = messageService;
         _ticketHistoryRepository = ticketHistoryRepository;
         _ticketCommentsRepository = ticketCommentsRepository;
-        //_messageRepository = messageRepository;
     }
 
     [HttpGet]
@@ -177,22 +174,14 @@ public class TicketController : Controller
 
         var systemUser = await _userManager.FindByNameAsync("system");
 
-        if (ticket.AssignedUser != null)
+        if (ticket.AssignedUser != null && currentUser != null && systemUser != null)
         {
-
-            // var message = new Message
-            // {
-            //     Sender = systemUser!,
-            //     SenderId = systemUser!.Id,
-            //     Receiver = ticket.AssignedUser,
-            //     ReceiverId = ticket.AssignedUserId!,
-            //     SentAt = DateTime.Now.ToUniversalTime(),
-            //     Subject = $"Ein Neues Ticket mit der ID: {ticket.Id} wurde erstellt",
-            //     Body = $"Das Ticket wurde von {currentUser!.UserName} um {ticket.CreatedAt} erstellt"
-            //
-            // };
-            // await _messageRepository.AddMessage(message);
-            // await _messageRepository.SaveChangesAsync();
+            await _messageService.SendNewTicketAssignmentNotificationAsync(
+                currentUser.Id,
+                systemUser.Id,
+                ticket.Id,
+                ticket.CreatedAt,
+                currentUser.UserName!);
         }
 
         TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";
@@ -323,20 +312,8 @@ public class TicketController : Controller
         await _ticketHistoryRepository.SaveChangesAsync();
 
         var systemUser = await _userManager.FindByNameAsync("system");
-
-        var message = new Message
-        {
-            Sender = systemUser!,
-            SenderId = systemUser!.Id,
-            Receiver = assignedUser,
-            ReceiverId = assignedUser.Id,
-            SentAt = DateTime.Now.ToUniversalTime(),
-            Subject = $"Sie wurden dem Ticket mit der ID: {ticketToUpdate.Id} für die bearbeitung zugewiesen",
-            Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUser!.UserName} um {DateTime.Now.ToUniversalTime()}"
-
-        };
-        await _messageRepository.AddMessage(message);
-        await _messageRepository.SaveChangesAsync();
+        if (systemUser != null && newAssignedUserId != null && currentUser != null)
+            await _messageService.SendNewAssignmentNotificationAsync(newAssignedUserId, currentUser.UserName!, systemUser.Id, ticketToUpdate.Id );
 
         TempData["ToastMessage"] = "Ticket erfolgreich bearbeitet.";
         return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
@@ -391,36 +368,28 @@ public class TicketController : Controller
             return Unauthorized();
         }
 
-        if (string.IsNullOrWhiteSpace(viewModel.NewCommentContent))
+        var newCommentContent = viewModel.NewCommentContent;
+        if (string.IsNullOrWhiteSpace(newCommentContent))
         {
-            ModelState.AddModelError(nameof(viewModel.NewCommentContent), "Kommentar darf nicht leer sein.");
+            ModelState.AddModelError(nameof(newCommentContent), "Kommentar darf nicht leer sein.");
             viewModel.Ticket = ticket;
             viewModel.History = await _ticketHistoryRepository.GetHistoryForTicketAsync(ticket.Id);
             viewModel.Comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(ticket.Id);
             return View(viewModel);
         }
 
-        _ticketCommentsRepository.CreateComment(ticket.Id, viewModel.NewCommentContent, currentUser.Id);
+        _ticketCommentsRepository.CreateComment(ticket.Id, newCommentContent, currentUser.Id);
         await _ticketCommentsRepository.SaveCommentAsync();
 
         var systemUser = await _userManager.FindByNameAsync("system");
 
-        var message = new Message
-        {
-            Sender = systemUser!,
-            SenderId = systemUser!.Id,
-            Receiver = ticket.AssignedUser!,
-            ReceiverId = ticket.AssignedUser!.Id,
-            SentAt = DateTime.Now.ToUniversalTime(),
-            Subject = $"Es wurde ein Neues Kommentar für das Ticket: {ticket.Id} erstellt",
-            Body = $"""
-                    Das Kommentar wurde vom Benutzer: {currentUser.UserName} um {DateTime.Now.ToUniversalTime()} hinterlassen:
-                    {viewModel.NewCommentContent}
-                    """
-
-        };
-        await _messageRepository.AddMessage(message);
-        await _messageRepository.SaveChangesAsync();
+        if (systemUser != null)
+            await _messageService.SendNewCommentNotificationAsync(
+                currentUser.Id,
+                currentUser.UserName!,
+                systemUser.Id,
+                ticket.Id,
+                newCommentContent);
 
         TempData["ToastMessage"] = "Kommentar erfolgreich hinzugefügt.";
         return RedirectToAction(nameof(Detail), new { id = ticket.Id });

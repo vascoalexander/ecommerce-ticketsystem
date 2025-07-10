@@ -1,31 +1,35 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 
 namespace WebApp.Services;
 
-public class MessageService
+public class MessageService : IMessageService
 {
     private readonly IMessageRepository _messageRepository;
     private readonly IUserManagementService _userManagementService;
-    private readonly string? _systemUserId;
 
-    public MessageService(IMessageRepository messageRepository, IUserManagementService userManagementService, string systemUserId)
+    public MessageService(IMessageRepository messageRepository, IUserManagementService userManagementService)
     {
         _messageRepository = messageRepository;
         _userManagementService = userManagementService;
-        _systemUserId = systemUserId;
     }
 
-    public async Task<MessagesViewModel> GetAllUserMessages(string userId)
+    public async Task<MessagesViewModel> GetAllUserMessages()
     {
-        var receivedMessagesTask = _messageRepository.GetMessagesReceived(userId);
-        var sentMessagesTask = _messageRepository.GetMessagesSent(userId);
-        var systemMessagesTask = _messageRepository.GetSystemMessageReceived(userId);
+        var currentUserId = await _userManagementService.GetCurrentUserIdAsync();
+        if (currentUserId == null)
+        {
+            throw new UnauthorizedAccessException("Kein authentifizierter Benutzer gefunden");
+        }
 
-        await Task.WhenAll(receivedMessagesTask, sentMessagesTask, systemMessagesTask);
+        var receivedMessagesTask = await _messageRepository.GetMessagesReceived(currentUserId);
+        var sentMessagesTask = await _messageRepository.GetMessagesSent(currentUserId);
+        var systemMessagesTask = await _messageRepository.GetSystemMessageReceived(currentUserId);
 
-        var received = receivedMessagesTask.Result
+        var received = receivedMessagesTask
             .Where(m => !m.IsDeletedReceiver)
             .Select(m => new MessageDetailsViewModel()
                 {
@@ -41,7 +45,7 @@ public class MessageService
                 }
             ).ToList();
 
-        var sent = sentMessagesTask.Result
+        var sent = sentMessagesTask
             .Where(m => !m.IsDeletedSender)
             .Select(m => new MessageDetailsViewModel()
             {
@@ -56,7 +60,7 @@ public class MessageService
                 IsRead = m.IsRead,
             }).ToList();
 
-        var system = systemMessagesTask.Result
+        var system = systemMessagesTask
             .Where(m => !m.IsDeletedReceiver)
             .Select(m => new MessageDetailsViewModel()
             {
@@ -75,13 +79,15 @@ public class MessageService
             SystemMessages = system
         };
     }
-    public async Task<MessageDetailsViewModel> GetMessageDetails(int messageId, string currentUserId)
+    public async Task<MessageDetailsViewModel> GetMessageDetails(int messageId)
     {
         var message = await _messageRepository.GetByIdAsync(messageId);
+        var currentUserId = await _userManagementService.GetCurrentUserIdAsync();
 
+        if (currentUserId == null)
+            throw new UnauthorizedAccessException("Kein authentifizierter Benutzer gefunden");
         if (message == null)
             throw new KeyNotFoundException("Die angeforderte Nachricht wurde nicht gefunden.");
-
         if (message.SenderId != currentUserId && message.ReceiverId != currentUserId)
             throw new UnauthorizedAccessException("Sie sind nicht berechtigt, diese Nachricht anzuzeigen.");
 
@@ -107,9 +113,15 @@ public class MessageService
             IsDeletedReceiver = message.IsDeletedReceiver,
         };
     }
-    public async Task MarkMessageAsDeleted(int messageId, string currentUserId)
+    public async Task MarkMessageAsDeleted(int messageId)
     {
         var message = await _messageRepository.GetByIdAsync(messageId);
+        var currentUserId = await _userManagementService.GetCurrentUserIdAsync();
+
+        if (currentUserId == null)
+        {
+            throw new UnauthorizedAccessException("Kein authentifizierter Benutzer gefunden");
+        }
 
         if (message!.ReceiverId == currentUserId)
             message.IsDeletedReceiver = true;
@@ -120,10 +132,16 @@ public class MessageService
         await _messageRepository.SaveChangesAsync();
     }
 
-    public async Task<SendMessageViewModel> PrepareSendMessageViewModelAsync(string currentUserId, int? replyToMessageId)
+    public async Task<SendMessageViewModel> PrepareSendMessageViewModelAsync(int? replyToMessageId)
     {
         var model = new SendMessageViewModel();
-        model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUserId);
+        var currentUserId = await _userManagementService.GetCurrentUserIdAsync();
+        if (currentUserId == null)
+        {
+            throw new UnauthorizedAccessException("Kein authentifizierter Benutzer gefunden");
+        }
+
+        model.AvailableReceivers = await GetAvailableReceiversAsync();
 
         if (replyToMessageId.HasValue)
         {
@@ -144,25 +162,14 @@ public class MessageService
         return model;
     }
 
-    public async Task<SendMessageViewModel> ReplyToSender(string currentUserId, int receiverId)
+    public async Task SendNewMessageAsync(SendMessageViewModel model)
     {
-        var model = new SendMessageViewModel();
-        model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUserId);
-
-        var originalMessage = await _messageRepository.GetByIdAsync(receiverId);
-        if (originalMessage != null && originalMessage.ReceiverId == currentUserId)
+        var senderId = await _userManagementService.GetCurrentUserIdAsync();
+        if (senderId == null)
         {
-            model.ReceiverId = originalMessage.SenderId;
-            if (!string.IsNullOrEmpty(originalMessage.Subject) && !originalMessage.Subject.StartsWith("Re: "))
-                model.Subject = $"Re: {originalMessage.Subject}";
-            else if (!string.IsNullOrEmpty(originalMessage.Subject))
-                model.Subject = originalMessage.Subject;
+            throw new UnauthorizedAccessException("Kein authentifizierter Benutzer gefunden");
         }
-        return model;
-    }
 
-    public async Task SendNewMessageAsync(SendMessageViewModel model, string senderId)
-    {
         if (string.IsNullOrWhiteSpace(model.Subject) || string.IsNullOrWhiteSpace(model.Body))
         {
             throw new ArgumentException("Betreff und Nachrichtentext dürfen nicht leer sein.");
@@ -238,5 +245,14 @@ public class MessageService
         };
         await _messageRepository.AddAsync(message);
         await _messageRepository.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<SelectListItem>> GetAvailableReceiversAsync()
+    {
+        var currentUserId = await _userManagementService.GetCurrentUserIdAsync();
+        return await _userManagementService.GetAllUsersQuery()
+            .Where(u => u.Id != currentUserId)
+            .OrderBy(u => u.UserName)
+            .Select(u => new SelectListItem { Text = u.UserName, Value = u.Id.ToString() })
+            .ToListAsync();
     }
 }

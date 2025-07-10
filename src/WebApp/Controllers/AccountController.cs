@@ -14,15 +14,13 @@ public class AccountController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
-    private readonly MessageService _messageService;
-    private readonly IUserManagementService _userManagementService;
+    private readonly IMessageService _messageService;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, MessageService messageService, IUserManagementService userManagementService)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMessageService messageService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _messageService = messageService;
-        _userManagementService = userManagementService;
     }
 
     [HttpGet]
@@ -197,23 +195,25 @@ public class AccountController : Controller
     [Authorize]
     public async Task<IActionResult> Messages()
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser == null) { return View("Login"); }
-
-        var model = await _messageService.GetAllUserMessages(currentUser.Id);
-        return View(model);
+        try
+        {
+            var model = await _messageService.GetAllUserMessages();
+            return View(model);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return View("Login");
+        }
     }
 
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> MessageDetails(int messageId)
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser == null) { return View("Login"); }
-
         try
         {
-            var messageDetails = await _messageService.GetMessageDetails(messageId, currentUser.Id);
+            var messageDetails = await _messageService.GetMessageDetails(messageId);
             return View("MessageDetails", messageDetails);
         }
         catch (KeyNotFoundException ex)
@@ -232,49 +232,60 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkAsDeleted(int messageId)
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser == null) { return View("Login"); }
-
-        await _messageService.MarkMessageAsDeleted(messageId, currentUser.Id);
-
-        return RedirectToAction(nameof(Messages));
+        try
+        {
+            await _messageService.MarkMessageAsDeleted(messageId);
+            return RedirectToAction(nameof(Messages));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return View("Login");
+        }
     }
 
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> SendMessage(int? replyToMessageId)
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser == null) { return View("Login"); }
-
-        var model = await _messageService.PrepareSendMessageViewModelAsync(currentUser.Id, replyToMessageId);
-        return View(model);
+        try
+        {
+            var model = await _messageService.PrepareSendMessageViewModelAsync(replyToMessageId);
+            return View(model);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return View("Login");
+        }
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendMessage(SendMessageViewModel model)
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser == null) { return View("Login"); }
-
         if (!ModelState.IsValid)
         {
-            model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUser.Id);
+            model.AvailableReceivers = await _messageService.GetAvailableReceiversAsync();
             return View(model);
         }
 
         try
         {
-            await _messageService.SendNewMessageAsync(model, currentUser.Id);
+            await _messageService.SendNewMessageAsync(model);
             TempData["SuccessMessage"] = "Nachricht erfolgreich gesendet!";
             return RedirectToAction(nameof(Messages));
         }
         catch (ArgumentException ex)
         {
             ModelState.AddModelError("", ex.Message);
-            model.AvailableReceivers = await _userManagementService.GetAvailableReceiversAsync(currentUser.Id);
+            model.AvailableReceivers = await _messageService.GetAvailableReceiversAsync();
             return View(model);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return View("Login");
         }
     }
 
