@@ -9,6 +9,7 @@ using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.ViewModels;
 using WebApp.Helper;
+using WebApp.Services;
 
 namespace WebApp.Controllers;
 
@@ -21,7 +22,8 @@ public class TicketController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly TicketHistoryRepository _ticketHistoryRepository;
     private readonly TicketCommentsRepository _ticketCommentsRepository;
-    private readonly MessageRepository _messageRepository;
+    private readonly MessageService _messageService;
+    //private readonly MessageRepository _messageRepository;
 
     public TicketController(
         TicketRepository ticketRepository,
@@ -29,16 +31,18 @@ public class TicketController : Controller
         FileRepository fileRepository,
         TicketHistoryRepository ticketHistoryRepository,
         TicketCommentsRepository ticketCommentsRepository,
-        MessageRepository messageRepository,
-        UserManager<AppUser> userManager)
+        //MessageRepository messageRepository,
+        UserManager<AppUser> userManager,
+        MessageService messageService)
     {
         _ticketRepository = ticketRepository;
         _projectRepository = projectRepository;
         _fileRepository = fileRepository;
         _userManager = userManager;
+        _messageService = messageService;
         _ticketHistoryRepository = ticketHistoryRepository;
         _ticketCommentsRepository = ticketCommentsRepository;
-        _messageRepository = messageRepository;
+        //_messageRepository = messageRepository;
     }
 
     [HttpGet]
@@ -175,19 +179,20 @@ public class TicketController : Controller
 
         if (ticket.AssignedUser != null)
         {
-            var message = new Message
-            {
-                Sender = systemUser!,
-                SenderId = systemUser!.Id,
-                Receiver = ticket.AssignedUser,
-                ReceiverId = ticket.AssignedUserId!,
-                SentAt = DateTime.Now.ToUniversalTime(),
-                Subject = $"Ein Neues Ticket mit der ID: {ticket.Id} wurde erstellt",
-                Body = $"Das Ticket wurde von {currentUser!.UserName} um {ticket.CreatedAt} erstellt"
 
-            };
-            await _messageRepository.AddMessage(message);
-            await _messageRepository.SaveChangesAsync();
+            // var message = new Message
+            // {
+            //     Sender = systemUser!,
+            //     SenderId = systemUser!.Id,
+            //     Receiver = ticket.AssignedUser,
+            //     ReceiverId = ticket.AssignedUserId!,
+            //     SentAt = DateTime.Now.ToUniversalTime(),
+            //     Subject = $"Ein Neues Ticket mit der ID: {ticket.Id} wurde erstellt",
+            //     Body = $"Das Ticket wurde von {currentUser!.UserName} um {ticket.CreatedAt} erstellt"
+            //
+            // };
+            // await _messageRepository.AddMessage(message);
+            // await _messageRepository.SaveChangesAsync();
         }
 
         TempData["ToastMessage"] = "Ticket erfolgreich erstellt.";

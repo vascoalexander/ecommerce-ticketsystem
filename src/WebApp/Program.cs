@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApp.Data;
 using WebApp.Models;
 using WebApp.Repositories;
+using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,9 @@ builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<FileRepository>();
 builder.Services.AddScoped<TicketHistoryRepository>();
 builder.Services.AddScoped<TicketCommentsRepository>();
-builder.Services.AddScoped<MessageRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<MessageService>();
 
 var app = builder.Build();
 
@@ -53,7 +56,6 @@ using (var scope = app.Services.CreateScope())
 
 await EnsureIdentity.SeedDefaultAccounts(app);
 DbInitializer.SeedDb(app);
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

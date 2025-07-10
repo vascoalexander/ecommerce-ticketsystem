@@ -8,11 +8,13 @@ public class MessageService
 {
     private readonly IMessageRepository _messageRepository;
     private readonly IUserManagementService _userManagementService;
+    private readonly string? _systemUserId;
 
-    public MessageService(IMessageRepository messageRepository, IUserManagementService userManagementService)
+    public MessageService(IMessageRepository messageRepository, IUserManagementService userManagementService, string systemUserId)
     {
         _messageRepository = messageRepository;
         _userManagementService = userManagementService;
+        _systemUserId = systemUserId;
     }
 
     public async Task<MessagesViewModel> GetAllUserMessages(string userId)
@@ -184,6 +186,56 @@ public class MessageService
             IsDeletedReceiver = false,
         };
 
+        await _messageRepository.AddAsync(message);
+        await _messageRepository.SaveChangesAsync();
+    }
+
+    public async Task SendNewCommentNotificationAsync(string currentUserId, string currentUserName, string senderId, int ticketId, string commentContent)
+    {
+        var message = new Message
+        {
+            SenderId = senderId,
+            ReceiverId = currentUserId,
+            SentAt = DateTime.UtcNow,
+            Subject = $"Es wurde ein Neues Kommentar für das Ticket: {ticketId} erstellt",
+            Body = $"""
+                    Das Kommentar wurde vom Benutzer: {currentUserName} um {DateTime.Now.ToUniversalTime()} hinterlassen:
+                    {commentContent}
+                    """,
+            IsRead = false,
+            IsDeletedSender = false,
+            IsDeletedReceiver = false,
+        };
+        await _messageRepository.AddAsync(message);
+        await _messageRepository.SaveChangesAsync();
+    }
+    public async Task SendNewTicketAssignmentNotificationAsync(string assignedUserId, string senderId, int ticketId, DateTime ticketCreatedAt, string currentUserName)
+    {
+        var message = new Message
+        {
+            SenderId = senderId,
+            ReceiverId = assignedUserId,
+            SentAt = DateTime.Now.ToUniversalTime(),
+            Subject = $"Ein Neues Ticket mit der ID: {ticketId} wurde erstellt",
+            Body = $"Das Ticket wurde von {currentUserName} um {ticketCreatedAt} erstellt"
+
+        };
+        await _messageRepository.AddAsync(message);
+        await _messageRepository.SaveChangesAsync();
+    }
+    public async Task SendNewAssignmentNotificationAsync(string assignedUserId, string currentUserName,string senderId, int ticketId)
+    {
+        var message = new Message
+        {
+            SenderId = senderId,
+            ReceiverId = assignedUserId,
+            SentAt = DateTime.UtcNow,
+            Subject = $"Sie wurden dem Ticket mit der ID: {ticketId} für die bearbeitung zugewiesen",
+            Body = $"Das Ticket wurde Ihnen zugewiesen von {currentUserName} um {DateTime.Now.ToUniversalTime()}",
+            IsRead = false,
+            IsDeletedSender = false,
+            IsDeletedReceiver = false,
+        };
         await _messageRepository.AddAsync(message);
         await _messageRepository.SaveChangesAsync();
     }
