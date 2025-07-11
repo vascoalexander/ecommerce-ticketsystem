@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Data;
+using WebApp.Helper;
 using WebApp.Models;
 using WebApp.Repositories;
 using WebApp.Services;
@@ -43,6 +44,11 @@ builder.Services.AddScoped<TicketCommentsRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ThemeFilter>();
+});
 
 var app = builder.Build();
 

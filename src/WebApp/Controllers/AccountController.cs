@@ -14,13 +14,15 @@ public class AccountController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly IUserManagementService _userManagementService;
     private readonly IMessageService _messageService;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMessageService messageService)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMessageService messageService, IUserManagementService userManagementService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _messageService = messageService;
+        _userManagementService = userManagementService;
     }
 
     [HttpGet]
@@ -40,32 +42,27 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByEmailAsync(viewModel.Email);
-            if (user != null)
+            viewModel.ErrorMessage = "Benutzername oder Passwort ist falsch.";
+            return View(viewModel);
+        }
+
+        try
+        {
+            var result = await _userManagementService.UserSignInAsync(
+                viewModel.Email,
+                viewModel.Password,
+                false,
+                false);
+
+            if (result.Succeeded)
             {
-                if (!user.IsActive)
-                {
-                    viewModel.ErrorMessage = "Ihr Benutzerkonto ist deaktiviert.";
-                    return View(viewModel);
-                }
-                await _signInManager.SignOutAsync();
-                var result = await _signInManager
-                    .PasswordSignInAsync(
-                        user,
-                        viewModel.Password,
-                        false,
-                        false
-                    );
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Dashboard", "Home");
-                }
-                else
-                {
-                    viewModel.ErrorMessage = "Benutzername oder Passwort ist falsch.";
-                    return View(viewModel);
-                }
+                return RedirectToAction("Dashboard", "Home");
             }
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return View(viewModel);
         }
         return View(viewModel);
     }

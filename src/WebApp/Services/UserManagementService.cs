@@ -8,12 +8,16 @@ namespace WebApp.Services;
 
 public class UserManagementService : IUserManagementService
 {
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly SignInManager<AppUser> _signInManager;
     private readonly UserManager<AppUser> _userManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserManagementService(UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor)
+    public UserManagementService(UserManager<AppUser> userManager, IHttpContextAccessor httpContextAccessor, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
+        _roleManager = roleManager;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -48,5 +52,48 @@ public class UserManagementService : IUserManagementService
             return Task.FromResult<string?>(null);
 
         return Task.FromResult(_userManager.GetUserId(httpContext.User));
+    }
+
+    public async Task<SignInResult> UserSignInAsync(string userEmail, string password, bool isPersistent, bool lockoutOnFailure)
+    {
+        var user = await _userManager.FindByEmailAsync(userEmail);
+
+        if (user != null && !user.IsActive)
+        {
+            throw new InvalidOperationException("Ihr Benutzerkonto ist deaktiviert.");
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(userEmail, password, isPersistent, lockoutOnFailure);
+        return result;
+    }
+
+    public Task UserSignOutAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> IsSignedInAsync(ClaimsPrincipal userPrincipal)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> IsUserInRoleAsync(string userId, string roleName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IdentityResult> AddUserToRoleAsync(string userId, string roleName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IdentityResult> RemoveUserFromRoleAsync(string userId, string roleName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<string>> GetUserRolesAsync(string userId)
+    {
+        throw new NotImplementedException();
     }
 }
