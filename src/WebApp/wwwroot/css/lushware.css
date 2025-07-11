@@ -1,0 +1,428 @@
+/* ==========
+   Basics & Layout
+   ========== */
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background-color: #111;
+    background-image: url('/images/lushwearBg.webp'); /* Passe den Pfad an */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    color: #212529;
+}
+
+
+
+main {
+    flex: 1;
+    z-index: 1;
+}
+
+header {
+    position: relative;
+    z-index: 10;
+}
+
+/* ==========
+   Navbar & Logo
+   ========== */
+
+.navbar {
+    background-color: rgba(59, 39, 93, 0.7) !important;
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    max-height: 4em;
+    display: block;
+}
+
+@media (min-width: 992px) {
+    .logo {
+        max-height: 5em;
+    }
+
+    .navbar {
+        height: 64px;
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+    }
+}
+
+a.nav-link {
+    color: #000 !important;
+    transition: color 0.3s ease;
+}
+
+a.nav-link:hover {
+    color: #c38ffa !important;
+}
+
+/* ==========
+   Navbar mobile
+   ========== */
+
+@media (max-width: 992px) {
+    .navbar-collapse {
+        text-align: center;
+    }
+
+    .navbar-nav {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .navbar-nav .nav-item {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .navbar-nav .nav-link {
+        text-align: center;
+    }
+
+    .navbar-nav .btn {
+        width: 80%;
+    }
+}
+
+/* ==========
+   Buttons & Forms
+   ========== */
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #3b275d;
+}
+
+.btn-dark {
+    background-color: #3b275d;
+    border-color: #3b275d;
+}
+
+.btn-dark:hover {
+    background-color: #2d2046;
+    border-color: #2d2046;
+}
+
+.btn-outline-secondary{
+    border-color: #2d2046;
+    background-color: #2d2046;
+    color: #ffffff;
+}
+
+.badge {
+    text-shadow:
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px  1px 0 black,
+            1px  1px 0 black;
+}
+
+.bg-light{
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.form-control:focus {
+    border-color: #3b275d;
+    box-shadow: 0 0 0 0.2rem rgba(59, 39, 93, 0.25);
+}
+
+.form-control {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ==========
+   Transparent / Glas-Effekt
+   ========== */
+
+.card,
+.dashboard-main,
+.table,
+.list-group-item,
+.form-control,
+.alert,
+.modal-content {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #212529;
+    border-radius: 12px;
+}
+
+.navbar {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px);
+  
+    color: #212529;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+footer{
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px);
+    color: #212529;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.text-muted {
+    color: #212529 !important;
+}
+
+/* ==========
+   Chart Container
+   ========== */
+
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+}
+
+/* ==========
+   Message Dot
+   ========== */
+
+#messageDot {
+    width: 10px;
+    height: 10px;
+}
+
+.navbar .rounded-circle {
+    border: 2px solid #6c757d;
+    transition: border-color 0.3s ease;
+    object-fit: cover;
+}
+
+.navbar .rounded-circle:hover {
+    border-color: #343a40;
+}
+
+/* ==========
+   Theme Switch
+   ========== */
+
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #c38ffa ;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+}
+
+input:checked + .slider {
+    background-color: #3b275d;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #3b275d;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* ==========
+   Dark Mode – Transparente Variante
+   ========== */
+
+.dark-mode body {
+    background-color: #000;
+    color: #e0e0e0;
+    background-image: url('/images/lushwearBg-Dark.webp') !important;
+}
+
+.dark-mode .card,
+.dark-mode .dashboard-main,
+.dark-mode .table,
+.dark-mode .list-group-item,
+.dark-mode .form-control,
+.dark-mode .alert,
+.dark-mode .navbar,
+.dark-mode footer,
+.dark-mode .modal-content {
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.dark-mode .navbar-brand,
+.dark-mode .nav-link,
+.dark-mode .navbar-toggler-icon {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .form-control:focus {
+    background-color: #383838;
+    border-color: #80bdff;
+}
+
+.dark-mode .pagination  .page-link {
+    background-color: #3b275d;
+    border-color: #3b275d;
+    color: #fff;
+}
+
+.pagination .page-link {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: #3b275d;
+    color: #fff;
+}
+.page-item.active {
+    background-color: #3b275d;
+    border-color: #3b275d;
+    color: #fff;
+}
+
+.ticket-history-entry {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    color: #212529;
+}
+.dark-mode .ticket-history-entry {
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.tableText {
+    color: #212529;
+}
+
+.nav-tabs{
+    background-color: transparent !important;
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark-mode .nav-link.active {
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    color: white !important;
+}
+
+.dark-mode .logo {
+    filter: brightness(0) invert(1);
+}
+
+.dark-mode .border-top{
+    border-top: none !important;
+}
+
+.dark-mode .rounded-circle{
+    filter: brightness(0) invert(1);
+}
+
+.list-group-item {
+    margin-bottom: 0.75rem; /* z. B. 12px Abstand */
+}
+
+.form-select{
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    color: #000;
+}
+
+
+.dark-mode .form-select option {
+        background-color: #212529; 
+        color: #fff;
+}
+
+.dark-mode .footerText,
+.dark-mode .footer,
+.dark-mode .text-muted {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .welcome-text {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .title-text {
+    color: #e0e0e0 !important;
+}

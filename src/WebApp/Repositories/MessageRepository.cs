@@ -61,6 +61,23 @@ public class MessageRepository : IMessageRepository
             .ToListAsync();
     }
 
+    public async Task<int> GetUnreadMessages(string userId)
+    {
+        return await _context.Messages
+            .Where(m => m.SenderId ==  userId && !m.IsRead)
+            .CountAsync();
+    }
+
+    public async Task AddMessage(Message message)
+    {
+        await _context.Messages.AddAsync(message);
+    }
+
+    public void UpdateMessage(Message message)
+    {
+        _context.Messages.Update(message);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();

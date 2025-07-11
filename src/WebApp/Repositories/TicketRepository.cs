@@ -12,14 +12,12 @@ public class TicketRepository
     {
         _context = context;
     }
-    // Create 
     public async Task CreateTicketAsync(TicketModel ticket)
     {
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
     }
 
-    // Read 
     public async Task<TicketModel?> GetTicketByIdAsync(int? id)
     {
         return await _context.Tickets
@@ -38,8 +36,6 @@ public class TicketRepository
             .Include(t => t.CreatorUser)
             .ToListAsync();
     }
-
-    // Update 
     public async Task UpdateTicketAsync(TicketModel ticket)
     {
         _context.Tickets.Update(ticket);
@@ -54,16 +50,5 @@ public class TicketRepository
             .Include(t => t.AssignedUser)
             .Include(t => t.CreatorUser)
             .ToListAsync();
-    }
-
-    // Delete 
-    public async Task DeleteTicketAsync(int id)
-    {
-        var ticket = await _context.Tickets.FindAsync(id);
-        if (ticket != null)
-        {
-            _context.Tickets.Remove(ticket);
-            await _context.SaveChangesAsync();
-        }
     }
 }

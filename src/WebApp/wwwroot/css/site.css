@@ -98,6 +98,13 @@ main {
 /* ==========
    Buttons & Forms
    ========== */
+.badge {
+    text-shadow:
+            -1px -1px 0 black,
+            1px -1px 0 black,
+            -1px  1px 0 black,
+            1px  1px 0 black;
+}
 
 .btn:focus,
 .btn:active:focus,
@@ -235,7 +242,7 @@ input:checked + .slider:before {
    ========== */
 
 .dark-mode body {
-    background-color: #121212;
+    background-color: #000;
     color: #e0e0e0;
 }
 
@@ -290,7 +297,7 @@ input:checked + .slider:before {
 }
 
 .dark-mode .bg-light {
-    background-color: #2c2c2c !important;
+    background-color: #000 !important;
 }
 
 .dark-mode .navbar-light {
@@ -421,4 +428,9 @@ input:checked + .slider:before {
     padding: 1rem;
     border-radius: 0.25rem;
     border: 1px solid #444;
+}
+
+.dark-mode .card-header.bg-White {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
 }

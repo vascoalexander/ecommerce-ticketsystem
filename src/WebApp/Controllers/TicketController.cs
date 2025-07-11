@@ -209,7 +209,7 @@ public class TicketController : Controller
 
         return View(viewModel);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Edit(EditTicketViewModel viewModel, string submitAction)
     {
@@ -228,8 +228,8 @@ public class TicketController : Controller
             return RedirectToAction("Detail", new { id = ticketToUpdate.Id });
         }
 
-        
-        
+
+
         if (!ModelState.IsValid)
         {
             viewModel.AvailableProjects = await _projectRepository.GetAllProjectsAsync();
@@ -301,7 +301,8 @@ public class TicketController : Controller
             var newUserName = assignedUser.UserName;
 
             _ticketHistoryRepository.TrackChange(ticketToUpdate, TicketProperty.AssignedUser, oldUserName, newUserName, currentUser?.Id);
-            
+            ticketToUpdate.AssignedUser = assignedUser;
+
         }
         else if (ticketToUpdate.Status == TicketStatus.Open && ticketToUpdate.AssignedUser != null)
         {
@@ -324,13 +325,16 @@ public class TicketController : Controller
     [HttpGet]
     public async Task<IActionResult> Detail(int id, string returnUrl = "")
     {
-        var ticket = await _ticketRepository.GetTicketByIdAsync(id);
         TempData["ReturnUrl"] = returnUrl;
+        var ticket = await _ticketRepository.GetTicketByIdAsync(id);
+
+
         if (ticket == null)
         {
             TempData["ToastMessage"] = "Ticket nicht gefunden.";
             return NotFound();
         }
+
 
         var history = await _ticketHistoryRepository.GetHistoryForTicketAsync(id);
         var comments = await _ticketCommentsRepository.GetAllCommentsForTicketAsync(id);
@@ -463,7 +467,7 @@ public class TicketController : Controller
         await _fileRepository.AddFileAsync(ticketFile);
         await _fileRepository.SaveChangesAsync();
 
-        return RedirectToAction("TicketList");
+        return RedirectToAction("Edit", new { id = ticketId });
     }
 
     [HttpGet]
@@ -492,9 +496,11 @@ public class TicketController : Controller
     }
     public IActionResult BackOrRedirect()
     {
-        var source = TempData["ReturnUrl"] as string;
-        if (source == "AdminPage")
-            return RedirectToAction("AdminPage", "Admin");
+        var returnUrl = TempData["ReturnUrl"] as string;
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
 
         return RedirectToAction("TicketList", "Ticket");
     }
